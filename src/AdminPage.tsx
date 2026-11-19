@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { getCurrentUser, isFirebaseConfigured } from './firebaseAuth';
 import {
+  createInvite,
+  deleteInvite,
+  listInvites,
   FEATURE_LABELS,
   isAdminUser,
   listAccounts,
@@ -14,6 +17,7 @@ import {
   type Account,
   type FeatureKey,
   type FeedbackReport,
+  type Invite,
 } from './lib/account';
 
 type Tab = 'members' | 'reports' | 'notice';
@@ -122,6 +126,8 @@ function MembersTab() {
         <button onClick={reload} className="text-xs font-semibold text-indigo-600 hover:underline">새로고침</button>
       </div>
       {message && <p className="rounded-lg bg-white border border-slate-200 px-3 py-2 text-xs text-slate-700">{message}</p>}
+
+      <InviteSection onChanged={reload} />
 
       {accounts.map((acc) => {
         const status = resolveStatus(acc);
@@ -301,6 +307,137 @@ function NoticeTab() {
         </button>
         {message && <span className="text-xs text-slate-600">{message}</span>}
       </div>
+    </section>
+  );
+}
+
+function InviteSection({ onChanged }: { onChanged: () => void }) {
+  const [email, setEmail] = useState('');
+  const [period, setPeriod] = useState<'1m' | '1y' | 'custom'>('1m');
+  const [customDate, setCustomDate] = useState('');
+  const [features, setFeatures] = useState<Record<FeatureKey, boolean>>({ apiSync: true, analytics: true });
+  const [invites, setInvites] = useState<Invite[]>([]);
+  const [message, setMessage] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const reloadInvites = () => listInvites().then(setInvites).catch((e) => setMessage(String(e?.message || e)));
+  useEffect(() => {
+    reloadInvites();
+  }, []);
+
+  const expiresFor = (): string | null => {
+    if (period === '1m') return new Date(Date.now() + 30 * DAY).toISOString();
+    if (period === '1y') return new Date(Date.now() + 365 * DAY).toISOString();
+    if (!customDate) return null;
+    return new Date(`${customDate}T23:59:59`).toISOString();
+  };
+
+  const save = async () => {
+    const trimmed = email.trim();
+    if (!trimmed.includes('@')) return setMessage('이메일 주소를 정확히 입력해 주세요.');
+    if (period === 'custom' && !customDate) return setMessage('만료일을 입력해 주세요.');
+    setSaving(true);
+    setMessage(null);
+    try {
+      await createInvite(trimmed, { expiresAt: expiresFor(), features });
+      setMessage(`${trimmed} 님을 초대했습니다. 이 Google 계정으로 처음 로그인하면 설정이 적용됩니다.`);
+      setEmail('');
+      await reloadInvites();
+      onChanged();
+    } catch (e: any) {
+      setMessage(`초대 실패: ${e?.message || e}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <section className="space-y-3 rounded-xl border border-indigo-200 bg-white p-4 shadow-sm">
+      <div>
+        <p className="text-sm font-bold text-slate-900">회원 초대</p>
+        <p className="text-[11px] text-slate-500">
+          초대할 사람의 Google 이메일을 적고 기간과 기능을 정하세요. 그 사람이 처음 로그인하면 자동으로 적용됩니다.
+        </p>
+      </div>
+
+      <input
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="example@gmail.com"
+        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+      />
+
+      <div className="flex flex-wrap items-center gap-2">
+        {([['1m', '1개월'], ['1y', '1년'], ['custom', '날짜 지정']] as const).map(([key, label]) => (
+          <button
+            key={key}
+            onClick={() => setPeriod(key)}
+            className={`rounded-lg px-3 py-1.5 text-xs font-bold ${
+              period === key ? 'bg-indigo-600 text-white' : 'border border-slate-300 bg-white text-slate-700'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+        {period === 'custom' && (
+          <input
+            type="date"
+            value={customDate}
+            onChange={(e) => setCustomDate(e.target.value)}
+            className="rounded-lg border border-slate-300 px-2 py-1 text-xs"
+          />
+        )}
+      </div>
+
+      <div className="flex flex-wrap gap-4">
+        {(Object.keys(FEATURE_LABELS) as FeatureKey[]).map((key) => (
+          <label key={key} className="flex items-center gap-2 text-xs text-slate-700">
+            <input
+              type="checkbox"
+              checked={features[key]}
+              onChange={(e) => setFeatures((prev) => ({ ...prev, [key]: e.target.checked }))}
+            />
+            {FEATURE_LABELS[key]}
+          </label>
+        ))}
+      </div>
+
+      <div className="flex items-center gap-3">
+        <button
+          onClick={save}
+          disabled={saving}
+          className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-700 disabled:opacity-50"
+        >
+          {saving ? '저장 중...' : '초대하기'}
+        </button>
+        {message && <span className="text-xs text-slate-600">{message}</span>}
+      </div>
+
+      {invites.length > 0 && (
+        <div className="space-y-2 border-t border-slate-100 pt-3">
+          <p className="text-xs font-bold text-slate-700">아직 로그인하지 않은 초대 ({invites.length}명)</p>
+          {invites.map((inv) => (
+            <div key={inv.email} className="flex items-center justify-between gap-2 text-xs text-slate-600">
+              <span>
+                {inv.email} · 만료일 {inv.expiresAt ? new Date(inv.expiresAt).toLocaleDateString('ko-KR') : '-'}
+              </span>
+              <button
+                onClick={async () => {
+                  try {
+                    await deleteInvite(inv.email);
+                    await reloadInvites();
+                  } catch (e: any) {
+                    setMessage(`삭제 실패: ${e?.message || e}`);
+                  }
+                }}
+                className="font-semibold text-rose-600 hover:underline"
+              >
+                초대 취소
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </section>
   );
 }

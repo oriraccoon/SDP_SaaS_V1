@@ -1,5 +1,6 @@
 import {
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -58,13 +59,44 @@ function database() {
   return getFirestore(app);
 }
 
-/** 로그인할 때마다 회원 문서를 만들거나 마지막 접속 시각을 갱신합니다. */
+export interface Invite {
+  email: string;
+  expiresAt: string | null;
+  blocked?: boolean;
+  features?: Features;
+}
+
+/**
+ * 로그인할 때마다 회원 문서를 만들거나 마지막 접속 시각을 갱신합니다.
+ * 처음 로그인하는 사람이고 관리자가 초대해 둔 이메일이면, 초대 설정(기간·기능)을 적용하고 초대는 지웁니다.
+ */
 export async function touchAccount(user: User): Promise<void> {
-  await setDoc(
-    doc(database(), 'users', user.uid),
-    { email: user.email ?? '', lastLoginAt: new Date().toISOString() },
-    { merge: true },
-  );
+  const db = database();
+  const ref = doc(db, 'users', user.uid);
+  const email = user.email ?? '';
+  const now = new Date().toISOString();
+
+  if (email) {
+    const existing = await getDoc(ref);
+    if (!existing.exists()) {
+      const inviteRef = doc(db, 'invites', email.toLowerCase());
+      const invite = await getDoc(inviteRef);
+      if (invite.exists()) {
+        const data = invite.data() as Invite;
+        await setDoc(ref, {
+          email,
+          lastLoginAt: now,
+          expiresAt: data.expiresAt ?? null,
+          blocked: data.blocked ?? false,
+          features: data.features ?? {},
+        });
+        await deleteDoc(inviteRef);
+        return;
+      }
+    }
+  }
+
+  await setDoc(ref, { email, lastLoginAt: now }, { merge: true });
 }
 
 export function subscribeAccount(uid: string, callback: (account: Account | null) => void): Unsubscribe {
@@ -121,4 +153,30 @@ export function subscribeNotice(callback: (notice: Notice | null) => void): Unsu
 
 export async function saveNotice(notice: Notice): Promise<void> {
   await setDoc(doc(database(), 'config', 'notice'), notice);
+}
+
+// ---- 초대 (관리자) ----
+
+export async function listInvites(): Promise<Invite[]> {
+  const snap = await getDocs(collection(database(), 'invites'));
+  return snap.docs.map((d) => d.data() as Invite);
+}
+
+/** 이메일 주소로 초대를 만듭니다. 그 이메일로 처음 로그인하면 이 설정이 적용됩니다. */
+export async function createInvite(
+  email: string,
+  settings: { expiresAt: string | null; features: Features },
+): Promise<void> {
+  const key = email.trim().toLowerCase();
+  await setDoc(doc(database(), 'invites', key), {
+    email: key,
+    expiresAt: settings.expiresAt,
+    features: settings.features,
+    blocked: false,
+    createdAt: new Date().toISOString(),
+  });
+}
+
+export async function deleteInvite(email: string): Promise<void> {
+  await deleteDoc(doc(database(), 'invites', email.toLowerCase()));
 }

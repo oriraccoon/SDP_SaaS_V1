@@ -505,32 +505,32 @@ export default function DeliveryAnalyticsReport({
     <div className="space-y-6">
       
       {/* 타이틀 및 통합 기간 필터 컨트롤바 */}
-      <div className="bg-slate-900 text-white p-5 rounded-2xl shadow-md space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+      <div className="bg-white text-slate-900 border border-slate-200 p-5 rounded-2xl shadow-2xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="p-1.5 bg-indigo-500/30 text-indigo-300 rounded-lg border border-indigo-400/30">
+              <span className="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg border border-indigo-200">
                 <TrendingUp className="w-5 h-5" />
               </span>
-              <h2 className="text-lg font-bold text-white">통합 출고 시각화 리포트</h2>
+              <h2 className="text-lg font-bold text-slate-900">통합 출고 시각화 리포트</h2>
             </div>
-            <p className="text-xs text-slate-300 pl-9">
+            <p className="text-xs text-slate-600 pl-9">
               기간을 선택하거나 캘린더 모달에서 날짜를 지정하면 모든 차트와 리포트가 실시간 업데이트됩니다.
             </p>
           </div>
 
           <div className="flex items-center gap-2 self-start sm:self-auto text-xs">
-            <span className="text-slate-400">전체 수집 데이터:</span>
-            <span className="font-extrabold text-amber-300 text-sm">{orders.length.toLocaleString()}건</span>
+            <span className="text-slate-500">전체 수집 데이터:</span>
+            <span className="font-extrabold text-amber-700 text-sm">{orders.length.toLocaleString()}건</span>
           </div>
         </div>
 
         {/* 1일 / 1주 / 1달 / 사용자 지정 버튼 그룹 및 우측 세부 기간 지정 / 캘린더 버튼 */}
-        <div className="flex flex-wrap items-center justify-between gap-2.5 pt-2 border-t border-slate-800/80 mt-2 text-xs">
+        <div className="flex flex-wrap items-center justify-between gap-2.5 pt-2 border-t border-slate-200 mt-2 text-xs">
           {/* 왼쪽: 필터 프리셋 버튼 모음 */}
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-xs font-bold text-slate-400 mr-1 flex items-center gap-1 shrink-0">
-              <Filter className="w-3.5 h-3.5 text-indigo-400" />
+            <span className="text-xs font-bold text-slate-500 mr-1 flex items-center gap-1 shrink-0">
+              <Filter className="w-3.5 h-3.5 text-indigo-600" />
               조회 기간:
             </span>
 
@@ -539,7 +539,7 @@ export default function DeliveryAnalyticsReport({
               className={`px-3 py-1.5 text-xs font-bold rounded-xl transition cursor-pointer ${
                 dateFilterType === 'all'
                   ? 'bg-indigo-600 text-white shadow-xs ring-1 ring-indigo-400'
-                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
               }`}
             >
               전체 ({orders.length}건)
@@ -550,7 +550,7 @@ export default function DeliveryAnalyticsReport({
               className={`px-3 py-1.5 text-xs font-bold rounded-xl transition cursor-pointer ${
                 dateFilterType === '1d'
                   ? 'bg-indigo-600 text-white shadow-xs ring-1 ring-indigo-400'
-                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
               }`}
             >
               1일별
@@ -561,7 +561,7 @@ export default function DeliveryAnalyticsReport({
               className={`px-3 py-1.5 text-xs font-bold rounded-xl transition cursor-pointer ${
                 dateFilterType === '1w'
                   ? 'bg-indigo-600 text-white shadow-xs ring-1 ring-indigo-400'
-                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
               }`}
             >
               1주일별
@@ -572,7 +572,7 @@ export default function DeliveryAnalyticsReport({
               className={`px-3 py-1.5 text-xs font-bold rounded-xl transition cursor-pointer ${
                 dateFilterType === '1m'
                   ? 'bg-indigo-600 text-white shadow-xs ring-1 ring-indigo-400'
-                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
               }`}
             >
               1달별
@@ -583,7 +583,7 @@ export default function DeliveryAnalyticsReport({
               className={`px-3.5 py-1.5 text-xs font-extrabold rounded-xl transition cursor-pointer ${
                 dateFilterType === 'custom'
                   ? 'bg-amber-500 text-slate-900 shadow-xs ring-1 ring-amber-300'
-                  : 'bg-slate-800 text-amber-300 hover:bg-slate-700'
+                  : 'bg-slate-100 text-amber-700 hover:bg-slate-200'
               }`}
             >
               사용자 지정
@@ -600,20 +600,20 @@ export default function DeliveryAnalyticsReport({
                 setCustomStartDate(todayStr);
                 setCustomEndDate(todayStr);
               }}
-              className="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 px-2.5 py-1 rounded-lg font-bold text-xs transition cursor-pointer shrink-0 flex items-center gap-1"
+              className="bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-300 px-2.5 py-1 rounded-lg font-bold text-xs transition cursor-pointer shrink-0 flex items-center gap-1"
               title="오늘 날짜로 설정"
             >
               오늘
             </button>
 
             {dateFilterType === '1d' || dateFilterType === '1w' || dateFilterType === '1m' ? (
-              <div className="flex items-center gap-2 bg-slate-900/90 p-1 px-2.5 rounded-xl border border-slate-700">
-                <span className="text-slate-400 font-medium text-xs shrink-0">기준일:</span>
+              <div className="flex items-center gap-2 bg-slate-50 p-1 px-2.5 rounded-xl border border-slate-200">
+                <span className="text-slate-500 font-medium text-xs shrink-0">기준일:</span>
                 <input
                   type="date"
                   value={targetBaseDate}
                   onChange={(e) => setTargetBaseDate(e.target.value)}
-                  className="relative bg-slate-800 text-amber-300 font-mono font-bold px-2.5 py-1 rounded-lg border border-slate-700 outline-none cursor-pointer text-xs [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer hover:border-amber-400/70 transition"
+                  className="relative bg-white text-amber-700 font-mono font-bold px-2.5 py-1 rounded-lg border border-slate-200 outline-none cursor-pointer text-xs [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer hover:border-amber-400/70 transition"
                 />
                 {(dateFilterType === '1w' || dateFilterType === '1m') && (
                   <span className="text-indigo-300 font-mono font-extrabold text-[11px] bg-indigo-950/90 px-2 py-1 rounded-lg border border-indigo-800/80 shrink-0">
@@ -622,7 +622,7 @@ export default function DeliveryAnalyticsReport({
                 )}
               </div>
             ) : dateFilterType === 'custom' ? (
-              <div className="flex items-center gap-1.5 bg-slate-900/90 p-1 px-2.5 rounded-xl border border-slate-700">
+              <div className="flex items-center gap-1.5 bg-slate-50 p-1 px-2.5 rounded-xl border border-slate-200">
                 <input
                   type="date"
                   value={customStartDate}
@@ -634,7 +634,7 @@ export default function DeliveryAnalyticsReport({
                       setCustomEndDate(val);
                     }
                   }}
-                  className="relative bg-slate-800 text-amber-300 font-mono font-bold px-2.5 py-1 rounded-lg border border-slate-700 outline-none cursor-pointer text-xs [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer hover:border-amber-400/70 transition"
+                  className="relative bg-white text-amber-700 font-mono font-bold px-2.5 py-1 rounded-lg border border-slate-200 outline-none cursor-pointer text-xs [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer hover:border-amber-400/70 transition"
                 />
                 <span className="text-amber-400 font-bold px-0.5 text-xs">~</span>
                 <input
@@ -648,7 +648,7 @@ export default function DeliveryAnalyticsReport({
                       setCustomStartDate(val);
                     }
                   }}
-                  className="relative bg-slate-800 text-amber-300 font-mono font-bold px-2.5 py-1 rounded-lg border border-slate-700 outline-none cursor-pointer text-xs [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer hover:border-amber-400/70 transition"
+                  className="relative bg-white text-amber-700 font-mono font-bold px-2.5 py-1 rounded-lg border border-slate-200 outline-none cursor-pointer text-xs [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer hover:border-amber-400/70 transition"
                 />
               </div>
             ) : null}
@@ -661,10 +661,10 @@ export default function DeliveryAnalyticsReport({
             {/* 캘린더 보기 우측 보조 버튼 */}
             <button
               onClick={() => setIsCalendarModalOpen(true)}
-              className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-300 hover:text-amber-200 font-extrabold rounded-xl text-xs transition cursor-pointer flex items-center gap-1.5 border border-slate-700 shrink-0 shadow-xs"
+              className="px-2.5 py-1.5 bg-white hover:bg-slate-50 text-amber-700 hover:text-amber-800 font-extrabold rounded-xl text-xs transition cursor-pointer flex items-center gap-1.5 border border-slate-200 shrink-0 shadow-xs"
               title="캘린더 달력 보기"
             >
-              <CalendarDays className="w-3.5 h-3.5 text-amber-300" />
+              <CalendarDays className="w-3.5 h-3.5 text-amber-700" />
               <span>캘린더</span>
             </button>
           </div>

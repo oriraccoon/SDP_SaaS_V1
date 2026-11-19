@@ -460,22 +460,22 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification }: 
   const enabledCount = configs.filter(c => c.isEnabled).length;
 
   return (
-    <div className="bg-slate-900 rounded-2xl border border-indigo-800/60 p-4 sm:p-5 text-white shadow-xl space-y-4">
+    <div className="space-y-4 text-slate-900">
       {/* 상단 제목 & 원클릭 수집 버튼 */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-indigo-800/40 pb-4">
+      <div className="bg-white border border-slate-200 rounded-2xl shadow-2xs p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="p-1.5 bg-amber-400/20 text-amber-300 rounded-lg border border-amber-400/30">
-              <Zap className="w-5 h-5 text-amber-300 animate-pulse" />
+            <span className="p-1.5 bg-amber-50 text-amber-700 rounded-lg border border-amber-300">
+              <Zap className="w-5 h-5 text-amber-600 animate-pulse" />
             </span>
-            <h2 className="text-base font-extrabold text-white tracking-tight flex items-center gap-2">
+            <h2 className="text-base font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
               쇼핑몰 API 주문 자동 연동 센터
-              <span className="text-[10px] bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 px-2 py-0.5 rounded-full font-semibold">
+              <span className="text-[10px] bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 py-0.5 rounded-full font-semibold">
                 원클릭 수집
               </span>
             </h2>
           </div>
-          <p className="text-xs text-indigo-200/80 leading-relaxed">
+          <p className="text-xs text-slate-500 leading-relaxed">
             엑셀 다운로드 필요 없이, 연동된 쇼핑몰 API에서 신규 주문(발주확인)을 실시간으로 끌어옵니다.
           </p>
         </div>
@@ -502,7 +502,7 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification }: 
 
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="px-3 py-2.5 bg-indigo-900/60 hover:bg-indigo-800/60 text-indigo-200 border border-indigo-700/60 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+            className="px-3 py-2.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer"
           >
             <span>{isExpanded ? '접기' : 'API 연동 설정 관리'}</span>
             {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}

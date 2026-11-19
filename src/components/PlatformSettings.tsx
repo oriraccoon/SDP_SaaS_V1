@@ -1051,18 +1051,18 @@ export default function PlatformSettings({
       <div className="space-y-6 animate-fade-in">
         
         {/* 상단 메인 헤더 & 톱니바퀴 버튼 & 쇼핑몰/택배사 모드 전환 탭 */}
-        <div className="bg-slate-900 text-white rounded-2xl p-6 shadow-md border border-indigo-700/50 space-y-4">
+        <div className="bg-white text-slate-900 rounded-2xl p-6 shadow-2xs border border-slate-200 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <span className="p-1.5 bg-indigo-500/30 rounded-lg text-amber-300">
+                <span className="p-1.5 bg-indigo-50 rounded-lg text-indigo-600">
                   <Grid className="w-5 h-5" />
                 </span>
-                <h2 className="text-lg font-bold tracking-tight">
+                <h2 className="text-lg font-bold tracking-tight text-slate-900">
                   엑셀 열 감지 & 세팅 매트릭스 GUI
                 </h2>
               </div>
-              <p className="text-xs text-indigo-200/90 mt-1.5 leading-relaxed">
+              <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
                 업로드된 엑셀 파일의 헤더 명칭과 자동 선별된 열 위치(A, B, C...)를 한눈에 파악하고, 키워드로 원하는 열을 즉시 탐색하여 설정에 반영합니다.
               </p>
             </div>
@@ -1075,10 +1075,10 @@ export default function PlatformSettings({
                   setModalTab(matrixType === 'courier' ? 'courier' : 'platform');
                   setShowSettingsModal(true);
                 }}
-                className="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-xl text-xs font-bold transition shadow-sm flex items-center justify-center gap-1.5 backdrop-blur-xs cursor-pointer"
+                className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 rounded-xl text-xs font-bold transition shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer"
                 title="쇼핑몰 양식 및 택배사 컬럼 상세 관리"
               >
-                <Settings className="w-4 h-4 text-amber-300 animate-spin-slow" />
+                <Settings className="w-4 h-4 text-amber-700 animate-spin-slow" />
                 <span>쇼핑몰/택배사 상세 설정 ()</span>
               </button>
 
@@ -1095,21 +1095,21 @@ export default function PlatformSettings({
           </div>
 
           {/* 쇼핑몰 플랫폼 vs 택배사 송장 매트릭스 전환 토글 스위치 */}
-          <div className="pt-3 border-t border-indigo-700/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-2 bg-indigo-950/80 p-1 rounded-xl border border-indigo-700/60 shrink-0">
+          <div className="pt-3 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-xl border border-slate-200 shrink-0">
               <button
                 onClick={() => setMatrixType('platform')}
                 className={`px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
                   matrixType === 'platform'
-                    ? 'bg-white text-indigo-950 shadow-md font-extrabold'
-                    : 'text-indigo-200 hover:text-white hover:bg-indigo-800/50'
+                    ? 'bg-indigo-600 text-white shadow-md font-extrabold'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
                 }`}
               >
                 <ShoppingBag className="w-4 h-4 text-indigo-600 shrink-0" />
                 <span> 1단계 쇼핑몰 플랫폼 감지</span>
                 {parsedFiles.length > 0 && (
                   <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${
-                    matrixType === 'platform' ? 'bg-indigo-100 text-indigo-800 font-bold' : 'bg-indigo-900 text-indigo-300'
+                    matrixType === 'platform' ? 'bg-indigo-100 text-indigo-800 font-bold' : 'bg-slate-200 text-slate-600'
                   }`}>
                     {parsedFiles.length}개 파일
                   </span>
@@ -1121,14 +1121,14 @@ export default function PlatformSettings({
                 className={`px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
                   matrixType === 'courier'
                     ? 'bg-amber-400 text-slate-950 shadow-md font-extrabold'
-                    : 'text-indigo-200 hover:text-white hover:bg-indigo-800/50'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
                 }`}
               >
                 <Truck className="w-4 h-4 text-amber-600 shrink-0" />
                 <span> 2단계 택배사 송장 감지</span>
                 {parsedTrackingFiles.length > 0 && (
                   <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${
-                    matrixType === 'courier' ? 'bg-slate-900 text-amber-300 font-bold' : 'bg-indigo-900 text-indigo-300'
+                    matrixType === 'courier' ? 'bg-indigo-600 text-white font-bold' : 'bg-slate-200 text-slate-600'
                   }`}>
                     {parsedTrackingFiles.length}개 파일
                   </span>
@@ -1137,7 +1137,7 @@ export default function PlatformSettings({
             </div>
 
             {/* 현재 선택 상태 서머리 텍스트 */}
-            <div className="text-xs text-indigo-200/90 font-medium flex items-center gap-2">
+            <div className="text-xs text-slate-500 font-medium flex items-center gap-2">
               {matrixType === 'platform' ? (
                 <span>쇼핑몰 주문서 엑셀 헤더 파싱 및 열 매핑 관리 모드</span>
               ) : (
@@ -1149,8 +1149,8 @@ export default function PlatformSettings({
           {/* 1) 쇼핑몰 모드 파일 목록 선택 탭 */}
           {matrixType === 'platform' && (
             parsedFiles.length > 0 ? (
-              <div className="pt-3 border-t border-indigo-700/50 flex flex-wrap items-center gap-2">
-                <span className="text-xs font-semibold text-indigo-200 mr-1">업로드된 쇼핑몰 엑셀 파일:</span>
+              <div className="pt-3 border-t border-slate-200 flex flex-wrap items-center gap-2">
+                <span className="text-xs font-semibold text-slate-600 mr-1">업로드된 쇼핑몰 엑셀 파일:</span>
                 {parsedFiles.map((pf, idx) => {
                   const isSelected = selectedFileIdx === idx;
                   const platName = pf.detectedPlatform?.name || '기본 양식';
@@ -1160,14 +1160,14 @@ export default function PlatformSettings({
                       onClick={() => setSelectedFileIdx(idx)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-2 border cursor-pointer ${
                         isSelected
-                          ? 'bg-white text-indigo-900 border-white shadow-sm font-bold'
-                          : 'bg-indigo-800/60 text-indigo-200 border-indigo-700 hover:bg-indigo-800'
+                          ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm font-bold'
+                          : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
                       }`}
                     >
                       <FileText className="w-3.5 h-3.5" />
                       <span className="max-w-[180px] truncate">{pf.fileName}</span>
                       <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${
-                        isSelected ? 'bg-indigo-100 text-indigo-800' : 'bg-indigo-950 text-indigo-300'
+                        isSelected ? 'bg-indigo-100 text-indigo-800' : 'bg-slate-100 text-slate-600'
                       }`}>
                         {platName}
                       </span>
@@ -1176,12 +1176,12 @@ export default function PlatformSettings({
                 })}
               </div>
             ) : (
-              <div className="pt-2 border-t border-indigo-700/50 flex items-center justify-between text-xs text-indigo-200">
+              <div className="pt-2 border-t border-slate-200 flex items-center justify-between text-xs text-slate-600">
                 <span> 아직 업로드된 쇼핑몰 엑셀 파일이 없습니다. 1단계 주문 가공에서 엑셀을 올리거나 아래 등록된 쇼핑몰의 기본 열 매핑 구조를 확인하세요.</span>
                 {onNavigateToProcessTab && (
                   <button
                     onClick={onNavigateToProcessTab}
-                    className="underline text-amber-300 hover:text-amber-200 font-bold ml-2 shrink-0 cursor-pointer"
+                    className="underline text-amber-700 hover:text-amber-800 font-bold ml-2 shrink-0 cursor-pointer"
                   >
                     1단계에서 엑셀 파일 올리기 →
                   </button>
@@ -1192,10 +1192,10 @@ export default function PlatformSettings({
 
           {/* 2) 택배사 모드 파일 목록 및 택배사 선택 드롭다운 */}
           {matrixType === 'courier' && (
-            <div className="pt-3 border-t border-indigo-700/50 space-y-2">
+            <div className="pt-3 border-t border-slate-200 space-y-2">
               {parsedTrackingFiles.length > 0 ? (
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-xs font-semibold text-amber-200 mr-1">업로드된 택배사 엑셀 파일:</span>
+                  <span className="text-xs font-semibold text-amber-800 mr-1">업로드된 택배사 엑셀 파일:</span>
                   {parsedTrackingFiles.map((ptf, idx) => {
                     const isSelected = selectedTrackingFileIdx === idx;
                     return (
@@ -1208,13 +1208,13 @@ export default function PlatformSettings({
                         className={`px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-2 border cursor-pointer ${
                           isSelected
                             ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-sm font-bold'
-                            : 'bg-indigo-800/60 text-indigo-200 border-indigo-700 hover:bg-indigo-800'
+                            : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
                         }`}
                       >
                         <Truck className="w-3.5 h-3.5" />
                         <span className="max-w-[180px] truncate">{ptf.fileName}</span>
                         <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${
-                          isSelected ? 'bg-slate-900 text-amber-300 font-bold' : 'bg-indigo-950 text-indigo-300'
+                          isSelected ? 'bg-indigo-600 text-white font-bold' : 'bg-slate-100 text-slate-600'
                         }`}>
                           {ptf.detectedCourier}
                         </span>
@@ -1223,18 +1223,18 @@ export default function PlatformSettings({
                   })}
                 </div>
               ) : (
-                <div className="flex items-center justify-between text-xs text-indigo-200">
+                <div className="flex items-center justify-between text-xs text-slate-600">
                   <span> 업로드된 택배사 운송장 파일이 없습니다. 등록된 택배사 목록에서 직접 양식을 선택하여 미리 확인하고 설정할 수 있습니다.</span>
                 </div>
               )}
 
               {/* 택배사 수동 선택 드롭다운 */}
               <div className="flex items-center gap-3 pt-1">
-                <span className="text-xs font-semibold text-indigo-200 shrink-0">조회/설정할 택배사 양식 선택:</span>
+                <span className="text-xs font-semibold text-slate-600 shrink-0">조회/설정할 택배사 양식 선택:</span>
                 <select
                   value={activeCourier?.id || activeCourier?.name || ''}
                   onChange={(e) => setSelectedCourierId(e.target.value)}
-                  className="bg-indigo-950 text-white border border-indigo-600 rounded-lg px-3 py-1.5 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer max-w-xs"
+                  className="bg-white text-slate-900 border border-slate-300 rounded-lg px-3 py-1.5 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer max-w-xs"
                 >
                   {couriers.map(c => (
                     <option key={c.id} value={c.id}>
@@ -1244,7 +1244,7 @@ export default function PlatformSettings({
                 </select>
 
                 {activeCourier && (
-                  <span className="text-[11px] text-amber-300 bg-amber-400/10 border border-amber-400/30 px-2.5 py-1 rounded-md font-semibold">
+                  <span className="text-[11px] text-amber-700 bg-amber-50 border border-amber-300 px-2.5 py-1 rounded-md font-semibold">
                     선택된 택배사: <strong>{activeCourier.name}</strong>
                   </span>
                 )}

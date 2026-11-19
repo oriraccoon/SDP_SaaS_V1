@@ -90,6 +90,10 @@ export async function refreshEmailVerified(): Promise<boolean> {
   const u = getCurrentUser();
   if (!u) return false;
   await u.reload();
+  if (u.emailVerified) {
+    // 보안 규칙은 토큰의 email_verified 값을 보므로, 새 토큰을 받아 둬야 회원 정보 저장이 통과합니다.
+    await u.getIdToken(true);
+  }
   return u.emailVerified;
 }
 

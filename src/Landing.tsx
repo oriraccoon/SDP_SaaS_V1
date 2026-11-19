@@ -79,7 +79,7 @@ export default function Landing() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white text-[#191F28]" style={{ fontFamily: "'Inter', 'IBM Plex Sans KR', system-ui, sans-serif" }}>
+    <div className="min-h-screen bg-white text-[#191F28]" style={{ fontFamily: "'Inter', 'Noto Sans KR', system-ui, sans-serif" }}>
       {/* 스크롤 진행 막대 */}
       <motion.div
         className="fixed inset-x-0 top-0 z-30 h-1 origin-left bg-[#1E5B4A]"
@@ -94,7 +94,7 @@ export default function Landing() {
       </header>
 
       {/* 작은 화면용 목차: 상단 바 아래에 가로로 고정 */}
-      <nav className="fixed inset-x-0 top-[72px] z-10 border-b border-[#F2F4F6] bg-white/95 backdrop-blur lg:hidden">
+      <nav className="fixed inset-x-0 top-[72px] z-10 bg-white/95 backdrop-blur lg:hidden">
         <ul className="flex gap-6 overflow-x-auto whitespace-nowrap px-6 py-3 text-sm">
           {toc.map((t) => {
             const on = active === t.id;
@@ -123,18 +123,18 @@ export default function Landing() {
               return (
                 <li key={t.id}>
                   <a href={`#${t.id}`} className="group flex items-center gap-4 py-1">
-                    {/* 짧은 선: 현재 섹션만 길고 진한 초록 */}
+                    {/* 짧은 선: 평소에는 짧은 선만, 현재 섹션은 길고 진한 초록 */}
                     <span
-                      className={`h-[2px] rounded-full transition-all duration-300 ${
-                        on ? 'w-12 bg-[#1E5B4A]' : 'w-6 bg-[#D1D6DB] group-hover:w-10 group-hover:bg-[#8B95A1]'
+                      className={`h-[3px] rounded-full transition-all duration-300 ease-out ${
+                        on ? 'w-14 bg-[#1E5B4A]' : 'w-6 bg-[#C9CFD6] group-hover:w-12 group-hover:bg-[#1E5B4A]'
                       }`}
                     />
-                    {/* 이름: 마우스를 올리면 뿅 나타남 */}
+                    {/* 이름: 마우스를 올리면 크기가 커지며 뿅 나타남 */}
                     <span
-                      className={`origin-left whitespace-nowrap text-sm font-medium transition-all duration-200 ease-out ${
+                      className={`origin-left whitespace-nowrap font-semibold transition-all duration-300 ease-out ${
                         on
-                          ? 'translate-x-[-6px] scale-90 text-[#1E5B4A] opacity-0 group-hover:translate-x-0 group-hover:scale-100 group-hover:opacity-100'
-                          : 'translate-x-[-6px] scale-90 text-[#8B95A1] opacity-0 group-hover:translate-x-0 group-hover:scale-100 group-hover:opacity-100'
+                          ? 'translate-x-[-8px] scale-75 text-[#1E5B4A] opacity-0 group-hover:translate-x-0 group-hover:scale-100 group-hover:opacity-100 group-hover:text-base'
+                          : 'translate-x-[-8px] scale-75 text-[#1E5B4A] opacity-0 group-hover:translate-x-0 group-hover:scale-100 group-hover:opacity-100 group-hover:text-base'
                       }`}
                     >
                       {t.label}

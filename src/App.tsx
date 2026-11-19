@@ -229,7 +229,12 @@ export default function App() {
     parsed: ProductMapping[];
   } | null>(null);
 
-  const [activeTab, setActiveTab] = useState<'process' | 'platforms' | 'products' | 'analytics' | 'backup'>('process');
+  const [activeTab, setActiveTab] = useState<'process' | 'analytics' | 'settings'>('process');
+  const [settingsSection, setSettingsSection] = useState<'platforms' | 'products' | 'backup' | 'account'>('platforms');
+  const openSettings = (section: 'platforms' | 'products' | 'backup' | 'account') => {
+    setSettingsSection(section);
+    setActiveTab('settings');
+  };
   const [selectedPlatformId, setSelectedPlatformId] = useState<string>('');
   // 1단계 (주문 가공) 상태 (다중 파일 지원!)
   const [orderFiles, setOrderFiles] = useState<File[]>([]);
@@ -2186,32 +2191,6 @@ export default function App() {
               <span className="hidden lg:inline">엑셀 / 가공 & 매칭</span>
               <span className="inline lg:hidden">가공/매칭</span>
             </button>
-            <button
-              onClick={() => setActiveTab('platforms')}
-              className={`flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition shrink-0 ${
-                activeTab === 'platforms' 
-                  ? 'bg-white text-slate-900 shadow-sm border border-slate-200' 
-                  : 'text-slate-500 hover:text-slate-900'
-              }`}
-              title="플랫폼 설정"
-            >
-              <Settings className="w-3.5 h-3.5 shrink-0" />
-              <span className="hidden lg:inline">플랫폼 설정</span>
-              <span className="inline lg:hidden">플랫폼</span>
-            </button>
-            <button
-              onClick={() => setActiveTab('products')}
-              className={`flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition shrink-0 ${
-                activeTab === 'products' 
-                  ? 'bg-white text-slate-900 shadow-sm border border-slate-200' 
-                  : 'text-slate-500 hover:text-slate-900'
-              }`}
-              title="품목 정제 리스트"
-            >
-              <ClipboardList className="w-3.5 h-3.5 shrink-0" />
-              <span className="hidden lg:inline">품목 정제 리스트</span>
-              <span className="inline lg:hidden">품목정제</span>
-            </button>
             {features.analytics && (
             <button
               onClick={() => setActiveTab('analytics')}
@@ -2228,37 +2207,18 @@ export default function App() {
             </button>
             )}
             <button
-              onClick={() => setActiveTab('backup')}
+              onClick={() => setActiveTab('settings')}
               className={`flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition shrink-0 ${
-                activeTab === 'backup' 
-                  ? 'bg-white text-slate-900 shadow-sm border border-slate-200' 
+                activeTab === 'settings'
+                  ? 'bg-white text-slate-900 shadow-sm border border-slate-200'
                   : 'text-slate-500 hover:text-slate-900'
               }`}
-              title="설정 백업"
+              title="설정"
             >
-              <Database className="w-3.5 h-3.5 shrink-0" />
-              <span className="hidden lg:inline">설정 백업</span>
-              <span className="inline lg:hidden">백업</span>
+              <Settings className="w-3.5 h-3.5 shrink-0" />
+              <span className="hidden lg:inline">설정</span>
             </button>
           </nav>
-
-          <button
-            onClick={() => setIsFeedbackOpen(true)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 shrink-0"
-            title="문의 / 버그 신고"
-          >
-            <MessageSquare className="w-3.5 h-3.5 shrink-0" />
-            <span className="hidden sm:inline">문의 / 버그 신고</span>
-          </button>
-
-          <button
-            onClick={() => logout()}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 shrink-0"
-            title="로그아웃"
-          >
-            <LogOut className="w-3.5 h-3.5 shrink-0" />
-            <span className="hidden sm:inline">로그아웃</span>
-          </button>
 
         </div>
       </header>
@@ -2474,7 +2434,7 @@ export default function App() {
                         <button
                           onClick={() => {
                             setPlatformMatrixType('platform');
-                            setActiveTab('platforms');
+                            openSettings('platforms');
                           }}
                           className="text-[11px] bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold px-2.5 py-1 rounded-lg border border-indigo-200 transition flex items-center gap-1.5 cursor-pointer shadow-2xs self-start sm:self-auto"
                         >
@@ -2806,7 +2766,7 @@ export default function App() {
                         <button
                           onClick={() => {
                             setPlatformMatrixType('courier');
-                            setActiveTab('platforms');
+                            openSettings('platforms');
                           }}
                           className="text-[11px] bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold px-2.5 py-1 rounded-lg border border-amber-200 transition flex items-center gap-1.5 cursor-pointer shadow-2xs self-start sm:self-auto"
                         >
@@ -2998,51 +2958,274 @@ export default function App() {
             </motion.div>
           )}
 
-          {/* 탭 2: 플랫폼 관리 */}
-          {activeTab === 'platforms' && (
+          {/* 설정 화면: 왼쪽 메뉴 + 선택한 항목 */}
+          {activeTab === 'settings' && (
             <motion.div
-              key="platforms-tab"
+              key="settings-tab"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
+              className="flex flex-col md:flex-row gap-6"
             >
-              <PlatformSettings 
-                platforms={platforms} 
-                onChange={(updatedPlatforms) => {
-                  setPlatforms(updatedPlatforms);
-                  if (orderFiles.length > 0) {
-                    processMultipleOrderFiles(orderFiles, customFilePlatforms, decryptedFilesCache, productMappings, updatedPlatforms);
-                  }
-                }} 
-                couriers={couriers}
-                onCouriersChange={setCouriers}
-                parsedFiles={orderParseResult?.parsedFiles}
-                parsedTrackingFiles={parsedTrackingFiles}
-                onFilePlatformChange={handleFilePlatformChange}
-                onFileCourierChange={handleTrackingFileCourierChange}
-                onNavigateToProcessTab={() => setActiveTab('process')}
-                onReProcessOrders={() => {
-                  if (orderFiles.length > 0) {
-                    processMultipleOrderFiles(orderFiles, customFilePlatforms, decryptedFilesCache, productMappings, platforms);
-                  }
-                }}
-                initialMatrixType={platformMatrixType}
-              />
-            </motion.div>
-          )}
+              <aside className="md:w-56 shrink-0">
+                <div className="bg-white border border-slate-200 rounded-xl p-2 shadow-sm space-y-1">
+                  {([
+                    ['platforms', '플랫폼 설정'],
+                    ['products', '품목 정제 리스트'],
+                    ['backup', '설정 백업'],
+                    ['account', '계정 · 문의'],
+                  ] as const).map(([key, label]) => (
+                    <button
+                      key={key}
+                      onClick={() => setSettingsSection(key)}
+                      className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold transition ${
+                        settingsSection === key ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-slate-100'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </aside>
 
-          {/* 탭 3: 품목 정제 사전 */}
-          {activeTab === 'products' && (
-            <motion.div
-              key="products-tab"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-            >
-              <ProductMappingList 
-                mappings={productMappings} 
-                onChange={setProductMappings} 
-              />
+              <section className="flex-1 min-w-0">
+            {/* 탭 2: 플랫폼 관리 */}
+            {settingsSection === 'platforms' && (
+              <motion.div
+                key="platforms-tab"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+              >
+                <PlatformSettings 
+                  platforms={platforms} 
+                  onChange={(updatedPlatforms) => {
+                    setPlatforms(updatedPlatforms);
+                    if (orderFiles.length > 0) {
+                      processMultipleOrderFiles(orderFiles, customFilePlatforms, decryptedFilesCache, productMappings, updatedPlatforms);
+                    }
+                  }} 
+                  couriers={couriers}
+                  onCouriersChange={setCouriers}
+                  parsedFiles={orderParseResult?.parsedFiles}
+                  parsedTrackingFiles={parsedTrackingFiles}
+                  onFilePlatformChange={handleFilePlatformChange}
+                  onFileCourierChange={handleTrackingFileCourierChange}
+                  onNavigateToProcessTab={() => setActiveTab('process')}
+                  onReProcessOrders={() => {
+                    if (orderFiles.length > 0) {
+                      processMultipleOrderFiles(orderFiles, customFilePlatforms, decryptedFilesCache, productMappings, platforms);
+                    }
+                  }}
+                  initialMatrixType={platformMatrixType}
+                />
+              </motion.div>
+            )}
+
+            {/* 탭 3: 품목 정제 사전 */}
+            {settingsSection === 'products' && (
+              <motion.div
+                key="products-tab"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+              >
+                <ProductMappingList 
+                  mappings={productMappings} 
+                  onChange={setProductMappings} 
+                />
+              </motion.div>
+            )}
+
+            {settingsSection === 'backup' && (
+              <motion.div
+                key="backup-tab"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="max-w-3xl mx-auto"
+              >
+                <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
+                
+                  {/* 헤더 타이틀 */}
+                  <div className="border-b border-slate-100 pb-5">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                          <Database className="w-6 h-6 text-indigo-600" />
+                          통합 백업 & 복원 (데이터 전체 관리)
+                        </h2>
+                        <p className="text-xs text-slate-500 mt-1">
+                          쇼핑몰 플랫폼 설정, 택배사 설정, 품목 대치 사전({productMappings.length}개 규칙)을 파일로 백업하거나 복원합니다.
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-xs font-bold shrink-0 shadow-2xs">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        실시간 자동 백업 동기화 중
+                      </div>
+                    </div>
+
+                    <div className="mt-3 p-3 bg-indigo-50/60 border border-indigo-100 rounded-xl text-xs text-indigo-900 leading-relaxed">
+                      <strong>설정은 자동으로 저장됩니다:</strong> 플랫폼 양식, 택배사 양식, 품목 대치 사전, 쇼핑몰 연동 설정은 로그인한 계정에 저장되어 다음에 접속해도 그대로 있습니다. <strong>엑셀 주문 데이터는 저장되지 않으며</strong>, 새로고침하면 사라집니다. API 키는 암호화되어 저장되고, 다른 컴퓨터에서는 다시 입력해야 합니다.
+                    </div>
+                  </div>
+
+                  {/* 메인 2분할: 가져오기 (Import) vs 내보내기 (Export) */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-0 md:divide-x md:divide-slate-200">
+                  
+                    {/* 1. 파일 가져오기 (복원/업로드) */}
+                    <div className="p-0 md:px-8 first:md:pl-0 last:md:pr-0 flex flex-col justify-between space-y-4">
+                      <div className="space-y-2">
+                        <span className="inline-block text-[10px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2.5 py-0.5 rounded-md">
+                          RESTORE & IMPORT
+                        </span>
+                        <h3 className="font-bold text-slate-800 text-sm flex items-center gap-1.5">
+                          <Upload className="w-4 h-4 text-indigo-600" />
+                          백업 / 사전 파일 가져오기
+                        </h3>
+                        <p className="text-xs text-slate-500 leading-relaxed">
+                          통합 백업 파일(<code>.json</code>) 또는 품목 사전(<code>.xlsx</code>, <code>.csv</code>, <code>.txt</code>)을 업로드하면 자동으로 형식을 감지해 복원합니다.
+                        </p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="relative">
+                          <input
+                            type="file"
+                            accept=".json, .xlsx, .xls, .csv, .txt"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              if (file.name.toLowerCase().endsWith('.json')) {
+                                const reader = new FileReader();
+                                reader.onload = (ev) => {
+                                  try {
+                                    const json = JSON.parse(ev.target?.result as string);
+                                    if (json.platforms || json.productMappings || json.analyticsOrders) {
+                                      openConfirm(
+                                        "통합 데이터 복원",
+                                        "기존의 플랫폼 설정과 품목 대치 사전이 업로드한 백업 내용으로 복원됩니다. 진행할까요?",
+                                        () => {
+                                          if (json.platforms) setPlatforms(json.platforms);
+                                          if (json.productMappings) setProductMappings(json.productMappings);
+                                          if (json.couriers) setCouriers(json.couriers);
+                                          if (json.analyticsOrders && Array.isArray(json.analyticsOrders)) {
+                                            setAnalyticsOrders(json.analyticsOrders);
+                                          }
+                                          showNotification('success', "플랫폼, 품목 사전 및 시각화 데이터가 완벽 복원되었습니다.");
+                                        }
+                                      );
+                                    } else if (Array.isArray(json)) {
+                                      handleImportProductMappingFile(e);
+                                    }
+                                  } catch {
+                                    showNotification('error', "JSON 파일 형식이 올바르지 않습니다.");
+                                  }
+                                };
+                                reader.readAsText(file);
+                              } else {
+                                handleImportProductMappingFile(e);
+                              }
+                              e.target.value = '';
+                            }}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                          />
+                          <button className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold transition shadow-sm cursor-pointer">
+                            <Upload className="w-4 h-4" />
+                            파일 선택하여 복원하기
+                          </button>
+                        </div>
+                        <p className="text-[10px] text-center text-slate-400">지원: .json (전체), .xlsx / .csv / .txt (품목사전)</p>
+                      </div>
+                    </div>
+
+                    {/* 2. 파일 내보내기 (백업/다운로드) */}
+                    <div className="p-0 md:px-8 first:md:pl-0 last:md:pr-0 flex flex-col justify-between space-y-4">
+                      <div className="space-y-2">
+                        <span className="inline-block text-[10px] font-bold text-slate-600 bg-slate-200/70 px-2.5 py-0.5 rounded-md">
+                          BACKUP & EXPORT
+                        </span>
+                        <h3 className="font-bold text-slate-800 text-sm flex items-center gap-1.5">
+                          <Download className="w-4 h-4 text-slate-700" />
+                          백업 / 사전 파일 내보내기
+                        </h3>
+                        <p className="text-xs text-slate-500 leading-relaxed">
+                          현재 설정된 <strong>플랫폼 양식, 택배사 양식, 품목 정제 사전</strong>을 백업 파일(.json)로 저장합니다. 주문 데이터는 포함되지 않습니다.
+                        </p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <button
+                          onClick={handleExportBackup}
+                          className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-semibold transition shadow-xs cursor-pointer"
+                        >
+                          <Database className="w-3.5 h-3.5" />
+                          전체 설정 통합 백업 (.json)
+                        </button>
+
+                        <div className="grid grid-cols-2 gap-2 pt-0.5">
+                          <button
+                            onClick={handleExportProductMappingsExcel}
+                            className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-semibold transition cursor-pointer"
+                          >
+                            <FileSpreadsheet className="w-3.5 h-3.5" />
+                            품목사전 (.xlsx)
+                          </button>
+                          <button
+                            onClick={handleExportProductMappingsCSV}
+                            className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[11px] font-semibold transition cursor-pointer"
+                          >
+                            <FileText className="w-3.5 h-3.5" />
+                            품목사전 (.csv)
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+
+                  {/* 하단 리셋 안내 */}
+                  <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-700">기본 설정으로 원복</h4>
+                      <p className="text-[11px] text-slate-400 mt-0.5">처음 설치 시 제공된 네이버/쿠팡 및 샘플 품목 매핑 사전 데이터로 전체 원복합니다.</p>
+                    </div>
+                    <button
+                      onClick={handleResetToDefault}
+                      className="flex items-center gap-1.5 px-3.5 py-2 border border-rose-200 hover:border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl text-xs font-bold transition shadow-2xs shrink-0 cursor-pointer"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      기본 설정으로 전체 초기화
+                    </button>
+                  </div>
+
+                </div>
+              </motion.div>
+            )}
+
+                  {settingsSection === 'account' && (
+                    <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
+                      <div>
+                        <h2 className="text-base font-bold text-slate-900">계정 · 문의</h2>
+                        <p className="mt-1 text-sm text-slate-600">문의나 버그는 아래 버튼으로 보내 주세요. 로그아웃도 여기서 합니다.</p>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          onClick={() => setIsFeedbackOpen(true)}
+                          className="px-4 py-2 rounded-lg border border-slate-300 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                        >
+                          문의 / 버그 신고
+                        </button>
+                        <button
+                          onClick={() => logout()}
+                          className="px-4 py-2 rounded-lg border border-slate-300 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                        >
+                          로그아웃
+                        </button>
+                      </div>
+                    </div>
+                  )}
+              </section>
             </motion.div>
           )}
 
@@ -3072,172 +3255,6 @@ export default function App() {
           )}
 
           {/* 탭 4: 설정 백업/동기화 */}
-          {activeTab === 'backup' && (
-            <motion.div
-              key="backup-tab"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="max-w-3xl mx-auto"
-            >
-              <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
-                
-                {/* 헤더 타이틀 */}
-                <div className="border-b border-slate-100 pb-5">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div>
-                      <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                        <Database className="w-6 h-6 text-indigo-600" />
-                        통합 백업 & 복원 (데이터 전체 관리)
-                      </h2>
-                      <p className="text-xs text-slate-500 mt-1">
-                        쇼핑몰 플랫폼 설정, 택배사 설정, 품목 대치 사전({productMappings.length}개 규칙)을 파일로 백업하거나 복원합니다.
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-xs font-bold shrink-0 shadow-2xs">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                      실시간 자동 백업 동기화 중
-                    </div>
-                  </div>
-
-                  <div className="mt-3 p-3 bg-indigo-50/60 border border-indigo-100 rounded-xl text-xs text-indigo-900 leading-relaxed">
-                    <strong>설정은 자동으로 저장됩니다:</strong> 플랫폼 양식, 택배사 양식, 품목 대치 사전, 쇼핑몰 연동 설정은 로그인한 계정에 저장되어 다음에 접속해도 그대로 있습니다. <strong>엑셀 주문 데이터는 저장되지 않으며</strong>, 새로고침하면 사라집니다. API 키는 암호화되어 저장되고, 다른 컴퓨터에서는 다시 입력해야 합니다.
-                  </div>
-                </div>
-
-                {/* 메인 2분할: 가져오기 (Import) vs 내보내기 (Export) */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-0 md:divide-x md:divide-slate-200">
-                  
-                  {/* 1. 파일 가져오기 (복원/업로드) */}
-                  <div className="p-0 md:px-8 first:md:pl-0 last:md:pr-0 flex flex-col justify-between space-y-4">
-                    <div className="space-y-2">
-                      <span className="inline-block text-[10px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2.5 py-0.5 rounded-md">
-                        RESTORE & IMPORT
-                      </span>
-                      <h3 className="font-bold text-slate-800 text-sm flex items-center gap-1.5">
-                        <Upload className="w-4 h-4 text-indigo-600" />
-                        백업 / 사전 파일 가져오기
-                      </h3>
-                      <p className="text-xs text-slate-500 leading-relaxed">
-                        통합 백업 파일(<code>.json</code>) 또는 품목 사전(<code>.xlsx</code>, <code>.csv</code>, <code>.txt</code>)을 업로드하면 자동으로 형식을 감지해 복원합니다.
-                      </p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <div className="relative">
-                        <input
-                          type="file"
-                          accept=".json, .xlsx, .xls, .csv, .txt"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (!file) return;
-                            if (file.name.toLowerCase().endsWith('.json')) {
-                              const reader = new FileReader();
-                              reader.onload = (ev) => {
-                                try {
-                                  const json = JSON.parse(ev.target?.result as string);
-                                  if (json.platforms || json.productMappings || json.analyticsOrders) {
-                                    openConfirm(
-                                      "통합 데이터 복원",
-                                      "기존의 플랫폼 설정과 품목 대치 사전이 업로드한 백업 내용으로 복원됩니다. 진행할까요?",
-                                      () => {
-                                        if (json.platforms) setPlatforms(json.platforms);
-                                        if (json.productMappings) setProductMappings(json.productMappings);
-                                        if (json.couriers) setCouriers(json.couriers);
-                                        if (json.analyticsOrders && Array.isArray(json.analyticsOrders)) {
-                                          setAnalyticsOrders(json.analyticsOrders);
-                                        }
-                                        showNotification('success', "플랫폼, 품목 사전 및 시각화 데이터가 완벽 복원되었습니다.");
-                                      }
-                                    );
-                                  } else if (Array.isArray(json)) {
-                                    handleImportProductMappingFile(e);
-                                  }
-                                } catch {
-                                  showNotification('error', "JSON 파일 형식이 올바르지 않습니다.");
-                                }
-                              };
-                              reader.readAsText(file);
-                            } else {
-                              handleImportProductMappingFile(e);
-                            }
-                            e.target.value = '';
-                          }}
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                        />
-                        <button className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold transition shadow-sm cursor-pointer">
-                          <Upload className="w-4 h-4" />
-                          파일 선택하여 복원하기
-                        </button>
-                      </div>
-                      <p className="text-[10px] text-center text-slate-400">지원: .json (전체), .xlsx / .csv / .txt (품목사전)</p>
-                    </div>
-                  </div>
-
-                  {/* 2. 파일 내보내기 (백업/다운로드) */}
-                  <div className="p-0 md:px-8 first:md:pl-0 last:md:pr-0 flex flex-col justify-between space-y-4">
-                    <div className="space-y-2">
-                      <span className="inline-block text-[10px] font-bold text-slate-600 bg-slate-200/70 px-2.5 py-0.5 rounded-md">
-                        BACKUP & EXPORT
-                      </span>
-                      <h3 className="font-bold text-slate-800 text-sm flex items-center gap-1.5">
-                        <Download className="w-4 h-4 text-slate-700" />
-                        백업 / 사전 파일 내보내기
-                      </h3>
-                      <p className="text-xs text-slate-500 leading-relaxed">
-                        현재 설정된 <strong>플랫폼 양식, 택배사 양식, 품목 정제 사전</strong>을 백업 파일(.json)로 저장합니다. 주문 데이터는 포함되지 않습니다.
-                      </p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <button
-                        onClick={handleExportBackup}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-semibold transition shadow-xs cursor-pointer"
-                      >
-                        <Database className="w-3.5 h-3.5" />
-                        전체 설정 통합 백업 (.json)
-                      </button>
-
-                      <div className="grid grid-cols-2 gap-2 pt-0.5">
-                        <button
-                          onClick={handleExportProductMappingsExcel}
-                          className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-semibold transition cursor-pointer"
-                        >
-                          <FileSpreadsheet className="w-3.5 h-3.5" />
-                          품목사전 (.xlsx)
-                        </button>
-                        <button
-                          onClick={handleExportProductMappingsCSV}
-                          className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[11px] font-semibold transition cursor-pointer"
-                        >
-                          <FileText className="w-3.5 h-3.5" />
-                          품목사전 (.csv)
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                </div>
-
-                {/* 하단 리셋 안내 */}
-                <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-700">기본 설정으로 원복</h4>
-                    <p className="text-[11px] text-slate-400 mt-0.5">처음 설치 시 제공된 네이버/쿠팡 및 샘플 품목 매핑 사전 데이터로 전체 원복합니다.</p>
-                  </div>
-                  <button
-                    onClick={handleResetToDefault}
-                    className="flex items-center gap-1.5 px-3.5 py-2 border border-rose-200 hover:border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl text-xs font-bold transition shadow-2xs shrink-0 cursor-pointer"
-                  >
-                    <RefreshCw className="w-3.5 h-3.5" />
-                    기본 설정으로 전체 초기화
-                  </button>
-                </div>
-
-              </div>
-            </motion.div>
-          )}
-
         </AnimatePresence>
       </main>
 

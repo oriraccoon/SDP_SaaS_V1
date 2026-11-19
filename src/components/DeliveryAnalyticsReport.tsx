@@ -764,7 +764,7 @@ export default function DeliveryAnalyticsReport({
                       return (
                         <div className="bg-slate-900 text-white px-3.5 py-2.5 rounded-xl border border-slate-700 shadow-xl text-xs space-y-1.5 min-w-[170px]">
                           <div className="font-bold text-amber-300 text-sm flex items-center gap-1.5 border-b border-slate-700/80 pb-1">
-                            <span>🛍️ {data.name}</span>
+                            <span> {data.name}</span>
                           </div>
                           <div className="text-slate-200 flex items-center justify-between pt-0.5 gap-3">
                             <span className="text-slate-400">출고 물량:</span>
@@ -842,7 +842,7 @@ export default function DeliveryAnalyticsReport({
                       return (
                         <div className="bg-slate-900 text-white px-3.5 py-2.5 rounded-xl border border-slate-700 shadow-xl text-xs space-y-1.5 min-w-[180px]">
                           <div className="font-bold text-purple-300 text-sm break-words max-w-xs leading-snug">
-                            📦 {data.name}
+                            {data.name}
                           </div>
                           <div className="text-slate-200 flex items-center justify-between border-t border-slate-700/80 pt-1.5 gap-2">
                             <span className="text-slate-300">총 판매 수량:</span>
@@ -917,7 +917,7 @@ export default function DeliveryAnalyticsReport({
                       return (
                         <div className="bg-slate-900 text-white px-3.5 py-2.5 rounded-xl border border-slate-700 shadow-xl text-xs space-y-1">
                           <div className="font-bold text-emerald-400 flex items-center gap-1.5 text-sm">
-                            📍 {label}
+                            {label}
                           </div>
                           <div className="text-slate-200 flex items-center gap-1.5">
                             <span>배송 물량:</span>
@@ -1104,7 +1104,7 @@ export default function DeliveryAnalyticsReport({
                           return (
                             <div className="bg-slate-900 text-white px-3.5 py-2.5 rounded-xl border border-slate-700 shadow-xl text-xs space-y-1 min-w-[150px]">
                               <div className="font-bold text-amber-300 text-xs border-b border-slate-700/80 pb-1">
-                                📅 {data.fullDate} ({data.dayOfWeek || ''})
+                                {data.fullDate} ({data.dayOfWeek || ''})
                               </div>
                               <div className="text-slate-200 flex items-center justify-between pt-1">
                                 <span className="text-slate-400">출고 물량:</span>
@@ -1134,7 +1134,7 @@ export default function DeliveryAnalyticsReport({
             </div>
             
             <div className="text-[11px] text-slate-400 text-right flex items-center justify-end gap-1">
-              <span>💡 가로 스크롤로 일별 출고 흐름을 자세히 확인하세요</span>
+              <span> 가로 스크롤로 일별 출고 흐름을 자세히 확인하세요</span>
             </div>
           </div>
 
@@ -1142,7 +1142,7 @@ export default function DeliveryAnalyticsReport({
 
       </div>
 
-      {/* 🔥 팝업 캘린더 모달 (Modal Popup) */}
+      {/* 팝업 캘린더 모달 (Modal Popup) */}
       {isCalendarModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
           <div className="bg-white w-full max-w-3xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
@@ -1154,7 +1154,7 @@ export default function DeliveryAnalyticsReport({
                   <CalendarDays className="w-5 h-5" />
                 </span>
                 <div>
-                  <h3 className="font-bold text-base text-white">📅 출고 데이터 캘린더 기간 선택</h3>
+                  <h3 className="font-bold text-base text-white"> 출고 데이터 캘린더 기간 선택</h3>
                   <p className="text-xs text-slate-300">
                     원하는 날짜를 클릭하면 해당 범위의 시각화 데이터가 일괄 반영됩니다.
                   </p>
@@ -1328,7 +1328,7 @@ export default function DeliveryAnalyticsReport({
                   </span>
                 </div>
                 <span className="text-slate-500 text-[11px]">
-                  💡 날짜를 선택하면 범위(시작일~종료일)로 지정할 수 있습니다.
+                  날짜를 선택하면 범위(시작일~종료일)로 지정할 수 있습니다.
                 </span>
               </div>
 

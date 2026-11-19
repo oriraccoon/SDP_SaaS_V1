@@ -860,7 +860,7 @@ export default function App() {
     }
   };
 
-  // ⚡ 주문 목록에 productMappings를 적용하고, 미대치 품목(newRawItems) 추출 및 합포장(combinedId, isMulti)을 재계산하는 함수
+  // 주문 목록에 productMappings를 적용하고, 미대치 품목(newRawItems) 추출 및 합포장(combinedId, isMulti)을 재계산하는 함수
   const processOrdersWithMappings = (
     ordersList: ProcessedOrder[],
     mappings: ProductMapping[]
@@ -929,7 +929,7 @@ export default function App() {
     };
   };
 
-  // ⚡ 수집된 특정 파일/API 데이터 세트 개별 삭제 핸들러 (엑셀 파일 & API 수집건 공통 지원)
+  // 수집된 특정 파일/API 데이터 세트 개별 삭제 핸들러 (엑셀 파일 & API 수집건 공통 지원)
   const handleRemoveParsedFile = async (fileNameToRemove: string) => {
     // 1. 엑셀 업로드 파일 목록에서 해당 파일 제거
     const updatedOrderFiles = orderFiles.filter(f => f.name !== fileNameToRemove);
@@ -1553,7 +1553,7 @@ export default function App() {
     }
   };
 
-  // ⚡ 쇼핑몰 API 자동 연동 수집 결과 수신 핸들러 (플랫폼별 독립 데이터 세트 생성)
+  // 쇼핑몰 API 자동 연동 수집 결과 수신 핸들러 (플랫폼별 독립 데이터 세트 생성)
   const handleOrdersApiSynced = (syncedOrders: ProcessedOrder[], summaryMsg: string) => {
     if (!syncedOrders || syncedOrders.length === 0) return;
 
@@ -2275,31 +2275,31 @@ export default function App() {
       </AnimatePresence>
 
       {/* 대시보드 헤더 */}
-      <header id="main-header" className="bg-slate-900 text-white shadow-md border-b border-slate-800 shrink-0 w-full">
+      <header id="main-header" className="bg-white text-slate-900 border-b border-slate-200 shrink-0 w-full">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 py-3.5 flex flex-wrap sm:flex-row items-center justify-between gap-3">
           
           {/* 타이틀 로고 */}
           <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-indigo-600 rounded-xl shadow-inner shrink-0">
+            <div className="p-2 bg-slate-900 rounded-lg shrink-0">
               <FileSpreadsheet className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-base sm:text-lg font-bold tracking-tight">스마트 운송장 관리기</h1>
-                <span className="text-[10px] bg-indigo-500/30 text-indigo-300 font-semibold px-2 py-0.5 rounded-full shrink-0">v1.0.1 PRO</span>
+                <span className="text-[10px] bg-slate-100 text-slate-600 border border-slate-200 font-medium px-1.5 py-0.5 rounded-md shrink-0">v1.0.1 PRO</span>
               </div>
-              <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5 hidden xs:block">다중 플랫폼 통합 가공 및 AI 스마트 운송장 매칭 대시보드</p>
+              <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 hidden xs:block">다중 플랫폼 주문 가공 및 운송장 매칭</p>
             </div>
           </div>
 
           {/* 탭 네비게이션 - 반응형 최소화 (작을 땐 축소형 툴) */}
-          <nav className="flex bg-slate-800 p-1 rounded-xl border border-slate-700/50 max-w-full overflow-x-auto">
+          <nav className="flex bg-slate-100 p-1 rounded-lg border border-slate-200 max-w-full overflow-x-auto">
             <button
               onClick={() => setActiveTab('process')}
               className={`flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition shrink-0 ${
                 activeTab === 'process' 
-                  ? 'bg-indigo-600 text-white shadow' 
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-white text-slate-900 shadow-sm border border-slate-200' 
+                  : 'text-slate-500 hover:text-slate-900'
               }`}
               title="엑셀 / 가공 & 매칭"
             >
@@ -2311,8 +2311,8 @@ export default function App() {
               onClick={() => setActiveTab('platforms')}
               className={`flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition shrink-0 ${
                 activeTab === 'platforms' 
-                  ? 'bg-indigo-600 text-white shadow' 
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-white text-slate-900 shadow-sm border border-slate-200' 
+                  : 'text-slate-500 hover:text-slate-900'
               }`}
               title="플랫폼 설정"
             >
@@ -2324,8 +2324,8 @@ export default function App() {
               onClick={() => setActiveTab('products')}
               className={`flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition shrink-0 ${
                 activeTab === 'products' 
-                  ? 'bg-indigo-600 text-white shadow' 
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-white text-slate-900 shadow-sm border border-slate-200' 
+                  : 'text-slate-500 hover:text-slate-900'
               }`}
               title="품목 정제 리스트"
             >
@@ -2337,8 +2337,8 @@ export default function App() {
               onClick={() => setActiveTab('analytics')}
               className={`flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition shrink-0 ${
                 activeTab === 'analytics' 
-                  ? 'bg-indigo-600 text-white shadow' 
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-white text-slate-900 shadow-sm border border-slate-200' 
+                  : 'text-slate-500 hover:text-slate-900'
               }`}
               title="시각화 리포트"
             >
@@ -2350,8 +2350,8 @@ export default function App() {
               onClick={() => setActiveTab('backup')}
               className={`flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition shrink-0 ${
                 activeTab === 'backup' 
-                  ? 'bg-indigo-600 text-white shadow' 
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-white text-slate-900 shadow-sm border border-slate-200' 
+                  : 'text-slate-500 hover:text-slate-900'
               }`}
               title="설정 백업"
             >
@@ -2394,7 +2394,7 @@ export default function App() {
                       </div>
                       <div>
                         <h3 className="font-bold text-slate-800 text-sm">
-                          🔒 암호 보호 처리된 엑셀 파일이 감지되었습니다!
+                          암호 보호 처리된 엑셀 파일이 감지되었습니다!
                         </h3>
                         <p className="text-xs text-slate-600 mt-1 leading-relaxed">
                           업로드하신 <strong>{passwordErrorFile === 'order' ? '쇼핑몰 주문 데이터' : '운송장 소스'}</strong> 파일에 비밀번호가 설정되어 있어 브라우저 보안 샌드박스 내에서 파일을 파싱할 수 없습니다. 
@@ -2410,7 +2410,7 @@ export default function App() {
                   </div>
 
                   <div className="bg-white rounded-lg p-4 border border-rose-100 space-y-3">
-                    <div className="text-xs font-bold text-rose-700">💡 왜 이 작업이 필요하며, 어떻게 해결하나요?</div>
+                    <div className="text-xs font-bold text-rose-700"> 왜 이 작업이 필요하며, 어떻게 해결하나요?</div>
                     
                     {/* 안내 문구 */}
                     <div className="text-xs text-slate-600 space-y-2 leading-relaxed">
@@ -2489,7 +2489,7 @@ export default function App() {
                   </motion.div>
                 )}
 
-                {/* ⚡ 쇼핑몰 API 자동 연동 수집 센터 모듈 */}
+                {/* 쇼핑몰 API 자동 연동 수집 센터 모듈 */}
                 <SmartApiConnector 
                   onOrdersSynced={handleOrdersApiSynced}
                   showNotification={showNotification}
@@ -2576,7 +2576,7 @@ export default function App() {
                           className="text-[11px] bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold px-2.5 py-1 rounded-lg border border-indigo-200 transition flex items-center gap-1.5 cursor-pointer shadow-2xs self-start sm:self-auto"
                         >
                           <Grid className="w-3.5 h-3.5 text-indigo-600" />
-                          <span>🎯 플랫폼 설정에서 감지된 열 매핑 한눈에 보기 →</span>
+                          <span> 플랫폼 설정에서 감지된 열 매핑 한눈에 보기 →</span>
                         </button>
                       </div>
                       <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
@@ -2598,7 +2598,7 @@ export default function App() {
                                     <span>{pf.fileName}</span>
                                     {isApiSynced && (
                                       <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded">
-                                        ⚡ API 연동 자동수집건
+                                        API 연동 자동수집건
                                       </span>
                                     )}
                                   </div>
@@ -2658,7 +2658,7 @@ export default function App() {
                             </span>
                             <div>
                               <div className="text-xs font-bold text-rose-800 flex items-center gap-2">
-                                🚨 이상 주문 데이터 {anomalousIssues.length}건 자동 선별됨
+                                이상 주문 데이터 {anomalousIssues.length}건 자동 선별됨
                                 <span className="text-[10px] bg-rose-200 text-rose-900 font-extrabold px-2 py-0.5 rounded-full">
                                   오배송 / 송장인쇄 오류 사전 예방
                                 </span>
@@ -2728,7 +2728,7 @@ export default function App() {
                                         className="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded text-[11px] font-semibold transition shrink-0 flex items-center justify-center gap-1 cursor-pointer"
                                         title="AI 정제어 자동 입력"
                                       >
-                                        💡 추천 적용: <span className="font-bold underline underline-offset-2">{rec}</span>
+                                        추천 적용: <span className="font-bold underline underline-offset-2">{rec}</span>
                                       </button>
                                     )}
                                   </div>
@@ -2749,14 +2749,14 @@ export default function App() {
                       )}
 
                       <div className="bg-slate-50 rounded-xl p-4 border border-slate-150 space-y-3">
-                        <div className="text-slate-700 font-bold text-[11px] mb-1">📥 가공 완료된 엑셀 파일 다운로드 (총 2종)</div>
+                        <div className="text-slate-700 font-bold text-[11px] mb-1"> 가공 완료된 엑셀 파일 다운로드 (총 2종)</div>
                         <div className="space-y-2">
                           <button
                             onClick={handlePreviewStep1Excel}
                             className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg text-xs font-bold transition shadow-2xs cursor-pointer"
                           >
                             <Eye className="w-4 h-4 text-indigo-600" />
-                            👁️ 가공 엑셀 데이터 미리보기 (화면 확대 검수)
+                            가공 엑셀 데이터 미리보기 (화면 확대 검수)
                           </button>
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -2788,7 +2788,7 @@ export default function App() {
                             <div className="flex items-start gap-2.5">
                               <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                               <div>
-                                <strong className="font-semibold">⚠️ 다운로드 파일이 저장되지 않나요?</strong><br />
+                                <strong className="font-semibold"> 다운로드 파일이 저장되지 않나요?</strong><br />
                                 보안 환경에 따라 브라우저가 파일 다운로드를 차단할 수 있습니다.<br />
                                 화면 오른쪽 위의 <strong className="text-amber-900">새 탭에서 열기 (정방향 화살표 모양 아이콘)</strong> 버튼을 눌러 새 창에서 실행하시면 차단 없이 파일이 즉시 저장됩니다!
                               </div>
@@ -2908,7 +2908,7 @@ export default function App() {
                           className="text-[11px] bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold px-2.5 py-1 rounded-lg border border-amber-200 transition flex items-center gap-1.5 cursor-pointer shadow-2xs self-start sm:self-auto"
                         >
                           <Grid className="w-3.5 h-3.5 text-amber-600" />
-                          <span>🎯 택배사 설정에서 감지된 열 매핑 한눈에 보기 →</span>
+                          <span> 택배사 설정에서 감지된 열 매핑 한눈에 보기 →</span>
                         </button>
                       </div>
 
@@ -2977,7 +2977,7 @@ export default function App() {
                             className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg text-xs font-bold transition shadow-2xs cursor-pointer"
                           >
                             <Eye className="w-4 h-4 text-indigo-600" />
-                            👁️ 최종 운송장반영 엑셀 미리보기 (화면 확대 검수)
+                            최종 운송장반영 엑셀 미리보기 (화면 확대 검수)
                           </button>
                           <button
                             onClick={handleDownloadFinalTracking}
@@ -2991,7 +2991,7 @@ export default function App() {
                               <div className="flex items-start gap-2.5">
                                 <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                                 <div>
-                                  <strong className="font-semibold">⚠️ 다운로드 파일이 저장되지 않나요?</strong><br />
+                                  <strong className="font-semibold"> 다운로드 파일이 저장되지 않나요?</strong><br />
                                   환경에서는 브라우저가 보안을 위해 파일 저장을 제한할 수 있습니다.<br />
                                   화면 오른쪽 상단의 <strong className="text-amber-900">새 탭에서 열기 (정방향 화살표 모양 아이콘)</strong> 버튼을 눌러 새 창에서 사용하시면 지연 없이 바로 정상 저장됩니다!
                                 </div>
@@ -3199,7 +3199,7 @@ export default function App() {
                   </div>
 
                   <div className="mt-3 p-3 bg-indigo-50/60 border border-indigo-100 rounded-xl text-xs text-indigo-900 leading-relaxed">
-                    💡 <strong>별도의 '내보내기' 없이 자동 저장됩니다:</strong> 엑셀 주문서 수집, 신규 품목 추가, 플랫폼 양식 변경 등 새 데이터가 들어올 때마다 서버의 <code>app_data.json</code> 파일로 자동으로 저장되므로 데이터 손실 걱정 없이 안전합니다.
+                    <strong>별도의 '내보내기' 없이 자동 저장됩니다:</strong> 엑셀 주문서 수집, 신규 품목 추가, 플랫폼 양식 변경 등 새 데이터가 들어올 때마다 서버의 <code>app_data.json</code> 파일로 자동으로 저장되므로 데이터 손실 걱정 없이 안전합니다.
                   </div>
                 </div>
 
@@ -3375,7 +3375,7 @@ export default function App() {
                 onClick={() => handleApplyMappingImport(false)}
                 className="w-full text-left p-3.5 bg-indigo-50/80 hover:bg-indigo-100 border border-indigo-200 text-indigo-900 rounded-xl text-xs font-semibold transition flex flex-col gap-0.5 cursor-pointer"
               >
-                <span>➕ 기존 사전에 추가 (병합) [Enter]</span>
+                <span> 기존 사전에 추가 (병합) [Enter]</span>
                 <span className="text-[10px] text-indigo-600 font-normal">기존 목록을 유지하고 중복되지 않은 신규 항목만 추가합니다.</span>
               </button>
 
@@ -3383,7 +3383,7 @@ export default function App() {
                 onClick={() => handleApplyMappingImport(true)}
                 className="w-full text-left p-3.5 bg-rose-50/80 hover:bg-rose-100 border border-rose-200 text-rose-900 rounded-xl text-xs font-semibold transition flex flex-col gap-0.5 cursor-pointer"
               >
-                <span>⚠️ 기존 사전 전체 교체 (덮어쓰기)</span>
+                <span> 기존 사전 전체 교체 (덮어쓰기)</span>
                 <span className="text-[10px] text-rose-600 font-normal">기존 목록을 지우고 업로드한 파일 데이터로 전체 대체합니다.</span>
               </button>
             </div>

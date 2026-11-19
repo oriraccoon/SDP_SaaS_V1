@@ -578,7 +578,7 @@ export default function ExcelValidationDashboard({
                           >
                             <div className="flex items-center justify-between text-[11px] text-slate-500 border-b border-slate-100 pb-2">
                               <span className="font-semibold text-slate-600">
-                                👤 수령인: <strong className="text-slate-800">{parsed.recipient}</strong>
+                                수령인: <strong className="text-slate-800">{parsed.recipient}</strong>
                               </span>
                               {isAdded ? (
                                 <span className="px-2.5 py-0.5 font-extrabold bg-emerald-600 text-white rounded-md text-[10px] flex items-center gap-1 shadow-2xs">
@@ -587,7 +587,7 @@ export default function ExcelValidationDashboard({
                                 </span>
                               ) : hasCustomText ? (
                                 <span className="px-2.5 py-0.5 font-extrabold bg-indigo-600 text-white rounded-md text-[10px] flex items-center gap-1 shadow-2xs">
-                                  ✏️ 글자 수정됨 (미반영)
+                                  글자 수정됨 (미반영)
                                 </span>
                               ) : (
                                 <span className="px-2 py-0.5 font-bold bg-amber-100 text-amber-800 rounded-md text-[10px]">
@@ -599,7 +599,7 @@ export default function ExcelValidationDashboard({
                             {/* 전후 비교 바 */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-0.5">
                               <div className="bg-white/80 p-2.5 rounded-xl border border-slate-200">
-                                <div className="text-[10px] font-bold text-slate-400 mb-0.5">📄 원본 상품명</div>
+                                <div className="text-[10px] font-bold text-slate-400 mb-0.5"> 원본 상품명</div>
                                 <div className="font-semibold text-slate-800 break-words whitespace-normal leading-snug">
                                   {parsed.rawName}
                                 </div>
@@ -619,7 +619,7 @@ export default function ExcelValidationDashboard({
                                     ? 'text-indigo-700 font-extrabold'
                                     : 'text-indigo-500'
                                 }`}>
-                                  <span>{isAdded ? '✅ 반영된 대치 정제명' : hasCustomText ? '✏️ 수정한 정제명' : '✨ 매칭된 정제명'}</span>
+                                  <span>{isAdded ? ' 반영된 대치 정제명' : hasCustomText ? ' 수정한 정제명' : ' 매칭된 정제명'}</span>
                                 </div>
                                 <div className="font-bold break-words whitespace-normal leading-snug">
                                   {currentMappedName}

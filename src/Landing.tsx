@@ -76,7 +76,7 @@ export default function Landing() {
       </main>
 
       <footer className="border-t border-slate-200 py-8 text-center text-xs text-slate-500">
-        © Smart Delivery
+        Smart Delivery
       </footer>
     </div>
   );

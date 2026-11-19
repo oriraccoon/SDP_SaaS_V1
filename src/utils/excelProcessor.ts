@@ -2132,7 +2132,7 @@ function checkRecipientNameMatch(name1: string, name2: string): { isMatch: boole
   if (c1.includes(c2) || c2.includes(c1)) {
     const minLen = Math.min(c1.length, c2.length);
     if (minLen >= 2) {
-      return { isMatch: true, isExact: false, reason: `수령인 부분 포함 일치 ('${c1}' ↔ '${c2}')` };
+      return { isMatch: true, isExact: false, reason: `수령인 부분 포함 일치 ('${c1}' '${c2}')` };
     }
   }
 
@@ -2219,7 +2219,7 @@ function checkProductMatch(
         return { isMatch: true, reason: `상품명 양쪽 대치 교차 완전 일치 ('${sP}')` };
       }
       if (sP.length >= 2 && oP.length >= 2 && (sP.includes(oP) || oP.includes(sP))) {
-        return { isMatch: true, reason: `상품명 양쪽 대치 교차 포함 일치 ('${sP}' ↔ '${oP}')` };
+        return { isMatch: true, reason: `상품명 양쪽 대치 교차 포함 일치 ('${sP}' '${oP}')` };
       }
     }
   }
@@ -2233,7 +2233,7 @@ function checkProductMatch(
         return { isMatch: true, reason: `옵션/용량 양쪽 대치 교차 완전 일치 ('${sU}')` };
       }
       if (sU.length >= 2 && oU.length >= 2 && (sU.includes(oU) || oU.includes(sU))) {
-        return { isMatch: true, reason: `옵션/용량 양쪽 대치 교차 포함 일치 ('${sU}' ↔ '${oU}')` };
+        return { isMatch: true, reason: `옵션/용량 양쪽 대치 교차 포함 일치 ('${sU}' '${oU}')` };
       }
     }
   }
@@ -2865,7 +2865,7 @@ export function processTrackingUpdateWithRows(
             return {
               isMatched: true,
               isExact: true,
-              reason: `사전 등록 상품 매핑 규칙 완전 일치 (${m.rawName} ↔ ${m.mappedName})`
+              reason: `사전 등록 상품 매핑 규칙 완전 일치 (${m.rawName} ${m.mappedName})`
             };
           }
         }
@@ -2918,7 +2918,7 @@ export function processTrackingUpdateWithRows(
 
       if (existingOrderWithSameName) {
         return {
-          reason: `📦 [합포장 묶음 출고 안내] 동일 수취인('${o.수령인}') 명의의 타 주문건으로 운송장(${existingOrderWithSameName.trackingNumber})이 통합 발행됨`,
+          reason: ` [합포장 묶음 출고 안내] 동일 수취인('${o.수령인}') 명의의 타 주문건으로 운송장(${existingOrderWithSameName.trackingNumber})이 통합 발행됨`,
           debugDetail: `[합포장 출고 안내] 수취인 '${o.수령인}' 고객에게 대표 운송장(${existingOrderWithSameName.trackingNumber})이 발행되어 본 주문건은 별도 송장 없이 합포장 묶음배송 처리된 상태입니다.`
         };
       }
@@ -2953,7 +2953,7 @@ export function processTrackingUpdateWithRows(
       
       if (isCoupangOrder(o) && sameRecipientCountInCoupangOrders >= 2) {
         return {
-          reason: `📦 [합포장 묶음 출고 안내] 동일 수취인('${o.수령인}') 대표 송장(${usedItem.trackingNumber})에 합포장 포함됨`,
+          reason: ` [합포장 묶음 출고 안내] 동일 수취인('${o.수령인}') 대표 송장(${usedItem.trackingNumber})에 합포장 포함됨`,
           debugDetail: `[합포장 소진] 송장 엑셀의 '${o.수령인}' 수량(${sameNameItems.length}건)이 앞선 주문건들에 매칭되어 소진되었습니다. 본 품목은 대표 송장(${usedItem.trackingNumber})으로 합포장 출고 처리되었습니다.`
         };
       } else {
@@ -3120,7 +3120,7 @@ export function processTrackingUpdateWithRows(
           o.trackingNumber = alreadyMatchedOrder.trackingNumber;
           o.matchType = alreadyMatchedOrder.matchType || 'exact';
           o.isBundled = true;
-          o.softMatchReason = `📦 [합포장 묶음 출고] 동일 수취인('${oName}') 타 주문건과 대표 송장(${alreadyMatchedOrder.trackingNumber})으로 통합 발송`;
+          o.softMatchReason = ` [합포장 묶음 출고] 동일 수취인('${oName}') 타 주문건과 대표 송장(${alreadyMatchedOrder.trackingNumber})으로 통합 발송`;
           if (alreadyMatchedOrder.courierName) {
             o.courierName = alreadyMatchedOrder.courierName;
           }
@@ -3191,7 +3191,7 @@ export function processTrackingUpdateWithRows(
         if (!o.matchType || o.matchType === 'unmatched') {
           o.matchType = 'exact';
         }
-        o.softMatchReason = `📦 [합포장 묶음 출고] 동일 수취인('${o.수령인}') 총 ${count}개 품목 통합 배송 (대표송장: ${o.trackingNumber})`;
+        o.softMatchReason = ` [합포장 묶음 출고] 동일 수취인('${o.수령인}') 총 ${count}개 품목 통합 배송 (대표송장: ${o.trackingNumber})`;
       }
     }
   });

@@ -165,7 +165,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
 
     onChange(nextMappings);
     setShowSmartMatchModal(false);
-    showNotification('success', `✨ 총 ${selectedToApply.length}개 품목에 지능형 매칭 결과가 적용되었습니다!`);
+    showNotification('success', ` 총 ${selectedToApply.length}개 품목에 지능형 매칭 결과가 적용되었습니다!`);
   };
 
   // 대치 목록 필터링
@@ -882,7 +882,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
                   className="mt-2 flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 border border-indigo-200 hover:border-indigo-400 text-indigo-900 rounded-xl text-xs font-semibold shadow-2xs transition group cursor-pointer"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-amber-500 animate-pulse shrink-0" />
-                  <span>💡 지능형 추천: <strong className="text-indigo-700">'{getSmartSuggestion(newRawName)?.suggestedName}'</strong> (유사도 {getSmartSuggestion(newRawName)?.confidence}%)</span>
+                  <span> 지능형 추천: <strong className="text-indigo-700">'{getSmartSuggestion(newRawName)?.suggestedName}'</strong> (유사도 {getSmartSuggestion(newRawName)?.confidence}%)</span>
                   <span className="ml-1 text-[10px] text-indigo-600 underline font-normal group-hover:font-bold">[클릭하여 표준명 입력]</span>
                 </button>
               )}

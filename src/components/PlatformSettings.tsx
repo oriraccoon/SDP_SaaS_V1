@@ -146,11 +146,11 @@ export default function PlatformSettings({
   onReProcessOrders,
   initialMatrixType = 'platform'
 }: PlatformSettingsProps) {
-  // ⚙️ 톱니바퀴 모달 팝업 상태
+  // 톱니바퀴 모달 팝업 상태
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
   const [modalTab, setModalTab] = useState<'platform' | 'courier'>('platform');
 
-  // ➕ 현재 감지된 헤더 세팅으로 새 양식 추가 모달 상태
+  // 현재 감지된 헤더 세팅으로 새 양식 추가 모달 상태
   const [showSaveAsNewModal, setShowSaveAsNewModal] = useState<boolean>(false);
   const [newPlatformNameInput, setNewPlatformNameInput] = useState<string>('');
   const [newPlatformPatternInput, setNewPlatformPatternInput] = useState<string>('');
@@ -549,7 +549,7 @@ export default function PlatformSettings({
     setEditingPlatform(null);
   };
 
-  // ➕ 현재 스마트 감지된 헤더를 신규 쇼핑몰 양식으로 등록 처리
+  // 현재 스마트 감지된 헤더를 신규 쇼핑몰 양식으로 등록 처리
   const handleSaveAsNewPlatformSubmit = () => {
     if (!newPlatformNameInput.trim()) {
       alert('등록할 쇼핑몰 이름을 입력해주세요.');
@@ -576,11 +576,11 @@ export default function PlatformSettings({
     }
 
     setShowSaveAsNewModal(false);
-    setToastMessage(`🎉 [${newConfig.name}] 쇼핑몰 양식이 추가되어 연동되었습니다!`);
+    setToastMessage(` [${newConfig.name}] 쇼핑몰 양식이 추가되어 연동되었습니다!`);
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  // ⚡ 엑셀 헤더를 읽어서 목적 정보(상품명, 수량, 수령인, 연락처, 주소, 송장, 택배사 등) 자동 매칭 실행
+  // 엑셀 헤더를 읽어서 목적 정보(상품명, 수량, 수령인, 연락처, 주소, 송장, 택배사 등) 자동 매칭 실행
   const handleAutoMatchHeaders = () => {
     if (!activeFile || !rawHeaders || rawHeaders.length === 0 || !activePlatform) {
       alert('분석할 엑셀 파일이 없거나 헤더를 읽어오지 못했습니다.');
@@ -668,11 +668,11 @@ export default function PlatformSettings({
 
     if (onReProcessOrders) onReProcessOrders();
 
-    setToastMessage(`✨ 엑셀 헤더 스캔 완료! ${matchedCount}개 목적 컬럼이 헤더와 자동 매칭되었습니다.`);
+    setToastMessage(` 엑셀 헤더 스캔 완료! ${matchedCount}개 목적 컬럼이 헤더와 자동 매칭되었습니다.`);
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  // 💾 감지/선택된 쇼핑몰 양식에 최신 스마트 매칭/설정 덮어씌우기
+  // 감지/선택된 쇼핑몰 양식에 최신 스마트 매칭/설정 덮어씌우기
   const handleOverwriteActivePlatform = () => {
     if (!activePlatform || !activeFile) {
       alert('덮어씌울 쇼핑몰 양식 또는 파싱 파일이 선택되지 않았습니다.');
@@ -704,7 +704,7 @@ export default function PlatformSettings({
       onReProcessOrders();
     }
 
-    setToastMessage(`💾 [${activePlatform.name}] 쇼핑몰 열 매핑 설정이 최신 상태로 덮어씌워졌으며 1단계 주문서에 즉시 적용되었습니다!`);
+    setToastMessage(` [${activePlatform.name}] 쇼핑몰 열 매핑 설정이 최신 상태로 덮어씌워졌으며 1단계 주문서에 즉시 적용되었습니다!`);
     setTimeout(() => setToastMessage(null), 4000);
   };
 
@@ -838,29 +838,29 @@ export default function PlatformSettings({
 
   // 주요 타겟 필드 정의 (10가지 정보 - 쇼핑몰용)
   const TARGET_FIELDS = [
-    { key: '상품명', label: '상품명', icon: '📦', badgeBg: 'bg-indigo-100 text-indigo-800 border-indigo-200', description: '주문 상품 이름' },
-    { key: '용량', label: '용량 / 옵션명', icon: '🏷️', badgeBg: 'bg-blue-100 text-blue-800 border-blue-200', description: '상세 옵션 및 수량단위' },
-    { key: '수량', label: '주문 수량', icon: '🔢', badgeBg: 'bg-emerald-100 text-emerald-800 border-emerald-200', description: '구매 개수' },
-    { key: '수령인', label: '수령인 (받는사람)', icon: '👤', badgeBg: 'bg-purple-100 text-purple-800 border-purple-200', description: '수취인 성명' },
-    { key: '연락처', label: '연락처 (전화번호)', icon: '📞', badgeBg: 'bg-amber-100 text-amber-800 border-amber-200', description: '휴대폰 및 전화번호' },
-    { key: '우편번호', label: '우편번호', icon: '📮', badgeBg: 'bg-cyan-100 text-cyan-800 border-cyan-200', description: '배송지 5자리 우편번호' },
-    { key: '주소', label: '배송지 주소', icon: '🏠', badgeBg: 'bg-rose-100 text-rose-800 border-rose-200', description: '기본 및 상세주소' },
-    { key: '배송메시지', label: '배송 메시지', icon: '💬', badgeBg: 'bg-slate-100 text-slate-800 border-slate-200', description: '배송요청 메모' },
-    { key: 'tracking_col', label: '운송장번호 기입열', icon: '🚚', badgeBg: 'bg-violet-100 text-violet-800 border-violet-200', description: '송장 기입할 열' },
-    { key: 'courier_col', label: '택배사명 기입열', icon: '🏢', badgeBg: 'bg-teal-100 text-teal-800 border-teal-200', description: '택배사 기입할 열' },
+    { key: '상품명', label: '상품명', icon: '', badgeBg: 'bg-indigo-100 text-indigo-800 border-indigo-200', description: '주문 상품 이름' },
+    { key: '용량', label: '용량 / 옵션명', icon: '', badgeBg: 'bg-blue-100 text-blue-800 border-blue-200', description: '상세 옵션 및 수량단위' },
+    { key: '수량', label: '주문 수량', icon: '', badgeBg: 'bg-emerald-100 text-emerald-800 border-emerald-200', description: '구매 개수' },
+    { key: '수령인', label: '수령인 (받는사람)', icon: '', badgeBg: 'bg-purple-100 text-purple-800 border-purple-200', description: '수취인 성명' },
+    { key: '연락처', label: '연락처 (전화번호)', icon: '', badgeBg: 'bg-amber-100 text-amber-800 border-amber-200', description: '휴대폰 및 전화번호' },
+    { key: '우편번호', label: '우편번호', icon: '', badgeBg: 'bg-cyan-100 text-cyan-800 border-cyan-200', description: '배송지 5자리 우편번호' },
+    { key: '주소', label: '배송지 주소', icon: '', badgeBg: 'bg-rose-100 text-rose-800 border-rose-200', description: '기본 및 상세주소' },
+    { key: '배송메시지', label: '배송 메시지', icon: '', badgeBg: 'bg-slate-100 text-slate-800 border-slate-200', description: '배송요청 메모' },
+    { key: 'tracking_col', label: '운송장번호 기입열', icon: '', badgeBg: 'bg-violet-100 text-violet-800 border-violet-200', description: '송장 기입할 열' },
+    { key: 'courier_col', label: '택배사명 기입열', icon: '', badgeBg: 'bg-teal-100 text-teal-800 border-teal-200', description: '택배사 기입할 열' },
   ] as const;
 
   // 택배사 매트릭스 타겟 필드 정의 (9가지 정보 - 2단계 택배사용)
   const COURIER_TARGET_FIELDS = [
-    { key: 'tracking_col', label: '운송장번호 열', icon: '🚚', badgeBg: 'bg-indigo-100 text-indigo-800 border-indigo-200', description: '운송장번호 위치 (필수)' },
-    { key: 'name_col', label: '수령인 (받는사람)', icon: '👤', badgeBg: 'bg-purple-100 text-purple-800 border-purple-200', description: '수취인 성명 위치' },
-    { key: 'phone_col', label: '연락처 (전화번호)', icon: '📞', badgeBg: 'bg-amber-100 text-amber-800 border-amber-200', description: '전화/휴대폰번호 위치' },
-    { key: 'zip_col', label: '우편번호', icon: '📮', badgeBg: 'bg-cyan-100 text-cyan-800 border-cyan-200', description: '우편번호 5자리 위치' },
-    { key: 'addr_col', label: '배송지 주소', icon: '🏠', badgeBg: 'bg-rose-100 text-rose-800 border-rose-200', description: '배송지 주소 위치' },
-    { key: 'prod_col', label: '상품명', icon: '📦', badgeBg: 'bg-indigo-100 text-indigo-800 border-indigo-200', description: '상품/품목명 위치' },
-    { key: 'unit_col', label: '옵션 / 규격', icon: '🏷️', badgeBg: 'bg-blue-100 text-blue-800 border-blue-200', description: '옵션/용량/규격 위치' },
-    { key: 'qty_col', label: '수량', icon: '🔢', badgeBg: 'bg-emerald-100 text-emerald-800 border-emerald-200', description: '구매 개수 위치' },
-    { key: 'courier_col', label: '택배사명 지정열', icon: '🏢', badgeBg: 'bg-teal-100 text-teal-800 border-teal-200', description: '택배사명 표시열' },
+    { key: 'tracking_col', label: '운송장번호 열', icon: '', badgeBg: 'bg-indigo-100 text-indigo-800 border-indigo-200', description: '운송장번호 위치 (필수)' },
+    { key: 'name_col', label: '수령인 (받는사람)', icon: '', badgeBg: 'bg-purple-100 text-purple-800 border-purple-200', description: '수취인 성명 위치' },
+    { key: 'phone_col', label: '연락처 (전화번호)', icon: '', badgeBg: 'bg-amber-100 text-amber-800 border-amber-200', description: '전화/휴대폰번호 위치' },
+    { key: 'zip_col', label: '우편번호', icon: '', badgeBg: 'bg-cyan-100 text-cyan-800 border-cyan-200', description: '우편번호 5자리 위치' },
+    { key: 'addr_col', label: '배송지 주소', icon: '', badgeBg: 'bg-rose-100 text-rose-800 border-rose-200', description: '배송지 주소 위치' },
+    { key: 'prod_col', label: '상품명', icon: '', badgeBg: 'bg-indigo-100 text-indigo-800 border-indigo-200', description: '상품/품목명 위치' },
+    { key: 'unit_col', label: '옵션 / 규격', icon: '', badgeBg: 'bg-blue-100 text-blue-800 border-blue-200', description: '옵션/용량/규격 위치' },
+    { key: 'qty_col', label: '수량', icon: '', badgeBg: 'bg-emerald-100 text-emerald-800 border-emerald-200', description: '구매 개수 위치' },
+    { key: 'courier_col', label: '택배사명 지정열', icon: '', badgeBg: 'bg-teal-100 text-teal-800 border-teal-200', description: '택배사명 표시열' },
   ] as const;
 
   // 2단계 택배사 관련 활성 파일 및 택배사 설정
@@ -948,11 +948,11 @@ export default function PlatformSettings({
 
     onCouriersChange(updatedCouriers);
 
-    setToastMessage(`✨ 택배사 헤더 자동 매칭 완료! [${activeCourier.name}] 택배사 컬럼 매핑이 갱신되었습니다.`);
+    setToastMessage(` 택배사 헤더 자동 매칭 완료! [${activeCourier.name}] 택배사 컬럼 매핑이 갱신되었습니다.`);
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  // 💾 감지/선택된 택배사 양식에 최신 스마트 매칭/설정 덮어씌우기
+  // 감지/선택된 택배사 양식에 최신 스마트 매칭/설정 덮어씌우기
   const handleOverwriteActiveCourier = () => {
     if (!activeCourier) {
       alert('덮어씌울 택배사 양식이 선택되지 않았습니다.');
@@ -984,11 +984,11 @@ export default function PlatformSettings({
       onFileCourierChange(activeTrackingFile.fileName, activeCourier.name);
     }
 
-    setToastMessage(`💾 [${activeCourier.name}] 택배사 열 매핑 설정이 최신 상태로 덮어씌워졌습니다!`);
+    setToastMessage(` [${activeCourier.name}] 택배사 열 매핑 설정이 최신 상태로 덮어씌워졌습니다!`);
     setTimeout(() => setToastMessage(null), 4000);
   };
 
-  // ➕ 현재 감지된 헤더 세팅으로 신규 택배사 양식 등록 처리
+  // 현재 감지된 헤더 세팅으로 신규 택배사 양식 등록 처리
   const handleSaveAsNewCourierSubmit = () => {
     if (!newCourierNameInput.trim()) {
       alert('등록할 택배사 이름을 입력해주세요.');
@@ -1023,7 +1023,7 @@ export default function PlatformSettings({
     }
 
     setShowSaveAsNewCourierModal(false);
-    setToastMessage(`🎉 [${newConfig.name}] 택배사 양식이 추가되어 연동되었습니다!`);
+    setToastMessage(` [${newConfig.name}] 택배사 양식이 추가되어 연동되었습니다!`);
     setTimeout(() => setToastMessage(null), 3500);
   };
 
@@ -1046,11 +1046,11 @@ export default function PlatformSettings({
       )}
 
       {/* ======================================================== */}
-      {/* 🎯 메인화면: 엑셀 열 감지 & 키워드 매핑 한눈에 보기 GUI        */}
+      {/* 메인화면: 엑셀 열 감지 & 키워드 매핑 한눈에 보기 GUI        */}
       {/* ======================================================== */}
       <div className="space-y-6 animate-fade-in">
         
-        {/* 상단 메인 헤더 & ⚙️ 톱니바퀴 버튼 & 🔀 쇼핑몰/택배사 모드 전환 탭 */}
+        {/* 상단 메인 헤더 & 톱니바퀴 버튼 & 쇼핑몰/택배사 모드 전환 탭 */}
         <div className="bg-slate-900 text-white rounded-2xl p-6 shadow-md border border-indigo-700/50 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
@@ -1068,7 +1068,7 @@ export default function PlatformSettings({
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
-              {/* ⚙️ 톱니바퀴 고급 설정 버튼 (쇼핑몰 양식 & 택배사 송장 설정 팝업) */}
+              {/* 톱니바퀴 고급 설정 버튼 (쇼핑몰 양식 & 택배사 송장 설정 팝업) */}
               <button
                 id="btn-open-settings-modal"
                 onClick={() => {
@@ -1079,7 +1079,7 @@ export default function PlatformSettings({
                 title="쇼핑몰 양식 및 택배사 컬럼 상세 관리"
               >
                 <Settings className="w-4 h-4 text-amber-300 animate-spin-slow" />
-                <span>쇼핑몰/택배사 상세 설정 (⚙️)</span>
+                <span>쇼핑몰/택배사 상세 설정 ()</span>
               </button>
 
               {parsedFiles.length > 0 && onNavigateToProcessTab && (
@@ -1094,7 +1094,7 @@ export default function PlatformSettings({
             </div>
           </div>
 
-          {/* 🔀 쇼핑몰 플랫폼 vs 택배사 송장 매트릭스 전환 토글 스위치 */}
+          {/* 쇼핑몰 플랫폼 vs 택배사 송장 매트릭스 전환 토글 스위치 */}
           <div className="pt-3 border-t border-indigo-700/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2 bg-indigo-950/80 p-1 rounded-xl border border-indigo-700/60 shrink-0">
               <button
@@ -1106,7 +1106,7 @@ export default function PlatformSettings({
                 }`}
               >
                 <ShoppingBag className="w-4 h-4 text-indigo-600 shrink-0" />
-                <span>🛍️ 1단계 쇼핑몰 플랫폼 감지</span>
+                <span> 1단계 쇼핑몰 플랫폼 감지</span>
                 {parsedFiles.length > 0 && (
                   <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${
                     matrixType === 'platform' ? 'bg-indigo-100 text-indigo-800 font-bold' : 'bg-indigo-900 text-indigo-300'
@@ -1125,7 +1125,7 @@ export default function PlatformSettings({
                 }`}
               >
                 <Truck className="w-4 h-4 text-amber-600 shrink-0" />
-                <span>🚚 2단계 택배사 송장 감지</span>
+                <span> 2단계 택배사 송장 감지</span>
                 {parsedTrackingFiles.length > 0 && (
                   <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${
                     matrixType === 'courier' ? 'bg-slate-900 text-amber-300 font-bold' : 'bg-indigo-900 text-indigo-300'
@@ -1177,7 +1177,7 @@ export default function PlatformSettings({
               </div>
             ) : (
               <div className="pt-2 border-t border-indigo-700/50 flex items-center justify-between text-xs text-indigo-200">
-                <span>💡 아직 업로드된 쇼핑몰 엑셀 파일이 없습니다. 1단계 주문 가공에서 엑셀을 올리거나 아래 등록된 쇼핑몰의 기본 열 매핑 구조를 확인하세요.</span>
+                <span> 아직 업로드된 쇼핑몰 엑셀 파일이 없습니다. 1단계 주문 가공에서 엑셀을 올리거나 아래 등록된 쇼핑몰의 기본 열 매핑 구조를 확인하세요.</span>
                 {onNavigateToProcessTab && (
                   <button
                     onClick={onNavigateToProcessTab}
@@ -1224,7 +1224,7 @@ export default function PlatformSettings({
                 </div>
               ) : (
                 <div className="flex items-center justify-between text-xs text-indigo-200">
-                  <span>💡 업로드된 택배사 운송장 파일이 없습니다. 등록된 택배사 목록에서 직접 양식을 선택하여 미리 확인하고 설정할 수 있습니다.</span>
+                  <span> 업로드된 택배사 운송장 파일이 없습니다. 등록된 택배사 목록에서 직접 양식을 선택하여 미리 확인하고 설정할 수 있습니다.</span>
                 </div>
               )}
 
@@ -1238,7 +1238,7 @@ export default function PlatformSettings({
                 >
                   {couriers.map(c => (
                     <option key={c.id} value={c.id}>
-                      🚚 {c.name} (송장열: {colNumToLetter(c.tracking_col + 1)}열, 시작행: {c.start_row + 1}행)
+                      {c.name} (송장열: {colNumToLetter(c.tracking_col + 1)}열, 시작행: {c.start_row + 1}행)
                     </option>
                   ))}
                 </select>
@@ -1263,7 +1263,7 @@ export default function PlatformSettings({
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <h4 className="font-bold text-slate-800 text-sm">
-                    {activePlatform.id.startsWith('unregistered') ? '⚡ 미등록 엑셀 양식 감지됨' : `현재 파싱 설정: [${activePlatform.name}]`}
+                    {activePlatform.id.startsWith('unregistered') ? ' 미등록 엑셀 양식 감지됨' : `현재 파싱 설정: [${activePlatform.name}]`}
                   </h4>
                   {activePlatform.id.startsWith('unregistered') && (
                     <span className="px-2 py-0.5 bg-amber-500 text-slate-950 font-extrabold text-[10px] rounded-md animate-pulse">
@@ -1373,7 +1373,7 @@ export default function PlatformSettings({
         )}
 
         {/* ======================================================== */}
-        {/* A. 🛍️ 쇼핑몰 감지 매트릭스 뷰                                */}
+        {/* A. 쇼핑몰 감지 매트릭스 뷰                                */}
         {/* ======================================================== */}
         {matrixType === 'platform' && (
           <>
@@ -1431,7 +1431,7 @@ export default function PlatformSettings({
                 {keywordSearch.trim() !== '' && (
                   <div className="space-y-2 bg-indigo-50/40 border border-indigo-100 rounded-xl p-3.5">
                     <div className="text-xs font-bold text-indigo-900 flex items-center justify-between">
-                      <span>🔍 키워드 "{keywordSearch}" 검색 결과 ({filteredColumns.length}개 열 찾음):</span>
+                      <span> 키워드 "{keywordSearch}" 검색 결과 ({filteredColumns.length}개 열 찾음):</span>
                       <span className="text-[10px] text-indigo-600 font-normal">버튼을 클릭하면 플랫폼 설정 항목에 즉시 지정됩니다</span>
                     </div>
 
@@ -1498,11 +1498,11 @@ export default function PlatformSettings({
                       스마트 매칭 실행
                     </button>
 
-                    {/* 2. ⚡ 1단계 주문서에 즉시 적용하기 버튼 */}
+                    {/* 2. 1단계 주문서에 즉시 적용하기 버튼 */}
                     <button
                       onClick={() => {
                         if (onReProcessOrders) onReProcessOrders();
-                        setToastMessage("⚡ 현재 매칭 결과가 1단계 주문 가공 데이터에 즉시 적용되었습니다!");
+                        setToastMessage(" 현재 매칭 결과가 1단계 주문 가공 데이터에 즉시 적용되었습니다!");
                         setTimeout(() => setToastMessage(null), 3000);
                       }}
                       className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer hover:shadow-md"
@@ -1512,7 +1512,7 @@ export default function PlatformSettings({
                       1단계 주문에 즉시 적용
                     </button>
 
-                    {/* 3. 💾 기존 쇼핑몰 설정에 덮어씌우기 버튼 */}
+                    {/* 3. 기존 쇼핑몰 설정에 덮어씌우기 버튼 */}
                     {activePlatform && !activePlatform.id.startsWith('unregistered') && (
                       <button
                         onClick={handleOverwriteActivePlatform}
@@ -1744,7 +1744,7 @@ export default function PlatformSettings({
         )}
 
         {/* ======================================================== */}
-        {/* B. 🚚 택배사 감지 매트릭스 뷰                                */}
+        {/* B. 택배사 감지 매트릭스 뷰                                */}
         {/* ======================================================== */}
         {matrixType === 'courier' && (
           <>
@@ -1803,7 +1803,7 @@ export default function PlatformSettings({
               {keywordSearch.trim() !== '' && trackingHeaderInfo.rawHeaders.length > 0 && (
                 <div className="space-y-2 bg-amber-50/40 border border-amber-100 rounded-xl p-3.5">
                   <div className="text-xs font-bold text-amber-900 flex items-center justify-between">
-                    <span>🔍 택배사 키워드 "{keywordSearch}" 검색 결과:</span>
+                    <span> 택배사 키워드 "{keywordSearch}" 검색 결과:</span>
                     <span className="text-[10px] text-amber-700 font-normal">버튼을 클릭하면 선택된 택배사 설정에 저장됩니다</span>
                   </div>
 
@@ -2083,7 +2083,7 @@ export default function PlatformSettings({
       </div>
 
       {/* ======================================================== */}
-      {/* ⚙️ 톱니바퀴 모달 팝업: 쇼핑몰 양식 & 택배사 송장 상세 관리     */}
+      {/* 톱니바퀴 모달 팝업: 쇼핑몰 양식 & 택배사 송장 상세 관리     */}
       {/* ======================================================== */}
       {showSettingsModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in overflow-y-auto">
@@ -2277,7 +2277,7 @@ export default function PlatformSettings({
                           </div>
                         </div>
 
-                        {/* ➕ 송장기입열 & 택배사열 지정 필드 복구 */}
+                        {/* 송장기입열 & 택배사열 지정 필드 복구 */}
                         <div className="pt-3 border-t border-slate-200">
                           <label className="block text-xs font-bold text-indigo-900 mb-2">
                             송장번호 & 택배사 기입열 지정 (송장 입력 엑셀 다운로드용)
@@ -2439,7 +2439,7 @@ export default function PlatformSettings({
                           {/* 1. 운송장번호 지정 (핵심 요청) */}
                           <div className="bg-indigo-50/80 p-2.5 rounded-xl border border-indigo-200 space-y-1">
                             <span className="block text-[11px] font-bold text-indigo-900 flex items-center justify-between">
-                              <span>🚚 운송장번호 열</span>
+                              <span> 운송장번호 열</span>
                               <span className="text-[9px] text-indigo-600 bg-indigo-100 px-1 rounded">필수</span>
                             </span>
                             <div className="flex items-center gap-1">
@@ -2456,7 +2456,7 @@ export default function PlatformSettings({
 
                           {/* 2. 받는사람/수령인 */}
                           <div className="bg-white p-2.5 rounded-xl border border-slate-200 space-y-1">
-                            <span className="block text-[11px] font-bold text-slate-700">👤 수령인 (받는사람)</span>
+                            <span className="block text-[11px] font-bold text-slate-700"> 수령인 (받는사람)</span>
                             <div className="flex items-center gap-1">
                               <input
                                 type="text"
@@ -2471,7 +2471,7 @@ export default function PlatformSettings({
 
                           {/* 3. 연락처 */}
                           <div className="bg-white p-2.5 rounded-xl border border-slate-200 space-y-1">
-                            <span className="block text-[11px] font-bold text-slate-700">📞 연락처</span>
+                            <span className="block text-[11px] font-bold text-slate-700"> 연락처</span>
                             <div className="flex items-center gap-1">
                               <input
                                 type="text"
@@ -2486,7 +2486,7 @@ export default function PlatformSettings({
 
                           {/* 4. 우편번호 */}
                           <div className="bg-white p-2.5 rounded-xl border border-slate-200 space-y-1">
-                            <span className="block text-[11px] font-bold text-slate-700">📮 우편번호</span>
+                            <span className="block text-[11px] font-bold text-slate-700"> 우편번호</span>
                             <div className="flex items-center gap-1">
                               <input
                                 type="text"
@@ -2501,7 +2501,7 @@ export default function PlatformSettings({
 
                           {/* 5. 주소 */}
                           <div className="bg-white p-2.5 rounded-xl border border-slate-200 space-y-1">
-                            <span className="block text-[11px] font-bold text-slate-700">🏠 배송지 주소</span>
+                            <span className="block text-[11px] font-bold text-slate-700"> 배송지 주소</span>
                             <div className="flex items-center gap-1">
                               <input
                                 type="text"
@@ -2516,7 +2516,7 @@ export default function PlatformSettings({
 
                           {/* 6. 상품명 */}
                           <div className="bg-white p-2.5 rounded-xl border border-slate-200 space-y-1">
-                            <span className="block text-[11px] font-bold text-slate-700">📦 상품명</span>
+                            <span className="block text-[11px] font-bold text-slate-700"> 상품명</span>
                             <div className="flex items-center gap-1">
                               <input
                                 type="text"
@@ -2531,7 +2531,7 @@ export default function PlatformSettings({
 
                           {/* 7. 옵션/규격 */}
                           <div className="bg-white p-2.5 rounded-xl border border-slate-200 space-y-1">
-                            <span className="block text-[11px] font-bold text-slate-700">🏷️ 옵션 / 규격</span>
+                            <span className="block text-[11px] font-bold text-slate-700"> 옵션 / 규격</span>
                             <div className="flex items-center gap-1">
                               <input
                                 type="text"
@@ -2546,7 +2546,7 @@ export default function PlatformSettings({
 
                           {/* 8. 수량 */}
                           <div className="bg-white p-2.5 rounded-xl border border-slate-200 space-y-1">
-                            <span className="block text-[11px] font-bold text-slate-700">🔢 수량</span>
+                            <span className="block text-[11px] font-bold text-slate-700"> 수량</span>
                             <div className="flex items-center gap-1">
                               <input
                                 type="text"
@@ -2561,7 +2561,7 @@ export default function PlatformSettings({
 
                           {/* 9. 택배사명 지정열 */}
                           <div className="bg-white p-2.5 rounded-xl border border-slate-200 space-y-1">
-                            <span className="block text-[11px] font-bold text-slate-700">🏢 택배사명 지정열</span>
+                            <span className="block text-[11px] font-bold text-slate-700"> 택배사명 지정열</span>
                             <div className="flex items-center gap-1">
                               <input
                                 type="text"
@@ -2740,7 +2740,7 @@ export default function PlatformSettings({
         </div>
       )}
 
-      {/* ➕ 현재 스마트 감지된 헤더로 새 쇼핑몰 양식 추가 모달 */}
+      {/* 현재 스마트 감지된 헤더로 새 쇼핑몰 양식 추가 모달 */}
       {showSaveAsNewModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in">
           <form 
@@ -2789,7 +2789,7 @@ export default function PlatformSettings({
                   className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-medium"
                 />
                 <p className="text-[10px] text-slate-400 mt-1">
-                  💡 이 키워드가 들어간 엑셀 파일을 올리면 방금 설정한 양식으로 자동 인식됩니다.
+                  이 키워드가 들어간 엑셀 파일을 올리면 방금 설정한 양식으로 자동 인식됩니다.
                 </p>
               </div>
             </div>
@@ -2813,7 +2813,7 @@ export default function PlatformSettings({
         </div>
       )}
 
-      {/* 🚚 현재 스마트 감지된 헤더로 새 택배사 양식 추가 모달 */}
+      {/* 현재 스마트 감지된 헤더로 새 택배사 양식 추가 모달 */}
       {showSaveAsNewCourierModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in">
           <form 
@@ -2862,7 +2862,7 @@ export default function PlatformSettings({
                   className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-medium"
                 />
                 <p className="text-[10px] text-slate-400 mt-1">
-                  💡 이 키워드가 들어간 운송장 파일을 업로드하면 방금 설정한 택배사 양식으로 자동 인식됩니다.
+                  이 키워드가 들어간 운송장 파일을 업로드하면 방금 설정한 택배사 양식으로 자동 인식됩니다.
                 </p>
               </div>
             </div>

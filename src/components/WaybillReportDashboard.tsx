@@ -238,7 +238,7 @@ export default function WaybillReportDashboard({
                 : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
-            [3] 지능형 부분 매칭 ({softMatchOrders.length}건) ✨
+            [3] 지능형 부분 매칭 ({softMatchOrders.length}건)
           </button>
           <button
             onClick={() => setActiveTab('bundled')}
@@ -248,7 +248,7 @@ export default function WaybillReportDashboard({
                 : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
-            [4] 📦 합포장 묶음 ({displayBundledGroupCount}묶음 / {displayBundledCount}개)
+            [4] 합포장 묶음 ({displayBundledGroupCount}묶음 / {displayBundledCount}개)
           </button>
           <button
             onClick={() => setActiveTab('unfilled')}
@@ -586,7 +586,7 @@ export default function WaybillReportDashboard({
                     {unfilledErrors.length === 0 && (
                       <tr>
                         <td colSpan={6} className="px-3 py-8 text-center text-slate-400">
-                          누락된 주문이 없습니다. 모든 주문에 운송장 연결 완료! ✨
+                          누락된 주문이 없습니다. 모든 주문에 운송장 연결 완료!
                         </td>
                       </tr>
                     )}

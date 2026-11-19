@@ -319,11 +319,11 @@ export default function ExcelPreviewModal({
                                   </span>
                                 ) : cellStr === 'soft' ? (
                                   <span className="bg-amber-100 text-amber-800 border border-amber-300 px-2 py-0.5 rounded font-bold text-[10px]">
-                                    ✨ 부분 매칭
+                                    부분 매칭
                                   </span>
                                 ) : (
                                   <span className="bg-rose-100 text-rose-800 border border-rose-300 px-2 py-0.5 rounded font-bold text-[10px]">
-                                    ⚠️ 미매칭
+                                    미매칭
                                   </span>
                                 )
                               ) : (

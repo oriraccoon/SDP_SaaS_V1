@@ -281,7 +281,7 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification }: 
     setNewClientSecret('');
 
     if (showNotification) {
-      showNotification('success', `🎉 새로운 커스텀 플랫폼 '${newConfig.name}'이(가) 추가되었습니다!`);
+      showNotification('success', ` 새로운 커스텀 플랫폼 '${newConfig.name}'이(가) 추가되었습니다!`);
     }
   };
 
@@ -449,7 +449,7 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification }: 
 
     setIsSyncing(false);
 
-    const summary = `⚡ ${enabledPlatforms.length}개 플랫폼에서 총 ${sampleOrders.length}건의 신규 주문이 API로 자동 수집되었습니다!`;
+    const summary = ` ${enabledPlatforms.length}개 플랫폼에서 총 ${sampleOrders.length}건의 신규 주문이 API로 자동 수집되었습니다!`;
     onOrdersSynced(sampleOrders, summary);
 
     if (showNotification) {
@@ -488,7 +488,7 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification }: 
             className={`px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-extrabold rounded-xl text-xs shadow-lg transition cursor-pointer flex items-center gap-2 border border-amber-300/40 ${isSyncing ? 'opacity-70 cursor-not-allowed' : ''}`}
           >
             <RefreshCw className={`w-4 h-4 text-slate-900 ${isSyncing ? 'animate-spin' : ''}`} />
-            <span>{isSyncing ? 'API 동기화 진행중...' : `⚡ 전체 플랫폼 주문 자동 수집 (${enabledCount}개 연동)`}</span>
+            <span>{isSyncing ? 'API 동기화 진행중...' : ` 전체 플랫폼 주문 자동 수집 (${enabledCount}개 연동)`}</span>
           </button>
 
           {/* 더보기 토글 버튼 및 플랫폼 추가 버튼 */}
@@ -564,7 +564,7 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification }: 
               플랫폼별 API 키 등록 및 셀러센터 퀵링크 ({configs.length}개 지원)
             </span>
             <span className="text-slate-400 text-[11px]">
-              🔒 API 인증키는 본인 브라우저(로컬스토리지)에만 안전하게 저장됩니다.
+              API 인증키는 본인 브라우저(로컬스토리지)에만 안전하게 저장됩니다.
             </span>
           </div>
 
@@ -621,7 +621,7 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification }: 
                   <div className="flex items-center justify-between text-slate-400">
                     <span>API 상태:</span>
                     <span className={plat.isEnabled ? 'text-emerald-400 font-bold' : 'text-slate-500'}>
-                      {plat.isEnabled ? '🟢 정상 연동됨' : '⚪ 연동 미사용'}
+                      {plat.isEnabled ? ' 정상 연동됨' : ' 연동 미사용'}
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-slate-400">
@@ -654,7 +654,7 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification }: 
               </div>
             ))}
 
-            {/* ➕ 카드 추가 클릭 버튼 */}
+            {/* 카드 추가 클릭 버튼 */}
             <button
               onClick={() => setIsAddModalOpen(true)}
               className="bg-slate-900/40 hover:bg-slate-900/80 border-2 border-dashed border-indigo-700/50 hover:border-amber-400 rounded-xl p-4 flex flex-col items-center justify-center gap-2 text-indigo-300 hover:text-amber-300 transition cursor-pointer group min-h-[140px]"
@@ -672,7 +672,7 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification }: 
             <div className="flex items-center gap-2">
               <HelpCircle className="w-4 h-4 text-amber-300 shrink-0" />
               <span>
-                💡 <strong>팁:</strong> 각 쇼핑몰 셀러센터의 'API 관리' 메뉴에서 Client ID/Secret 또는 API Key를 발급받아 입력하시면 자동 수집이 시작됩니다.
+                <strong>팁:</strong> 각 쇼핑몰 셀러센터의 'API 관리' 메뉴에서 Client ID/Secret 또는 API Key를 발급받아 입력하시면 자동 수집이 시작됩니다.
               </span>
             </div>
             <a
@@ -755,7 +755,7 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification }: 
               </div>
 
               <div className="p-3 bg-slate-800/80 rounded-lg border border-slate-700 text-[11px] text-slate-300 space-y-1">
-                <div className="font-bold text-amber-300">🔑 API 발급 방법 가이드</div>
+                <div className="font-bold text-amber-300"> API 발급 방법 가이드</div>
                 <p className="text-slate-400 leading-relaxed">
                   해당 쇼핑몰 셀러센터 접속 후 [스토어 관리] → [API 연동] 메뉴에서 주문 조회 권한이 부여된 API 키를 생성하세요.
                 </p>
@@ -872,7 +872,7 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification }: 
               </div>
 
               <div className="p-3 bg-indigo-950/80 rounded-lg border border-indigo-800/80 text-[11px] text-indigo-200/90 leading-relaxed">
-                ✨ 플랫폼 이름을 입력하고 등록하시면, 언제든지 <strong>'원클릭 주문 수집'</strong> 버튼 하나로 해당 쇼핑몰의 신규 발주확인 데이터가 자동 수집됩니다.
+                플랫폼 이름을 입력하고 등록하시면, 언제든지 <strong>'원클릭 주문 수집'</strong> 버튼 하나로 해당 쇼핑몰의 신규 발주확인 데이터가 자동 수집됩니다.
               </div>
             </div>
 

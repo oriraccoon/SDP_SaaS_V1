@@ -202,7 +202,7 @@ export default function AnomalousOrdersModal({
         {/* 모달 푸터 */}
         <div className="bg-slate-50 border-t border-slate-200 p-4 flex items-center justify-between shrink-0">
           <div className="text-xs text-slate-500">
-            💡 엑셀 원본 파일을 수정 후 재업로드하시거나 현 상태로 가공을 진행하실 수 있습니다.
+            엑셀 원본 파일을 수정 후 재업로드하시거나 현 상태로 가공을 진행하실 수 있습니다.
           </div>
           <button
             onClick={onClose}

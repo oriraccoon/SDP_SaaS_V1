@@ -455,19 +455,9 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification, co
       {/* 상단 제목 & 원클릭 수집 버튼 */}
       <div className="bg-white border border-slate-200 rounded-2xl shadow-2xs p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="p-1.5 bg-amber-50 text-amber-700 rounded-lg border border-amber-300">
-              <Zap className="w-5 h-5 text-amber-600 animate-pulse" />
-            </span>
-            <h2 className="text-base font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-              쇼핑몰 API 주문 자동 연동 센터
-              <span className="text-[10px] bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 py-0.5 rounded-full font-semibold">
-                원클릭 수집
-              </span>
-            </h2>
-          </div>
+          <h2 className="text-base font-bold text-slate-900">쇼핑몰 주문 연동</h2>
           <p className="text-xs text-slate-500 leading-relaxed">
-            엑셀 다운로드 필요 없이, 연동된 쇼핑몰 API에서 신규 주문(발주확인)을 실시간으로 끌어옵니다.
+            쇼핑몰에서 주문을 자동으로 가져오는 기능은 준비 중입니다. 지금은 주문 엑셀을 직접 올려 주세요.
           </p>
         </div>
 

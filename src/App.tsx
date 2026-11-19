@@ -2166,15 +2166,12 @@ export default function App() {
           
           {/* 타이틀 로고 */}
           <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-slate-900 rounded-lg shrink-0">
-              <FileSpreadsheet className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-            </div>
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-base sm:text-lg font-bold tracking-tight">스마트 운송장 관리기</h1>
                 <span className="text-[10px] bg-slate-100 text-slate-600 border border-slate-200 font-medium px-1.5 py-0.5 rounded-md shrink-0">v1.0.1 PRO</span>
               </div>
-              <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 hidden xs:block">다중 플랫폼 주문 가공 및 운송장 매칭</p>
+              <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 hidden xs:block">주문서와 송장을 맞춰 발송 엑셀을 만듭니다</p>
             </div>
           </div>
 

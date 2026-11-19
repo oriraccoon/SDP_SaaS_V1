@@ -231,12 +231,11 @@ export default function App() {
 
   const [activeTab, setActiveTab] = useState<'process' | 'analytics'>('process');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [settingsSection, setSettingsSection] = useState<'platforms' | 'products' | 'backup' | 'account'>('platforms');
   const openSettings = (section: 'platforms' | 'products' | 'backup' | 'account') => {
     setSettingsSection(section);
     setIsSettingsOpen(true);
-    setIsMenuOpen(false);
   };
   const [selectedPlatformId, setSelectedPlatformId] = useState<string>('');
   // 1단계 (주문 가공) 상태 (다중 파일 지원!)
@@ -2179,84 +2178,48 @@ export default function App() {
             </div>
           </div>
 
-          {/* 탭 네비게이션 - 반응형 최소화 (작을 땐 축소형 툴) */}
-          <nav className="flex bg-slate-100 p-1 rounded-lg border border-slate-200 max-w-full overflow-x-auto">
-            <button
-              onClick={() => setActiveTab('process')}
-              className={`flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition shrink-0 ${
-                activeTab === 'process' 
-                  ? 'bg-white text-slate-900 shadow-sm border border-slate-200' 
-                  : 'text-slate-500 hover:text-slate-900'
-              }`}
-              title="엑셀 / 가공 & 매칭"
-            >
-              <Layers className="w-3.5 h-3.5 shrink-0" />
-              <span className="hidden lg:inline">엑셀 / 가공 & 매칭</span>
-              <span className="inline lg:hidden">가공/매칭</span>
-            </button>
-            {features.analytics && (
-            <button
-              onClick={() => setActiveTab('analytics')}
-              className={`flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition shrink-0 ${
-                activeTab === 'analytics' 
-                  ? 'bg-white text-slate-900 shadow-sm border border-slate-200' 
-                  : 'text-slate-500 hover:text-slate-900'
-              }`}
-              title="시각화 리포트"
-            >
-              <BarChart3 className="w-3.5 h-3.5 shrink-0 text-amber-300" />
-              <span className="hidden lg:inline">시각화 리포트</span>
-              <span className="inline lg:hidden">시각화</span>
-            </button>
-            )}
-            <button
-              onClick={() => openSettings('platforms')}
-              className={`flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition shrink-0 ${
-                isSettingsOpen
-                  ? 'bg-white text-slate-900 shadow-sm border border-slate-200'
-                  : 'text-slate-500 hover:text-slate-900'
-              }`}
-              title="설정"
-            >
-              <Settings className="w-3.5 h-3.5 shrink-0" />
-              <span className="hidden lg:inline">설정</span>
-            </button>
-          </nav>
-
-          <div className="relative shrink-0">
-            <button
-              onClick={() => setIsMenuOpen((v) => !v)}
-              className="p-2 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-              aria-label="메뉴"
-              title="메뉴"
-            >
-              <Menu className="w-4 h-4" />
-            </button>
-            {isMenuOpen && (
-              <div className="absolute right-0 mt-2 w-52 rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg z-40">
-                {([
-                  ['플랫폼 설정', () => openSettings('platforms')],
-                  ['품목 정제 리스트', () => openSettings('products')],
-                  ['설정 백업', () => openSettings('backup')],
-                  ['계정 · 문의', () => openSettings('account')],
-                ] as [string, () => void][]).map(([label, action]) => (
-                  <button
-                    key={label}
-                    onClick={action}
-                    className="w-full text-left px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-slate-100"
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
 
         </div>
       </header>
 
-      {/* 메인 본문 콘텐츠 */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6">
+      <div className="flex flex-1 min-h-0">
+        <aside
+          className={`shrink-0 flex flex-col gap-1 border-r border-slate-200 bg-white py-3 transition-all duration-200 ${
+            isSidebarOpen ? 'w-56 px-3' : 'w-14 px-2'
+          }`}
+        >
+          <button
+            onClick={() => setIsSidebarOpen((v) => !v)}
+            className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100"
+            aria-label={isSidebarOpen ? '메뉴 접기' : '메뉴 펼치기'}
+            title={isSidebarOpen ? '메뉴 접기' : '메뉴 펼치기'}
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+
+          {([
+            ['process', '엑셀 / 가공 & 매칭', <Layers className="w-5 h-5 shrink-0" />, () => setActiveTab('process'), activeTab === 'process' && !isSettingsOpen],
+            ...(features.analytics
+              ? [['analytics', '시각화 리포트', <BarChart3 className="w-5 h-5 shrink-0" />, () => setActiveTab('analytics'), activeTab === 'analytics' && !isSettingsOpen] as const]
+              : []),
+            ['settings', '설정', <Settings className="w-5 h-5 shrink-0" />, () => openSettings('platforms'), isSettingsOpen] as const,
+          ] as const).map(([key, label, icon, action, selected]) => (
+            <button
+              key={key}
+              onClick={action}
+              title={label}
+              className={`flex h-10 items-center gap-3 rounded-lg text-sm font-semibold transition ${
+                isSidebarOpen ? 'w-full px-3' : 'w-10 justify-center'
+              } ${selected ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-100'}`}
+            >
+              {icon}
+              {isSidebarOpen && <span className="whitespace-nowrap">{label}</span>}
+            </button>
+          ))}
+        </aside>
+
+        {/* 메인 본문 콘텐츠 */}
+        <main className="flex-1 min-w-0 max-w-7xl w-full mx-auto p-3 sm:p-6">
         <AnimatePresence mode="wait">
           
           {/* 탭 1: 가공 및 매칭 */}
@@ -3307,7 +3270,8 @@ export default function App() {
 
           {/* 탭 4: 설정 백업/동기화 */}
         </AnimatePresence>
-      </main>
+        </main>
+      </div>
 
       {/* 품목 사전 불러오기 확인 모달 */}
       {mappingImportConfirm && (

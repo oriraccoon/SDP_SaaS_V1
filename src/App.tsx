@@ -1995,7 +1995,9 @@ export default function App() {
   }, [confirmModal, passwordPrompt, mappingImportConfirm, anomalousModalOpen, previewModal]);
 
   return (
-    <div id="app-root-wrapper" className="min-h-screen bg-slate-50 text-slate-800 font-sans flex flex-col w-full overflow-x-auto overflow-y-auto">
+    <div id="app-root-wrapper" className={`min-h-screen bg-slate-50 text-slate-800 font-sans flex flex-col w-full overflow-x-clip transition-[padding] duration-200 ${
+      isSidebarOpen ? 'pl-56' : 'pl-14'
+    }`}>
       
       {/* 커스텀 전역 확인 모달 */}
       {confirmModal?.isOpen && (
@@ -2181,7 +2183,7 @@ export default function App() {
 
       <div className="flex flex-1 min-h-0">
         <aside
-          className={`shrink-0 flex flex-col gap-1 border-r border-slate-200 bg-white py-3 transition-all duration-200 ${
+          className={`fixed inset-y-0 left-0 z-30 flex flex-col gap-1 overflow-y-auto border-r border-slate-200 bg-white py-3 transition-all duration-200 ${
             isSidebarOpen ? 'w-56 px-3' : 'w-14 px-2'
           }`}
         >
@@ -2199,7 +2201,6 @@ export default function App() {
             ...(features.analytics
               ? [['analytics', '시각화 리포트', <BarChart3 className="w-5 h-5 shrink-0" />, () => setActiveTab('analytics'), activeTab === 'analytics' && !isSettingsOpen] as const]
               : []),
-            ['settings', '설정', <Settings className="w-5 h-5 shrink-0" />, () => openSettings('platforms'), isSettingsOpen] as const,
           ] as const).map(([key, label, icon, action, selected]) => (
             <button
               key={key}
@@ -2213,6 +2214,22 @@ export default function App() {
               {isSidebarOpen && <span className="whitespace-nowrap">{label}</span>}
             </button>
           ))}
+
+          {/* 설정은 맨 아래에 따로 버튼으로 둡니다 */}
+          <button
+            onClick={() => openSettings('platforms')}
+            title="설정"
+            className={`mt-auto flex h-10 items-center gap-3 rounded-lg border text-sm font-semibold transition ${
+              isSidebarOpen ? 'w-full px-3' : 'w-10 justify-center'
+            } ${
+              isSettingsOpen
+                ? 'border-indigo-600 bg-indigo-600 text-white'
+                : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+            }`}
+          >
+            <Settings className="w-5 h-5 shrink-0" />
+            {isSidebarOpen && <span className="whitespace-nowrap">설정</span>}
+          </button>
         </aside>
 
         {/* 메인 본문 콘텐츠 */}

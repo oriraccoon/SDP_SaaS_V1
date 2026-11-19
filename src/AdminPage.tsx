@@ -10,8 +10,11 @@ import {
   listReports,
   resolveFeatures,
   resolveStatus,
+  deleteAccountData,
+  purgeExpiredTrash,
   saveNotice,
   setReportStatus,
+  TRASH_RETENTION_DAYS,
   subscribeNotice,
   updateAccount,
   type Account,
@@ -59,7 +62,7 @@ export default function AdminPage() {
         {(
           [
             ['members', '회원 관리'],
-            ['reports', '신고 내용'],
+            ['reports', '신고/문의 내용'],
             ['notice', '공지 배너'],
           ] as [Tab, string][]
         ).map(([key, label]) => (
@@ -100,10 +103,26 @@ function MembersTab() {
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
-  const reload = () => listAccounts().then(setAccounts).catch((e) => setMessage(String(e?.message || e)));
+  const reload = async () => {
+    // 자동 삭제가 실패해도(예: 규칙이 아직 게시되지 않음) 회원 목록은 보여야 합니다.
+    try {
+      const purged = await purgeExpiredTrash();
+      if (purged > 0) setMessage(`휴지통에 ${TRASH_RETENTION_DAYS}일 넘게 있던 ${purged}명을 삭제했습니다.`);
+    } catch (e: any) {
+      console.warn('휴지통 자동 삭제 실패:', e);
+    }
+    try {
+      setAccounts(await listAccounts());
+    } catch (e: any) {
+      setMessage(String(e?.message || e));
+    }
+  };
   useEffect(() => {
     reload();
   }, []);
+
+  const activeAccounts = accounts.filter((a) => !a.deletedAt);
+  const trashAccounts = accounts.filter((a) => a.deletedAt);
 
   const run = async (uid: string, action: () => Promise<void>, doneText: string) => {
     setBusy(uid);
@@ -129,7 +148,46 @@ function MembersTab() {
 
       <InviteSection onChanged={reload} />
 
-      {accounts.map((acc) => {
+      {trashAccounts.length > 0 && (
+        <section className="space-y-3 rounded-xl border border-slate-300 bg-slate-100 p-4">
+          <div>
+            <p className="text-sm font-bold text-slate-800">휴지통 ({trashAccounts.length}명)</p>
+            <p className="text-[11px] text-slate-500">휴지통에 들어간 지 {TRASH_RETENTION_DAYS}일이 지나면 자동으로 삭제됩니다.</p>
+          </div>
+          {trashAccounts.map((acc) => {
+            const left = Math.max(0, TRASH_RETENTION_DAYS - Math.floor((Date.now() - new Date(acc.deletedAt as string).getTime()) / (24 * 60 * 60 * 1000)));
+            return (
+              <div key={acc.uid} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white p-3 border border-slate-200">
+                <div>
+                  <p className="text-sm font-semibold text-slate-800">{acc.email || '(이메일 없음)'}</p>
+                  <p className="text-[11px] text-slate-500">자동 삭제까지 {left}일 남음</p>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    disabled={busy === acc.uid}
+                    onClick={() => run(acc.uid, () => updateAccount(acc.uid, { deletedAt: null, blocked: false }), '복구했습니다.')}
+                    className="rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-1.5 text-xs font-bold text-indigo-700 hover:bg-indigo-100 disabled:opacity-50"
+                  >
+                    복구
+                  </button>
+                  <button
+                    disabled={busy === acc.uid}
+                    onClick={() => {
+                      if (!window.confirm(`${acc.email || '이 회원'}의 데이터를 바로 영구 삭제합니다. 되돌릴 수 없습니다. 계속할까요?`)) return;
+                      run(acc.uid, () => deleteAccountData(acc.uid), '영구 삭제했습니다.');
+                    }}
+                    className="rounded-lg border border-rose-300 bg-white px-3 py-1.5 text-xs font-bold text-rose-700 hover:bg-rose-50 disabled:opacity-50"
+                  >
+                    바로 영구 삭제
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </section>
+      )}
+
+      {activeAccounts.map((acc) => {
         const status = resolveStatus(acc);
         const features = resolveFeatures(acc);
         const statusLabel = { active: '사용 중', new: '기간 미등록', expired: '기간 만료', blocked: '정지' }[status];
@@ -183,6 +241,16 @@ function MembersTab() {
               >
                 {acc.blocked ? '정지 해제' : '이용 정지'}
               </button>
+              <button
+                disabled={busy === acc.uid}
+                onClick={() => {
+                  if (!window.confirm(`${acc.email || '이 회원'}을 휴지통으로 옮깁니다. ${TRASH_RETENTION_DAYS}일 뒤 자동으로 삭제되고, 그 전에는 복구할 수 있습니다. 계속할까요?`)) return;
+                  run(acc.uid, () => updateAccount(acc.uid, { deletedAt: new Date().toISOString(), blocked: true }), '휴지통으로 옮겼습니다.');
+                }}
+                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+              >
+                삭제 (휴지통)
+              </button>
             </div>
 
             <div className="flex flex-wrap gap-4 border-t border-slate-100 pt-3">
@@ -221,7 +289,10 @@ function ReportsTab() {
   const [reports, setReports] = useState<FeedbackReport[]>([]);
   const [message, setMessage] = useState<string | null>(null);
 
+  const [category, setCategory] = useState<'버그' | '문의' | '제안'>('버그');
   const reload = () => listReports().then(setReports).catch((e) => setMessage(String(e?.message || e)));
+  const countOf = (c: string) => reports.filter((r) => (r.category || '') === c).length;
+  const shown = reports.filter((r) => (r.category || '') === category);
   useEffect(() => {
     reload();
   }, []);
@@ -229,12 +300,26 @@ function ReportsTab() {
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-slate-600">신고 {reports.length}건</p>
+        <div className="flex gap-2">
+          {(['버그', '문의', '제안'] as const).map((c) => (
+            <button
+              key={c}
+              onClick={() => setCategory(c)}
+              className={`rounded-lg px-3 py-1.5 text-xs font-bold ${
+                category === c ? 'bg-indigo-600 text-white' : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              {c} ({countOf(c)})
+            </button>
+          ))}
+        </div>
         <button onClick={reload} className="text-xs font-semibold text-indigo-600 hover:underline">새로고침</button>
       </div>
       {message && <p className="text-xs text-rose-600">{message}</p>}
 
-      {reports.map((r) => (
+      {shown.length === 0 && <p className="text-sm text-slate-500">아직 {category} 내용이 없습니다.</p>}
+
+      {shown.map((r) => (
         <div key={r.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm space-y-2">
           <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500">
             <span>

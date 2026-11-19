@@ -16,6 +16,8 @@ service cloud.firestore {
     // 계정별 설정 (행 선택, 대치 사전, 연동 설정). 엑셀 주문 데이터는 저장하지 않습니다.
     match /users/{uid}/settings/{settingId} {
       allow read, write: if isSignedIn() && request.auth.uid == uid;
+      // 관리자는 휴지통에서 영구 삭제할 때 회원 설정을 지울 수 있습니다.
+      allow delete: if isAdmin();
     }
 
     // 초대 문서에 적힌 설정 (문서 ID는 이메일 주소)
@@ -53,7 +55,8 @@ service cloud.firestore {
           && invite(request.resource.data.email).features == request.resource.data.features
           && invite(request.resource.data.email).blocked == request.resource.data.blocked)
         || isAdmin();
-      allow delete: if false;
+      // 관리자는 휴지통에서 영구 삭제할 때 회원 정보를 지울 수 있습니다.
+      allow delete: if isAdmin();
     }
 
     // 회원 초대: 관리자가 만들고, 초대받은 본인이 처음 로그인할 때 지웁니다.

@@ -33,6 +33,8 @@ export interface Account {
   expiresAt?: string | null;
   /** true면 이용 중지 */
   blocked?: boolean;
+  /** 휴지통에 넣은 시각(ISO). 30일이 지나면 자동으로 삭제됩니다. */
+  deletedAt?: string | null;
   features?: Features;
 }
 
@@ -117,7 +119,7 @@ export async function isAdminUser(uid: string): Promise<boolean> {
 
 export function resolveStatus(account: Account | null): AccountStatus {
   if (!account) return 'new';
-  if (account.blocked) return 'blocked';
+  if (account.blocked || account.deletedAt) return 'blocked';
   if (!account.expiresAt) return 'new';
   return new Date(account.expiresAt).getTime() > Date.now() ? 'active' : 'expired';
 }
@@ -183,4 +185,31 @@ export async function createInvite(
 
 export async function deleteInvite(email: string): Promise<void> {
   await deleteDoc(doc(database(), 'invites', email.toLowerCase()));
+}
+
+// ---- 휴지통 (관리자) ----
+
+export const TRASH_RETENTION_DAYS = 30;
+
+/** 휴지통에 들어간 지 30일이 지난 계정을 영구 삭제합니다. 삭제한 계정 수를 돌려줍니다. */
+export async function purgeExpiredTrash(): Promise<number> {
+  const db = database();
+  const limit = Date.now() - TRASH_RETENTION_DAYS * 24 * 60 * 60 * 1000;
+  const snap = await getDocs(collection(db, 'users'));
+  let count = 0;
+  for (const d of snap.docs) {
+    const deletedAt = (d.data() as Account).deletedAt;
+    if (!deletedAt) continue;
+    if (new Date(deletedAt).getTime() > limit) continue;
+    await deleteAccountData(d.id);
+    count++;
+  }
+  return count;
+}
+
+/** 회원 문서와 그 회원의 설정을 함께 지웁니다. */
+export async function deleteAccountData(uid: string): Promise<void> {
+  const db = database();
+  await deleteDoc(doc(db, 'users', uid, 'settings', 'main'));
+  await deleteDoc(doc(db, 'users', uid));
 }

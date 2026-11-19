@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "sdp-saas-v1",
+  "compatibility_date": "2025-09-01",
+  // 웹 화면 파일(vite build 결과 dist/)만 올립니다. 서버 코드는 없습니다.
+  "assets": {
+    "directory": "./dist",
+    // /app 같은 주소도 index.html로 넘겨서 앱이 열리게 합니다.
+    "not_found_handling": "single-page-application"
+  }
+}

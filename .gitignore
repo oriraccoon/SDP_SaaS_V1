@@ -11,3 +11,5 @@ coverage/
 app_data.json
 custom_mappings.json
 package-lock.json
+
+.wrangler/

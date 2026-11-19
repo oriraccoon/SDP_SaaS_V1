@@ -573,7 +573,7 @@ export default function ExcelValidationDashboard({
                                 ? 'bg-emerald-50/60 border-emerald-200'
                                 : hasCustomText
                                 ? 'bg-indigo-50/40 border-indigo-200 hover:border-indigo-300'
-                                : 'bg-gradient-to-r from-amber-50/40 via-white to-indigo-50/20 border-slate-200 hover:border-indigo-300'
+                                : 'bg-white border-slate-200 hover:border-indigo-300'
                             }`}
                           >
                             <div className="flex items-center justify-between text-[11px] text-slate-500 border-b border-slate-100 pb-2">

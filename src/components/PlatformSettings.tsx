@@ -1051,7 +1051,7 @@ export default function PlatformSettings({
       <div className="space-y-6 animate-fade-in">
         
         {/* 상단 메인 헤더 & ⚙️ 톱니바퀴 버튼 & 🔀 쇼핑몰/택배사 모드 전환 탭 */}
-        <div className="bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 text-white rounded-2xl p-6 shadow-md border border-indigo-700/50 space-y-4">
+        <div className="bg-slate-900 text-white rounded-2xl p-6 shadow-md border border-indigo-700/50 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
@@ -1255,7 +1255,7 @@ export default function PlatformSettings({
 
         {/* 미등록 또는 자동 감지된 양식인 경우 새 쇼핑몰 양식 등록 안내 배너 */}
         {matrixType === 'platform' && activeFile && activePlatform && (
-          <div className="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-slate-900/5 border border-amber-500/30 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
+          <div className="bg-amber-50 border border-amber-500/30 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
             <div className="flex items-start gap-3">
               <span className="p-2 bg-amber-500/20 text-amber-600 rounded-xl shrink-0 mt-0.5">
                 <Sparkles className="w-5 h-5" />
@@ -1308,7 +1308,7 @@ export default function PlatformSettings({
                   setNewPlatformPatternInput(autoKey);
                   setShowSaveAsNewModal(true);
                 }}
-                className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold text-xs rounded-xl transition flex items-center gap-1.5 shadow-sm cursor-pointer hover:shadow-md"
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition flex items-center gap-1.5 shadow-sm cursor-pointer hover:shadow-md"
               >
                 <Plus className="w-4 h-4" />
                 새 쇼핑몰 양식으로 등록
@@ -1319,7 +1319,7 @@ export default function PlatformSettings({
 
         {/* 2단계 택배사 송장 양식 덮어씌우기 및 새 택배사 양식 등록 안내 배너 */}
         {matrixType === 'courier' && activeCourier && (
-          <div className="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-slate-900/5 border border-amber-500/30 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
+          <div className="bg-amber-50 border border-amber-500/30 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
             <div className="flex items-start gap-3">
               <span className="p-2 bg-amber-500/20 text-amber-600 rounded-xl shrink-0 mt-0.5">
                 <Truck className="w-5 h-5" />
@@ -1363,7 +1363,7 @@ export default function PlatformSettings({
                   setNewCourierPatternInput(autoKey);
                   setShowSaveAsNewCourierModal(true);
                 }}
-                className="px-4 py-2 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-bold text-xs rounded-xl transition flex items-center gap-1.5 shadow-sm cursor-pointer hover:shadow-md"
+                className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition flex items-center gap-1.5 shadow-sm cursor-pointer hover:shadow-md"
               >
                 <Plus className="w-4 h-4" />
                 새 택배사 양식으로 등록
@@ -1491,7 +1491,7 @@ export default function PlatformSettings({
                     {/* 1. 스마트 매칭 버튼 */}
                     <button
                       onClick={handleAutoMatchHeaders}
-                      className="px-3.5 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer hover:shadow-md"
+                      className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer hover:shadow-md"
                       title="엑셀 파일의 헤더명을 재분석하여 목적 항목 열을 자동으로 탐색 및 매칭합니다"
                     >
                       <Sparkles className="w-3.5 h-3.5 animate-pulse" />
@@ -1855,7 +1855,7 @@ export default function PlatformSettings({
                   <div className="flex flex-wrap items-center gap-2">
                     <button
                       onClick={handleAutoMatchCourierHeaders}
-                      className="px-3.5 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer hover:shadow-md"
+                      className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer hover:shadow-md"
                     >
                       <Sparkles className="w-3.5 h-3.5" />
                       스마트 매칭 실행
@@ -2090,7 +2090,7 @@ export default function PlatformSettings({
           <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-slate-200 my-auto">
             
             {/* 팝업 헤더 */}
-            <div className="p-5 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white flex items-center justify-between border-b border-slate-800">
+            <div className="p-5 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
               <div className="flex items-center gap-2.5">
                 <span className="p-2 bg-indigo-500/20 rounded-xl text-amber-300">
                   <Settings className="w-5 h-5 animate-spin-slow" />

@@ -879,7 +879,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
                     const sugg = getSmartSuggestion(newRawName);
                     if (sugg) setNewMappedName(sugg.suggestedName);
                   }}
-                  className="mt-2 flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-50 to-indigo-50 border border-indigo-200 hover:border-indigo-400 text-indigo-900 rounded-xl text-xs font-semibold shadow-2xs transition group cursor-pointer"
+                  className="mt-2 flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 border border-indigo-200 hover:border-indigo-400 text-indigo-900 rounded-xl text-xs font-semibold shadow-2xs transition group cursor-pointer"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-amber-500 animate-pulse shrink-0" />
                   <span>💡 지능형 추천: <strong className="text-indigo-700">'{getSmartSuggestion(newRawName)?.suggestedName}'</strong> (유사도 {getSmartSuggestion(newRawName)?.confidence}%)</span>

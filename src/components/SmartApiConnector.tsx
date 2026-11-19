@@ -460,7 +460,7 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification }: 
   const enabledCount = configs.filter(c => c.isEnabled).length;
 
   return (
-    <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl border border-indigo-800/60 p-4 sm:p-5 text-white shadow-xl space-y-4">
+    <div className="bg-slate-900 rounded-2xl border border-indigo-800/60 p-4 sm:p-5 text-white shadow-xl space-y-4">
       {/* 상단 제목 & 원클릭 수집 버튼 */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-indigo-800/40 pb-4">
         <div className="space-y-1">
@@ -485,7 +485,7 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification }: 
           <button
             onClick={handleRunApiSync}
             disabled={isSyncing}
-            className={`px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold rounded-xl text-xs shadow-lg transition cursor-pointer flex items-center gap-2 border border-amber-300/40 ${isSyncing ? 'opacity-70 cursor-not-allowed' : ''}`}
+            className={`px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-extrabold rounded-xl text-xs shadow-lg transition cursor-pointer flex items-center gap-2 border border-amber-300/40 ${isSyncing ? 'opacity-70 cursor-not-allowed' : ''}`}
           >
             <RefreshCw className={`w-4 h-4 text-slate-900 ${isSyncing ? 'animate-spin' : ''}`} />
             <span>{isSyncing ? 'API 동기화 진행중...' : `⚡ 전체 플랫폼 주문 자동 수집 (${enabledCount}개 연동)`}</span>
@@ -522,7 +522,7 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification }: 
           </div>
           <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
             <div 
-              className="bg-gradient-to-r from-amber-400 to-emerald-400 h-full transition-all duration-300 ease-out"
+              className="bg-emerald-500 h-full transition-all duration-300 ease-out"
               style={{ width: `${syncProgress}%` }}
             />
           </div>

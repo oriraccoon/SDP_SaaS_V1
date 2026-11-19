@@ -64,6 +64,9 @@ export default function Landing() {
   const { scrollYProgress } = useScroll();
   const [faqs, setFaqs] = useState<Faq[]>(DEFAULT_FAQS);
   const [active, setActive] = useState<string>('intro');
+  // 첫 화면 작업 화면 미리보기의 단계 (1~3단계)
+  const [demoStep, setDemoStep] = useState(0);
+  const demoSteps = ['1 주문 올리기', '2 송장 받기', '3 송장 맞추기'];
   const [hover, setHover] = useState<number | null>(null);
 
   useEffect(() => {
@@ -172,7 +175,7 @@ export default function Landing() {
               transition={{ duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
               className="mt-6 text-5xl font-bold leading-tight tracking-tight sm:text-7xl"
             >
-              엑셀 정리,<br />이제 한 번이면 끝나요
+              엑셀 정리,<br />한 번에 끝
             </motion.h1>
             <motion.p initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.4 }} className="mt-8 max-w-xl text-lg leading-relaxed text-[#6B7684]">
               주문 엑셀을 올리면 송장 맞추기부터 쇼핑몰 업로드 파일까지 순서대로 만들어 드려요.
@@ -197,29 +200,84 @@ export default function Landing() {
                   <span className="text-xs font-semibold text-[#6B7684]">주문 정리</span>
                 </div>
                 <div className="space-y-4 p-5">
-                  <div className="flex flex-wrap gap-2 text-xs font-semibold">
-                    <span className="rounded-full bg-[#1E5B4A] px-3 py-1.5 text-white">1 주문 올리기</span>
-                    <span className="rounded-full bg-[#F2F4F6] px-3 py-1.5 text-[#6B7684]">2 송장 받기</span>
-                    <span className="rounded-full bg-[#F2F4F6] px-3 py-1.5 text-[#6B7684]">3 송장 맞추기</span>
+                  {/* 단계 버튼: 누르면 그 단계 화면으로 바뀝니다 */}
+                  <div role="tablist" aria-label="작업 단계" className="flex flex-wrap gap-2 text-xs font-semibold">
+                    {demoSteps.map((label, i) => (
+                      <button
+                        key={label}
+                        type="button"
+                        role="tab"
+                        aria-selected={demoStep === i}
+                        onClick={() => setDemoStep(i)}
+                        className={`min-h-[36px] rounded-full px-4 py-2 transition-colors duration-200 ${
+                          demoStep === i ? 'bg-[#1E5B4A] text-white' : 'bg-[#F2F4F6] text-[#6B7684] hover:bg-[#E5E8EB]'
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
                   </div>
-                  <div className="rounded-xl border border-dashed border-[#1E5B4A] bg-[#F7FBF9] px-5 py-7 text-center">
-                    <p className="text-sm font-bold">주문 엑셀을 여기에 놓으세요</p>
-                    <p className="mt-1 text-xs text-[#6B7684]">.xlsx 여러 개도 한 번에</p>
-                  </div>
-                  <div className="overflow-hidden rounded-xl border border-[#E5E8EB] text-xs">
-                    <div className="flex bg-[#F7F8FA] px-4 py-2.5 font-semibold text-[#6B7684]">
-                      <span className="flex-1">파일</span>
-                      <span className="w-20 text-right">주문 수</span>
-                    </div>
-                    <div className="flex items-center border-t border-[#F2F4F6] px-4 py-3">
-                      <span className="flex-1">11월_주문서.xlsx</span>
-                      <span className="w-20 text-right tabular-nums">128</span>
-                    </div>
-                    <div className="flex items-center border-t border-[#F2F4F6] px-4 py-3">
-                      <span className="flex-1">추가_주문서.xlsx</span>
-                      <span className="w-20 text-right tabular-nums">42</span>
-                    </div>
-                  </div>
+
+                  {demoStep === 0 && (
+                    <>
+                      <div className="rounded-xl border border-dashed border-[#1E5B4A] bg-[#F7FBF9] px-5 py-7 text-center">
+                        <p className="text-sm font-bold">주문 엑셀을 여기에 놓으세요</p>
+                        <p className="mt-1 text-xs text-[#6B7684]">.xlsx 여러 개도 한 번에</p>
+                      </div>
+                      <div className="overflow-hidden rounded-xl border border-[#E5E8EB] text-xs">
+                        <div className="flex bg-[#F7F8FA] px-4 py-2.5 font-semibold text-[#6B7684]">
+                          <span className="flex-1">파일</span>
+                          <span className="w-20 text-right">주문 수</span>
+                        </div>
+                        <div className="flex items-center border-t border-[#F2F4F6] px-4 py-3">
+                          <span className="flex-1">11월_주문서.xlsx</span>
+                          <span className="w-20 text-right tabular-nums">128</span>
+                        </div>
+                        <div className="flex items-center border-t border-[#F2F4F6] px-4 py-3">
+                          <span className="flex-1">추가_주문서.xlsx</span>
+                          <span className="w-20 text-right tabular-nums">42</span>
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {demoStep === 1 && (
+                    <>
+                      <p className="text-sm leading-relaxed text-[#4E5968]">택배사 사이트에 품목별정렬 파일을 올리고, 송장이 들어 있는 엑셀을 받아 주세요.</p>
+                      <div className="overflow-hidden rounded-xl border border-[#E5E8EB] text-xs">
+                        <div className="flex bg-[#F7F8FA] px-4 py-2.5 font-semibold text-[#6B7684]">
+                          <span className="flex-1">택배사</span>
+                          <span className="w-20 text-right">송장 수</span>
+                        </div>
+                        <div className="flex items-center border-t border-[#F2F4F6] px-4 py-3">
+                          <span className="flex-1">A택배 · 송장파일.xlsx</span>
+                          <span className="w-20 text-right tabular-nums">128</span>
+                        </div>
+                        <div className="flex items-center border-t border-[#F2F4F6] px-4 py-3">
+                          <span className="flex-1">B택배 · 송장파일.xlsx</span>
+                          <span className="w-20 text-right tabular-nums">42</span>
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {demoStep === 2 && (
+                    <>
+                      <div className="rounded-xl bg-[#F1F7F4] px-5 py-5">
+                        <p className="text-xs font-semibold text-[#1E5B4A]">송장 맞추기 결과</p>
+                        <p className="mt-1 text-2xl font-bold tabular-nums">170건 중 168건 맞췄어요</p>
+                        <div className="mt-4 h-2 overflow-hidden rounded-full bg-white">
+                          <div className="h-full w-[99%] rounded-full bg-[#1E5B4A]" />
+                        </div>
+                      </div>
+                      <div className="overflow-hidden rounded-xl border border-[#E5E8EB] text-xs">
+                        <div className="flex items-center border-t border-[#F2F4F6] px-4 py-3 first:border-t-0">
+                          <span className="flex-1">확인이 필요한 주문</span>
+                          <span className="w-20 text-right font-semibold text-[#8A5A00] tabular-nums">2건</span>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </motion.div>

@@ -1,1 +1,61 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
+
+/*
+ * 디자인 토큰 (Notion / Linear / Stripe 혼합 스타일)
+ * 기존 JSX의 Tailwind 클래스(slate, indigo, rounded-*)를 그대로 쓰고,
+ * 팔레트와 radius, 그림자, 폰트만 여기서 바꿉니다. 기능 코드는 건드리지 않습니다.
+ */
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Malgun Gothic", sans-serif;
+
+  /* Neutral: Notion의 따뜻한 회색 + Linear의 선명한 대비 */
+  --color-slate-50: #fbfbfa;
+  --color-slate-100: #f4f4f2;
+  --color-slate-200: #e6e6e3;
+  --color-slate-300: #d4d4d0;
+  --color-slate-400: #9b9b96;
+  --color-slate-500: #6f6f6b;
+  --color-slate-600: #52524f;
+  --color-slate-700: #3a3a38;
+  --color-slate-800: #262624;
+  --color-slate-900: #171716;
+  --color-slate-950: #0e0e0d;
+
+  /* Accent: Stripe의 블루-바이올렛 */
+  --color-indigo-50: #f3f3ff;
+  --color-indigo-100: #e7e7fd;
+  --color-indigo-200: #d2d2fa;
+  --color-indigo-300: #aeaef5;
+  --color-indigo-400: #8787ec;
+  --color-indigo-500: #6b6be0;
+  --color-indigo-600: #5a5ad6;
+  --color-indigo-700: #4a4ab8;
+  --color-indigo-800: #3c3c94;
+  --color-indigo-900: #2f2f73;
+
+  --radius-md: 0.5rem;
+  --radius-lg: 0.625rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.04);
+  --shadow: 0 1px 3px rgb(0 0 0 / 0.06), 0 1px 2px rgb(0 0 0 / 0.04);
+  --shadow-md: 0 4px 12px rgb(0 0 0 / 0.06);
+  --shadow-lg: 0 12px 32px rgb(0 0 0 / 0.08);
+}
+
+@layer base {
+  html,
+  body {
+    background: var(--color-slate-50);
+    color: var(--color-slate-800);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* 선명하고 얇은 테두리 */
+  * {
+    border-color: var(--color-slate-200);
+  }
+}

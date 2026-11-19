@@ -63,6 +63,18 @@ export default function Landing() {
           </a>
         </section>
 
+        {/* 1-2. 공감 문구 */}
+        <section className="pb-24">
+          <div className="rounded-3xl bg-[#F1F7F4] px-8 py-12 text-center sm:px-16">
+            <p className="text-2xl font-bold leading-snug sm:text-3xl">
+              수수료 떼고, 광고비 나가고,<br className="hidden sm:block" /> 남는 게 줄어드는 게 지치시죠?
+            </p>
+            <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-[#6B7684] sm:text-lg">
+              그래서 {APP_NAME}은 부담 없는 가격에, 셀러님께 꼭 필요한 기능만 드리려고 해요.
+            </p>
+          </div>
+        </section>
+
         {/* 2. 동작 방식 */}
         <section className="pb-24">
           <h2 className="text-2xl font-bold sm:text-3xl">이렇게 쓰면 돼요</h2>

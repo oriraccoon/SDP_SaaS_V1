@@ -1,0 +1,6 @@
+{
+  "name": "스마트 배송관리",
+  "description": "스마트 배송관리 및 운송장 검증 시스템 (Smart Delivery Management System)",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

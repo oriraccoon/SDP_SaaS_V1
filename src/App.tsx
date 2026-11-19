@@ -2970,7 +2970,7 @@ export default function App() {
           {/* 설정 창 (팝업): 가운데에 하나의 창으로 열립니다 */}
           {isSettingsOpen && (
             <div
-              className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4"
+              className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/50 p-4"
               onClick={() => setIsSettingsOpen(false)}
             >
               <motion.div
@@ -3243,7 +3243,7 @@ export default function App() {
                           문의 / 버그 신고
                         </button>
                         <button
-                          onClick={() => logout()}
+                          onClick={() => openConfirm('로그아웃', '로그아웃 하시겠습니까? 저장되지 않은 작업은 사라집니다.', () => logout())}
                           className="px-4 py-2 rounded-lg border border-slate-300 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50"
                         >
                           로그아웃

@@ -95,15 +95,15 @@ export default function Landing() {
         style={{ scaleX: scrollYProgress }}
       />
 
-      <header className="fixed inset-x-0 top-1 z-20 border-b border-[#F2F4F6] bg-white/90 backdrop-blur">
+      <header className="relative z-20 border-b border-[#F2F4F6] bg-white/90 backdrop-blur lg:fixed lg:inset-x-0 lg:top-1">
         <div className="flex w-full items-center justify-between px-6 py-5 sm:px-10">
           <span className="text-lg font-bold text-[#1E5B4A]">{APP_NAME}</span>
           <a href="/app" className="text-sm font-semibold text-[#1E5B4A] hover:underline">로그인</a>
         </div>
       </header>
 
-      {/* 작은 화면용 목차: 상단 헤더 아래에 두고, 페이지와 함께 스크롤됩니다 */}
-      <nav className="relative mt-[76px] border-b border-[#F2F4F6] bg-white lg:hidden">
+      {/* 작은 화면용 목차: 헤더는 페이지와 함께 올라가고, 목차만 화면 위에 붙어서 따라옵니다 */}
+      <nav className="sticky top-0 z-10 border-b border-[#F2F4F6] bg-white/95 backdrop-blur lg:hidden">
         <ul className="flex gap-6 overflow-x-auto whitespace-nowrap px-6 py-3 text-sm">
           {toc.map((t) => {
             const on = active === t.id;

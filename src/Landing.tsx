@@ -93,6 +93,27 @@ export default function Landing() {
         </div>
       </header>
 
+      {/* 작은 화면용 목차: 상단 바 아래에 가로로 고정 */}
+      <nav className="fixed inset-x-0 top-[72px] z-10 border-b border-[#F2F4F6] bg-white/95 backdrop-blur lg:hidden">
+        <ul className="flex gap-6 overflow-x-auto whitespace-nowrap px-6 py-3 text-sm">
+          {toc.map((t) => {
+            const on = active === t.id;
+            return (
+              <li key={t.id}>
+                <a
+                  href={`#${t.id}`}
+                  className={`block py-1 transition-colors duration-300 ${
+                    on ? 'border-b-2 border-[#1E5B4A] font-bold text-[#1E5B4A]' : 'border-b-2 border-transparent text-[#8B95A1]'
+                  }`}
+                >
+                  {t.label}
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+
       <div className="flex w-full">
         {/* 왼쪽 목차 */}
         <nav className="fixed left-0 top-0 z-10 hidden h-screen w-56 flex-col justify-center border-r border-[#F2F4F6] bg-white pl-10 lg:flex">
@@ -118,7 +139,7 @@ export default function Landing() {
 
         <main className="min-w-0 flex-1 px-6 sm:px-12 lg:ml-56 lg:px-20 xl:px-28">
           {/* 1. 소개 */}
-          <section id="intro" className="scroll-mt-24 flex min-h-screen flex-col justify-center pt-24">
+          <section id="intro" className="scroll-mt-40 lg:scroll-mt-40 lg:scroll-mt-24 flex min-h-screen flex-col justify-center pt-36 lg:pt-24">
             <motion.p initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-base font-semibold text-[#1E5B4A]">
               주문 정리는 {APP_NAME}에 맡기세요
             </motion.p>
@@ -141,7 +162,7 @@ export default function Landing() {
           </section>
 
           {/* 2. 불편함 */}
-          <motion.section id="pain" {...reveal} className="scroll-mt-24 flex min-h-screen flex-col justify-center border-t border-[#F2F4F6] py-24">
+          <motion.section id="pain" {...reveal} className="scroll-mt-40 lg:scroll-mt-24 flex min-h-screen flex-col justify-center border-t border-[#F2F4F6] py-24">
             <p className="text-2xl font-bold leading-snug sm:text-4xl">
               수수료 떼고, 광고비 나가고,<br />남는 게 줄어드는 게 지치시죠?
             </p>
@@ -151,7 +172,7 @@ export default function Landing() {
           </motion.section>
 
           {/* 3. 사용 순서 */}
-          <motion.section id="steps" {...reveal} className="scroll-mt-24 flex min-h-screen flex-col justify-center border-t border-[#F2F4F6] py-24">
+          <motion.section id="steps" {...reveal} className="scroll-mt-40 lg:scroll-mt-24 flex min-h-screen flex-col justify-center border-t border-[#F2F4F6] py-24">
             <p className="text-sm font-semibold text-[#1E5B4A]">사용 순서</p>
             <h2 className="mt-4 text-4xl font-bold leading-tight sm:text-5xl">딱 네 단계면 돼요</h2>
             <motion.div {...listContainer} className="mt-14 divide-y divide-[#F2F4F6]">
@@ -168,7 +189,7 @@ export default function Landing() {
           </motion.section>
 
           {/* 4. 대상 */}
-          <motion.section id="audience" {...reveal} className="scroll-mt-24 flex min-h-screen flex-col justify-center border-t border-[#F2F4F6] py-24">
+          <motion.section id="audience" {...reveal} className="scroll-mt-40 lg:scroll-mt-24 flex min-h-screen flex-col justify-center border-t border-[#F2F4F6] py-24">
             <p className="text-sm font-semibold text-[#1E5B4A]">이런 분들께</p>
             <h2 className="mt-4 text-4xl font-bold leading-tight sm:text-5xl">이런 분들께 맞아요</h2>
             <motion.ul {...listContainer} className="mt-14 space-y-10">
@@ -182,7 +203,7 @@ export default function Landing() {
           </motion.section>
 
           {/* 5. 가격 */}
-          <motion.section id="price" {...reveal} className="scroll-mt-24 flex min-h-screen flex-col items-start justify-center border-t border-[#F2F4F6] py-24">
+          <motion.section id="price" {...reveal} className="scroll-mt-40 lg:scroll-mt-24 flex min-h-screen flex-col items-start justify-center border-t border-[#F2F4F6] py-24">
             <p className="text-lg text-[#6B7684]">월 구독</p>
             <p className="mt-4 text-6xl font-bold text-[#1E5B4A] sm:text-8xl">
               {MONTHLY_PRICE_KRW.toLocaleString('ko-KR')}원
@@ -193,7 +214,7 @@ export default function Landing() {
           </motion.section>
 
           {/* 6. 질문 */}
-          <motion.section id="faq" {...reveal} className="scroll-mt-24 py-24">
+          <motion.section id="faq" {...reveal} className="scroll-mt-40 lg:scroll-mt-24 py-24">
             <h2 className="text-4xl font-bold leading-tight sm:text-5xl">자주 묻는 질문</h2>
             <div className="mt-12 divide-y divide-[#F2F4F6] border-y border-[#F2F4F6]">
               {faqs.map((f) => (

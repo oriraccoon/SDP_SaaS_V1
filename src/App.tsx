@@ -66,6 +66,7 @@ import { encryptApiConfigs, decryptApiConfigs } from './lib/secureKey';
 import { decryptExcelFile } from './utils/decryptExcel';
 import { getCurrentUid, logout } from './firebaseAuth';
 import { useAccount } from './AccountGate';
+import { APP_NAME } from './config/brand';
 import FeedbackModal from './components/FeedbackModal';
 import { LogOut, Menu, MessageSquare } from 'lucide-react';
 
@@ -2170,7 +2171,7 @@ export default function App() {
           <div className="flex items-center gap-2.5">
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-base sm:text-lg font-bold tracking-tight">스마트 운송장 관리기</h1>
+                <h1 className="text-base sm:text-lg font-bold tracking-tight">{APP_NAME}</h1>
                 <span className="text-[10px] bg-slate-100 text-slate-600 border border-slate-200 font-medium px-1.5 py-0.5 rounded-md shrink-0">v1.0.1 PRO</span>
               </div>
               <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 hidden xs:block">주문서와 송장을 맞춰 발송 엑셀을 만듭니다</p>
@@ -2245,7 +2246,39 @@ export default function App() {
               exit={{ opacity: 0, y: -10 }}
               className="space-y-6"
             >
-              
+
+              {/* 한눈에 보는 작업 순서 */}
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                {[
+                  { no: '1', title: '주문서 올리기', desc: '쇼핑몰 주문 엑셀', outside: false },
+                  { no: '2', title: '택배사에서 송장 받기', desc: '택배사 사이트에서 진행', outside: true },
+                  { no: '3', title: '송장 맞추기', desc: '송장 엑셀과 주문서 올리기', outside: false },
+                  { no: '4', title: '쇼핑몰에 올리기', desc: '쇼핑몰별 파일 업로드', outside: true },
+                ].map((st) => (
+                  <div
+                    key={st.no}
+                    className={`rounded-2xl border p-5 ${
+                      st.outside ? 'border-slate-200 bg-white' : 'border-[#CFE3DA] bg-[#F1F7F4]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold ${
+                          st.outside ? 'bg-slate-200 text-slate-600' : 'bg-[#1E5B4A] text-white'
+                        }`}
+                      >
+                        {st.no}
+                      </span>
+                      <span className="text-sm font-bold text-slate-900">{st.title}</span>
+                    </div>
+                    <p className="mt-2 text-xs text-slate-500">
+                      {st.desc}
+                      {st.outside ? ' (이 화면 밖)' : ''}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
               {/* 비밀번호 보호 해결 가이드 배너 */}
               {passwordErrorFile && (
                 <motion.div

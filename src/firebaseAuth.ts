@@ -4,6 +4,7 @@ import {
   getAuth,
   GoogleAuthProvider,
   onAuthStateChanged,
+  sendEmailVerification,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
@@ -69,11 +70,33 @@ export async function signInWithEmail(email: string, password: string): Promise<
   await signInWithEmailAndPassword(a, email.trim(), password);
 }
 
-/** 이메일과 비밀번호로 회원가입. 가입과 동시에 로그인됩니다. */
+/** 이메일과 비밀번호로 회원가입. 가입과 동시에 로그인되고, 인증 메일을 보냅니다. */
 export async function signUpWithEmail(email: string, password: string): Promise<void> {
   const a = getFirebaseAuth();
   if (!a) throw new Error('Firebase 설정이 없습니다.');
-  await createUserWithEmailAndPassword(a, email.trim(), password);
+  const cred = await createUserWithEmailAndPassword(a, email.trim(), password);
+  await sendEmailVerification(cred.user);
+}
+
+/** 인증 메일을 다시 보냅니다. */
+export async function resendVerificationEmail(): Promise<void> {
+  const u = getCurrentUser();
+  if (!u) throw new Error('로그인 상태가 아니에요.');
+  await sendEmailVerification(u);
+}
+
+/** 인증 완료 여부를 서버에서 다시 확인합니다. 인증되었으면 true. */
+export async function refreshEmailVerified(): Promise<boolean> {
+  const u = getCurrentUser();
+  if (!u) return false;
+  await u.reload();
+  return u.emailVerified;
+}
+
+/** 이메일/비밀번호로 가입한 계정인지. 구글 로그인 계정은 제외합니다. */
+export function needsEmailVerification(user: User): boolean {
+  const usesPassword = user.providerData.some((p) => p.providerId === 'password');
+  return usesPassword && !user.emailVerified;
 }
 
 /** Firebase 오류 코드를 사용자에게 보여 줄 문장으로 바꿉니다. */

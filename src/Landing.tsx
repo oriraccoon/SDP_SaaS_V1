@@ -102,8 +102,8 @@ export default function Landing() {
         </div>
       </header>
 
-      {/* 작은 화면용 목차: 상단 바 아래에 가로로 고정 */}
-      <nav className="fixed inset-x-0 top-[72px] z-10 bg-white/95 backdrop-blur lg:hidden">
+      {/* 작은 화면용 목차: 상단 헤더 아래에 두고, 페이지와 함께 스크롤됩니다 */}
+      <nav className="relative mt-[76px] border-b border-[#F2F4F6] bg-white lg:hidden">
         <ul className="flex gap-6 overflow-x-auto whitespace-nowrap px-6 py-3 text-sm">
           {toc.map((t) => {
             const on = active === t.id;
@@ -160,7 +160,7 @@ export default function Landing() {
 
         <main className="min-w-0 flex-1 px-6 sm:px-12 lg:ml-56 lg:px-20 xl:px-28">
           {/* 1. 소개 */}
-          <section id="intro" className="scroll-mt-40 lg:scroll-mt-40 lg:scroll-mt-24 flex min-h-screen flex-col justify-center pt-36 lg:pt-24">
+          <section id="intro" className="scroll-mt-40 lg:scroll-mt-40 lg:scroll-mt-24 flex min-h-screen flex-col justify-center pt-10 lg:pt-24">
             <motion.p initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-base font-semibold text-[#1E5B4A]">
               주문 정리는 {APP_NAME}에 맡기세요
             </motion.p>

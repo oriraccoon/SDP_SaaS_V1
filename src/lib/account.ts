@@ -1,3 +1,4 @@
+import { FREE_MONTHLY_UPLOADS } from '../config/brand';
 import {
   collection,
   deleteDoc,
@@ -36,6 +37,10 @@ export interface Account {
   /** 휴지통에 넣은 시각(ISO). 30일이 지나면 자동으로 삭제됩니다. */
   deletedAt?: string | null;
   features?: Features;
+  /** 월 업로드 한도. 없으면 제한이 없습니다. */
+  uploadLimit?: number | null;
+  /** 이번 달 업로드 사용량. 달이 바뀌면 자동으로 0이 됩니다. */
+  usage?: { month: string; count: number } | null;
 }
 
 export type AccountStatus = 'active' | 'new' | 'expired' | 'blocked';
@@ -120,12 +125,48 @@ export async function isAdminUser(uid: string): Promise<boolean> {
 export function resolveStatus(account: Account | null): AccountStatus {
   if (!account) return 'new';
   if (account.blocked || account.deletedAt) return 'blocked';
-  if (!account.expiresAt) return 'new';
+  if (!account.expiresAt) return typeof account.uploadLimit === 'number' ? 'active' : 'new';
   return new Date(account.expiresAt).getTime() > Date.now() ? 'active' : 'expired';
 }
 
 export function resolveFeatures(account: Account | null): Record<FeatureKey, boolean> {
   return { ...DEFAULT_FEATURES, ...(account?.features ?? {}) };
+}
+
+/** 이번 달 키 (예: 2026-11). */
+export function currentMonthKey(now: Date = new Date()): string {
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+}
+
+/** 이번 달에 쓴 업로드 횟수. 달이 바뀌면 0입니다. */
+export function uploadsUsedThisMonth(account: Account | null): number {
+  const usage = account?.usage;
+  return usage && usage.month === currentMonthKey() ? usage.count : 0;
+}
+
+/** 남은 업로드 횟수. null이면 제한이 없는 회원입니다. */
+export function uploadsLeft(account: Account | null): number | null {
+  const limit = account?.uploadLimit;
+  if (typeof limit !== 'number') return null;
+  return Math.max(0, limit - uploadsUsedThisMonth(account));
+}
+
+/** 파일 count개를 올리려 할 때 한도 안이면 이번 달 사용량을 늘리고 true를 돌려줍니다. */
+export async function consumeUploads(account: Account | null, count: number): Promise<boolean> {
+  if (!account) return false;
+  const left = uploadsLeft(account);
+  if (left !== null && count > left) return false;
+  await setDoc(
+    doc(database(), 'users', account.uid),
+    { usage: { month: currentMonthKey(), count: uploadsUsedThisMonth(account) + count } },
+    { merge: true },
+  );
+  return true;
+}
+
+/** 무료 플랜 시작: 본인 계정에 무료 월 업로드 한도를 설정합니다. */
+export async function startFreePlan(uid: string): Promise<void> {
+  await setDoc(doc(database(), 'users', uid), { uploadLimit: FREE_MONTHLY_UPLOADS }, { merge: true });
 }
 
 // ---- 관리자 전용 ----

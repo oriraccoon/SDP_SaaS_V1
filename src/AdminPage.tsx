@@ -239,6 +239,23 @@ function MembersTab() {
               </button>
               <button
                 disabled={busy === acc.uid}
+                onClick={() => {
+                  const v = window.prompt('월 업로드 한도를 입력하세요 (숫자). 비우면 제한을 없앱니다.', acc.uploadLimit != null ? String(acc.uploadLimit) : '');
+                  if (v === null) return;
+                  const t = v.trim();
+                  const uploadLimit = t === '' ? null : Number(t);
+                  if (uploadLimit !== null && (!Number.isInteger(uploadLimit) || uploadLimit < 0)) {
+                    window.alert('0 이상의 정수를 입력해 주세요.');
+                    return;
+                  }
+                  run(acc.uid, () => updateAccount(acc.uid, { uploadLimit }), '업로드 한도를 저장했습니다.');
+                }}
+                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+              >
+                업로드 한도
+              </button>
+              <button
+                disabled={busy === acc.uid}
                 onClick={() => run(acc.uid, () => updateAccount(acc.uid, { blocked: !acc.blocked }), acc.blocked ? '정지를 풀었습니다.' : '이용을 정지했습니다.')}
                 className="rounded-lg border border-rose-300 bg-white px-3 py-1.5 text-xs font-bold text-rose-700 hover:bg-rose-50 disabled:opacity-50"
               >

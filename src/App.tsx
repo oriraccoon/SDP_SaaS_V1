@@ -66,6 +66,7 @@ import { encryptApiConfigs, decryptApiConfigs } from './lib/secureKey';
 import { decryptExcelFile } from './utils/decryptExcel';
 import { getCurrentUid, logout } from './firebaseAuth';
 import { useAccount } from './AccountGate';
+import { consumeUploads, uploadsLeft } from './lib/account';
 import { APP_NAME } from './config/brand';
 import FeedbackModal from './components/FeedbackModal';
 import { LogOut, Menu, MessageSquare } from 'lucide-react';
@@ -209,7 +210,7 @@ function migratePlatforms(parsed: PlatformConfig[]): PlatformConfig[] {
 }
 
 export default function App() {
-  const { features } = useAccount();
+  const { features, account } = useAccount();
   // ----------------------------------------------------
   // 1. 상태 선언 및 로컬스토리지 연동
   // ----------------------------------------------------
@@ -600,11 +601,19 @@ export default function App() {
   // ----------------------------------------------------
   // 2. 1단계: 주문서 파싱 및 가공 핸들러 (다중 파일 처리 지원)
   // ----------------------------------------------------
+  // 업로드 횟수 제한: 한도 안이면 사용량을 올리고, 넘으면 막고 안내합니다.
+  const checkUploadAllowed = async (count: number): Promise<boolean> => {
+    const ok = await consumeUploads(account, count);
+    if (!ok) window.alert(`이번 달 업로드 횟수를 모두 썼어요. 남은 횟수: ${uploadsLeft(account) ?? 0}회`);
+    return ok;
+  };
+
   const handleOrderFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
     
     const newFiles = Array.from(files);
+    if (!(await checkUploadAllowed(newFiles.length))) { e.target.value = ''; return; }
     // 중복 파일명 체크하여 중복 로딩 방지
     const existingNames = new Set(orderFiles.map((f: File) => f.name));
     const uniqueNewFiles = newFiles.filter((f: File) => !existingNames.has(f.name));
@@ -1462,6 +1471,7 @@ export default function App() {
     const files = e.target.files;
     if (!files || files.length === 0) return;
     const newFiles = Array.from(files);
+    if (!(await checkUploadAllowed(newFiles.length))) { e.target.value = ''; return; }
 
     const existingNames = new Set(trackingFiles.map((f: File) => f.name));
     const uniqueNewFiles = newFiles.filter((f: File) => !existingNames.has(f.name));

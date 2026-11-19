@@ -54,6 +54,11 @@ service cloud.firestore {
           && invite(request.resource.data.email).expiresAt == request.resource.data.expiresAt
           && invite(request.resource.data.email).features == request.resource.data.features
           && invite(request.resource.data.email).blocked == request.resource.data.blocked)
+        // 본인은 이번 달 업로드 사용량(usage)을 기록할 수 있고, 무료 플랜 한도(5회)만 스스로 설정할 수 있습니다.
+        || (isSignedIn() && request.auth.uid == uid
+          && (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['usage'])
+            || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['uploadLimit'])
+              && request.resource.data.uploadLimit == 5)))
         || isAdmin();
       // 관리자는 휴지통에서 영구 삭제할 때 회원 정보를 지울 수 있습니다.
       allow delete: if isAdmin();

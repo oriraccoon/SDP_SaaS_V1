@@ -7,5 +7,17 @@ service cloud.firestore {
     match /users/{uid}/{document=**} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
     }
+
+    // 문의/버그 신고: 로그인한 사용자는 보낼 수만 있고, 읽거나 고칠 수 없습니다.
+    // 내용은 Firebase 콘솔(Firestore Database → 데이터)의 reports 컬렉션에서 확인합니다.
+    match /reports/{reportId} {
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['category', 'message', 'uid', 'email', 'pageUrl', 'userAgent', 'createdAt'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.message is string
+        && request.resource.data.message.size() > 0
+        && request.resource.data.message.size() <= 2000;
+      allow read, update, delete: if false;
+    }
   }
 }

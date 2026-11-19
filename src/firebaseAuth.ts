@@ -35,6 +35,11 @@ function getFirebaseAuth(): Auth | null {
   return auth;
 }
 
+/** 로그인한 사용자 정보. 로그인 전이거나 Firebase 설정이 없으면 null. */
+export function getCurrentUser(): User | null {
+  return getFirebaseAuth()?.currentUser ?? null;
+}
+
 /** 로그인한 계정의 ID. 로그인 전이거나 Firebase 설정이 없으면 null. */
 export function getCurrentUid(): string | null {
   return getFirebaseAuth()?.currentUser?.uid ?? null;

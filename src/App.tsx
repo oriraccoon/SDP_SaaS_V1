@@ -65,6 +65,7 @@ import { loadCloudSettings, saveCloudSettings } from './lib/cloudSettings';
 import { encryptApiConfigs, decryptApiConfigs } from './lib/secureKey';
 import { decryptExcelFile } from './utils/decryptExcel';
 import { getCurrentUid } from './firebaseAuth';
+import { useAccount } from './AccountGate';
 import FeedbackModal from './components/FeedbackModal';
 import { MessageSquare } from 'lucide-react';
 
@@ -207,6 +208,7 @@ function migratePlatforms(parsed: PlatformConfig[]): PlatformConfig[] {
 }
 
 export default function App() {
+  const { features } = useAccount();
   // ----------------------------------------------------
   // 1. 상태 선언 및 로컬스토리지 연동
   // ----------------------------------------------------
@@ -2210,6 +2212,7 @@ export default function App() {
               <span className="hidden lg:inline">품목 정제 리스트</span>
               <span className="inline lg:hidden">품목정제</span>
             </button>
+            {features.analytics && (
             <button
               onClick={() => setActiveTab('analytics')}
               className={`flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition shrink-0 ${
@@ -2223,6 +2226,7 @@ export default function App() {
               <span className="hidden lg:inline">시각화 리포트</span>
               <span className="inline lg:hidden">시각화</span>
             </button>
+            )}
             <button
               onClick={() => setActiveTab('backup')}
               className={`flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition shrink-0 ${
@@ -2376,12 +2380,14 @@ export default function App() {
                 )}
 
                 {/* 쇼핑몰 API 자동 연동 수집 센터 모듈 */}
-                <SmartApiConnector
-                  onOrdersSynced={handleOrdersApiSynced}
-                  showNotification={showNotification}
-                  configs={apiConfigs}
-                  setConfigs={setApiConfigs}
-                />
+                {features.apiSync && (
+                  <SmartApiConnector
+                    onOrdersSynced={handleOrdersApiSynced}
+                    showNotification={showNotification}
+                    configs={apiConfigs}
+                    setConfigs={setApiConfigs}
+                  />
+                )}
                 
                 {/* 1단계 카드: 주문 데이터 가공 */}
                 <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
@@ -3032,7 +3038,7 @@ export default function App() {
           )}
 
           {/* 탭 4: 시각화 리포트 탭 */}
-          {activeTab === 'analytics' && (
+          {activeTab === 'analytics' && features.analytics && (
             <motion.div
               key="analytics-tab"
               initial={{ opacity: 0, y: 10 }}

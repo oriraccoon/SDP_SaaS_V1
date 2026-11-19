@@ -105,26 +105,6 @@ export default function Landing() {
         </div>
       </header>
 
-      {/* 작은 화면용 목차: 헤더는 페이지와 함께 올라가고, 목차만 화면 위에 붙어서 따라옵니다 */}
-      <nav className="sticky top-0 z-10 border-b border-[#F2F4F6] bg-white/95 backdrop-blur lg:hidden">
-        <ul className="flex gap-6 overflow-x-auto whitespace-nowrap px-6 py-3 text-sm">
-          {toc.map((t) => {
-            const on = active === t.id;
-            return (
-              <li key={t.id}>
-                <a
-                  href={`#${t.id}`}
-                  className={`block py-1 transition-colors duration-300 ${
-                    on ? 'border-b-2 border-[#1E5B4A] font-bold text-[#1E5B4A]' : 'border-b-2 border-transparent text-[#8B95A1]'
-                  }`}
-                >
-                  {t.label}
-                </a>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
 
       <div className="flex w-full">
         {/* 왼쪽 목차 */}

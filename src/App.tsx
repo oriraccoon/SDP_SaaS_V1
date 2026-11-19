@@ -67,7 +67,7 @@ import { decryptExcelFile } from './utils/decryptExcel';
 import { getCurrentUid, logout } from './firebaseAuth';
 import { useAccount } from './AccountGate';
 import FeedbackModal from './components/FeedbackModal';
-import { LogOut, MessageSquare } from 'lucide-react';
+import { LogOut, Menu, MessageSquare } from 'lucide-react';
 
 // 2단계 운송장 소스 엑셀 파일 택배사/양식 지능형 자동 감지 헬퍼
 function detectCourierForFile(fileName: string, rawRows?: any[][]): string {
@@ -229,11 +229,14 @@ export default function App() {
     parsed: ProductMapping[];
   } | null>(null);
 
-  const [activeTab, setActiveTab] = useState<'process' | 'analytics' | 'settings'>('process');
+  const [activeTab, setActiveTab] = useState<'process' | 'analytics'>('process');
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [settingsSection, setSettingsSection] = useState<'platforms' | 'products' | 'backup' | 'account'>('platforms');
   const openSettings = (section: 'platforms' | 'products' | 'backup' | 'account') => {
     setSettingsSection(section);
-    setActiveTab('settings');
+    setIsSettingsOpen(true);
+    setIsMenuOpen(false);
   };
   const [selectedPlatformId, setSelectedPlatformId] = useState<string>('');
   // 1단계 (주문 가공) 상태 (다중 파일 지원!)
@@ -2207,9 +2210,9 @@ export default function App() {
             </button>
             )}
             <button
-              onClick={() => setActiveTab('settings')}
+              onClick={() => openSettings('platforms')}
               className={`flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition shrink-0 ${
-                activeTab === 'settings'
+                isSettingsOpen
                   ? 'bg-white text-slate-900 shadow-sm border border-slate-200'
                   : 'text-slate-500 hover:text-slate-900'
               }`}
@@ -2219,6 +2222,35 @@ export default function App() {
               <span className="hidden lg:inline">설정</span>
             </button>
           </nav>
+
+          <div className="relative shrink-0">
+            <button
+              onClick={() => setIsMenuOpen((v) => !v)}
+              className="p-2 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+              aria-label="메뉴"
+              title="메뉴"
+            >
+              <Menu className="w-4 h-4" />
+            </button>
+            {isMenuOpen && (
+              <div className="absolute right-0 mt-2 w-52 rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg z-40">
+                {([
+                  ['플랫폼 설정', () => openSettings('platforms')],
+                  ['품목 정제 리스트', () => openSettings('products')],
+                  ['설정 백업', () => openSettings('backup')],
+                  ['계정 · 문의', () => openSettings('account')],
+                ] as [string, () => void][]).map(([label, action]) => (
+                  <button
+                    key={label}
+                    onClick={action}
+                    className="w-full text-left px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-slate-100"
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
         </div>
       </header>
@@ -2958,17 +2990,34 @@ export default function App() {
             </motion.div>
           )}
 
-          {/* 설정 화면: 왼쪽 메뉴 + 선택한 항목 */}
-          {activeTab === 'settings' && (
-            <motion.div
-              key="settings-tab"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="flex flex-col md:flex-row gap-6"
+          {/* 설정 창 (팝업): 가운데에 하나의 창으로 열립니다 */}
+          {isSettingsOpen && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4"
+              onClick={() => setIsSettingsOpen(false)}
             >
-              <aside className="md:w-56 shrink-0">
-                <div className="bg-white border border-slate-200 rounded-xl p-2 shadow-sm space-y-1">
+              <motion.div
+                key="settings-modal"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 12 }}
+                className="flex max-h-[88vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+                  <h2 className="text-base font-bold text-slate-900">설정</h2>
+                  <button
+                    onClick={() => setIsSettingsOpen(false)}
+                    className="p-1 text-slate-500 hover:text-slate-800"
+                    aria-label="닫기"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+                  <aside className="shrink-0 border-b border-slate-200 p-3 md:w-56 md:border-b-0 md:border-r">
+                    <div className="space-y-1">
                   {([
                     ['platforms', '플랫폼 설정'],
                     ['products', '품목 정제 리스트'],
@@ -2986,9 +3035,9 @@ export default function App() {
                     </button>
                   ))}
                 </div>
-              </aside>
+                  </aside>
 
-              <section className="flex-1 min-w-0">
+                  <section className="min-w-0 flex-1 overflow-y-auto bg-slate-50 p-5">
             {/* 탭 2: 플랫폼 관리 */}
             {settingsSection === 'platforms' && (
               <motion.div
@@ -3225,8 +3274,10 @@ export default function App() {
                       </div>
                     </div>
                   )}
-              </section>
-            </motion.div>
+                  </section>
+                </div>
+              </motion.div>
+            </div>
           )}
 
           {/* 탭 4: 시각화 리포트 탭 */}

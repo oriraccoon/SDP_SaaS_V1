@@ -60,7 +60,11 @@ import ExcelValidationDashboard from './components/ExcelValidationDashboard';
 import ExcelPreviewModal, { ExcelPreviewFile } from './components/ExcelPreviewModal';
 import DeliveryAnalyticsReport from './components/DeliveryAnalyticsReport';
 import AnomalousOrdersModal from './components/AnomalousOrdersModal';
-import SmartApiConnector from './components/SmartApiConnector';
+import SmartApiConnector, { DEFAULT_API_CONFIGS, mergeApiConfigs, type PlatformApiConfig } from './components/SmartApiConnector';
+import { loadCloudSettings, saveCloudSettings } from './lib/cloudSettings';
+import { encryptApiConfigs, decryptApiConfigs } from './lib/secureKey';
+import { decryptExcelFile } from './utils/decryptExcel';
+import { getCurrentUid } from './firebaseAuth';
 
 // 2단계 운송장 소스 엑셀 파일 택배사/양식 지능형 자동 감지 헬퍼
 function detectCourierForFile(fileName: string, rawRows?: any[][]): string {
@@ -130,115 +134,89 @@ function mergeOrdersWithoutDuplicates(existing: ProcessedOrder[], incoming: Proc
   return merged;
 }
 
+// 저장된 플랫폼 설정을 최신 기본값 기준으로 정리합니다.
+function migratePlatforms(parsed: PlatformConfig[]): PlatformConfig[] {
+  let migrated = false;
+  const cleaned = parsed.map(p => {
+    let updated = { ...p };
+    const defaultPlat = DEFAULT_PLATFORMS.find(dp => dp.id === p.id);
+
+    if (defaultPlat && (p.id === 'naver' || p.id === 'toss') && p.start_row === 3) {
+      updated.start_row = defaultPlat.start_row;
+      migrated = true;
+    }
+
+    if (defaultPlat && p.id === 'toss') {
+      if (updated.col_map?.상품명 !== defaultPlat.col_map.상품명 || updated.courier_col !== defaultPlat.courier_col) {
+        updated = { ...defaultPlat };
+        migrated = true;
+      }
+    }
+
+    if (defaultPlat && (p.id === 'sikbom' || p.id === 'ESM')) {
+      if (updated.filepath_pattern !== defaultPlat.filepath_pattern || updated.identifier !== defaultPlat.identifier) {
+        updated.filepath_pattern = defaultPlat.filepath_pattern;
+        updated.identifier = defaultPlat.identifier;
+        migrated = true;
+      }
+    }
+
+    // '주문자'가 col_map에 있으면 제거하고 최신 사양으로 마이그레이션
+    if (updated.col_map && ('주문자' in updated.col_map || Object.keys(updated.col_map).length > 8)) {
+      migrated = true;
+      const newColMap = { ...updated.col_map };
+      delete (newColMap as any).주문자;
+
+      // 표준 기본 플랫폼인 경우, 최신 defaultData 설정값과 동기화
+      if (defaultPlat) {
+        return {
+          ...updated,
+          col_map: { ...defaultPlat.col_map },
+          tracking_col: defaultPlat.tracking_col,
+          start_row: defaultPlat.start_row
+        };
+      }
+
+      return {
+        ...updated,
+        col_map: newColMap
+      };
+    }
+    return updated;
+  });
+
+  let finalPlatforms = cleaned.filter(p => p.id !== 'gmarket' && p.id !== 'elevenst');
+  if (finalPlatforms.length !== cleaned.length) {
+    migrated = true;
+  }
+
+  // DEFAULT_PLATFORMS 중 누락된 기본 플랫폼 추가
+  DEFAULT_PLATFORMS.forEach(dp => {
+    if (!finalPlatforms.some(p => p.id === dp.id)) {
+      finalPlatforms.push(dp);
+      migrated = true;
+    }
+  });
+
+  if (migrated) {
+    return finalPlatforms;
+  }
+  return finalPlatforms;
+}
+
 export default function App() {
   // ----------------------------------------------------
   // 1. 상태 선언 및 로컬스토리지 연동
   // ----------------------------------------------------
-  const [platforms, setPlatforms] = useState<PlatformConfig[]>(() => {
-    const saved = localStorage.getItem('s_waybill_platforms');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved) as PlatformConfig[];
-        let migrated = false;
-        const cleaned = parsed.map(p => {
-          let updated = { ...p };
-          const defaultPlat = DEFAULT_PLATFORMS.find(dp => dp.id === p.id);
+  const [platforms, setPlatforms] = useState<PlatformConfig[]>(DEFAULT_PLATFORMS);
 
-          if (defaultPlat && (p.id === 'naver' || p.id === 'toss') && p.start_row === 3) {
-            updated.start_row = defaultPlat.start_row;
-            migrated = true;
-          }
+  const [couriers, setCouriers] = useState<CourierConfig[]>(DEFAULT_COURIERS);
 
-          if (defaultPlat && p.id === 'toss') {
-            if (updated.col_map?.상품명 !== defaultPlat.col_map.상품명 || updated.courier_col !== defaultPlat.courier_col) {
-              updated = { ...defaultPlat };
-              migrated = true;
-            }
-          }
+  // 시각화 리포트용 주문 데이터 (메모리에만 두며, 새로고침하면 사라집니다)
+  const [analyticsOrders, setAnalyticsOrders] = useState<ProcessedOrder[]>([]);
 
-          if (defaultPlat && (p.id === 'sikbom' || p.id === 'ESM')) {
-            if (updated.filepath_pattern !== defaultPlat.filepath_pattern || updated.identifier !== defaultPlat.identifier) {
-              updated.filepath_pattern = defaultPlat.filepath_pattern;
-              updated.identifier = defaultPlat.identifier;
-              migrated = true;
-            }
-          }
-
-          // '주문자'가 col_map에 있으면 제거하고 최신 사양으로 마이그레이션
-          if (updated.col_map && ('주문자' in updated.col_map || Object.keys(updated.col_map).length > 8)) {
-            migrated = true;
-            const newColMap = { ...updated.col_map };
-            delete (newColMap as any).주문자;
-
-            // 표준 기본 플랫폼인 경우, 최신 defaultData 설정값과 동기화
-            if (defaultPlat) {
-              return {
-                ...updated,
-                col_map: { ...defaultPlat.col_map },
-                tracking_col: defaultPlat.tracking_col,
-                start_row: defaultPlat.start_row
-              };
-            }
-
-            return {
-              ...updated,
-              col_map: newColMap
-            };
-          }
-          return updated;
-        });
-
-        let finalPlatforms = cleaned.filter(p => p.id !== 'gmarket' && p.id !== 'elevenst');
-        if (finalPlatforms.length !== cleaned.length) {
-          migrated = true;
-        }
-
-        // DEFAULT_PLATFORMS 중 누락된 기본 플랫폼 추가
-        DEFAULT_PLATFORMS.forEach(dp => {
-          if (!finalPlatforms.some(p => p.id === dp.id)) {
-            finalPlatforms.push(dp);
-            migrated = true;
-          }
-        });
-
-        if (migrated) {
-          localStorage.setItem('s_waybill_platforms', JSON.stringify(finalPlatforms));
-          return finalPlatforms;
-        }
-        return finalPlatforms;
-      } catch (e) {
-        return DEFAULT_PLATFORMS;
-      }
-    }
-    return DEFAULT_PLATFORMS;
-  });
-
-  const [couriers, setCouriers] = useState<CourierConfig[]>(() => {
-    const saved = localStorage.getItem('s_waybill_couriers');
-    if (saved) {
-      try {
-        return JSON.parse(saved) as CourierConfig[];
-      } catch (e) {
-        return DEFAULT_COURIERS;
-      }
-    }
-    return DEFAULT_COURIERS;
-  });
-
-  // 시각화 리포트용 저장된 주문 데이터
-  const [analyticsOrders, setAnalyticsOrders] = useState<ProcessedOrder[]>(() => {
-    const saved = localStorage.getItem('s_waybill_analytics_orders');
-    if (saved) {
-      try {
-        return JSON.parse(saved) as ProcessedOrder[];
-      } catch (e) {
-        return [];
-      }
-    }
-    return [];
-  });
-
-  // 대치 규칙은 최초 빈 배열로 선언 후, useEffect를 통해 서버/로컬스토리지에서 비동기로 수집
+  // 대치 규칙은 기본값으로 시작한 뒤, 로그인한 계정의 설정(Firestore)에서 불러옵니다.
+  const [apiConfigs, setApiConfigs] = useState<PlatformApiConfig[]>(DEFAULT_API_CONFIGS);
   const [productMappings, setProductMappings] = useState<ProductMapping[]>([]);
   const [defaultRawNames, setDefaultRawNames] = useState<string[]>([]);
   const [isMappingsLoaded, setIsMappingsLoaded] = useState(false);
@@ -507,52 +485,49 @@ export default function App() {
 
   const isAppDataLoadedRef = React.useRef(false);
 
-  // 최초 1회 백엔드 서버로부터 전체 통합 앱 데이터(app_data.json) 및 품목 사전 불러오기
+  // 로그인한 계정의 설정을 Firestore에서 불러옵니다. 엑셀 주문 데이터는 불러오지 않습니다.
   useEffect(() => {
-    fetch('/api/app-data')
-      .then(res => res.json())
-      .then(result => {
-        if (result.success && result.data) {
-          const { platforms: serverPlats, couriers: serverCouriers, productMappings: serverMappings, analyticsOrders: serverOrders } = result.data;
+    setDefaultRawNames(DEFAULT_PRODUCT_MAPPINGS.map(m => m.rawName));
+    setProductMappings(DEFAULT_PRODUCT_MAPPINGS);
 
-          if (Array.isArray(serverPlats) && serverPlats.length > 0) {
-            setPlatforms(serverPlats);
-            localStorage.setItem('s_waybill_platforms', JSON.stringify(serverPlats));
-          }
+    // 예전 버전이 브라우저에 남겨 둔 주문 데이터 캐시는 지웁니다.
+    try {
+      localStorage.removeItem('s_waybill_analytics_orders');
+    } catch (e) {
+      // 저장소를 쓸 수 없는 환경에서는 무시합니다.
+    }
 
-          if (Array.isArray(serverCouriers) && serverCouriers.length > 0) {
-            setCouriers(serverCouriers);
-            localStorage.setItem('s_waybill_couriers', JSON.stringify(serverCouriers));
-          }
+    const uid = getCurrentUid();
+    if (!uid) {
+      isAppDataLoadedRef.current = true;
+      setIsMappingsLoaded(true);
+      return;
+    }
 
-          if (Array.isArray(serverOrders) && serverOrders.length > 0) {
-            setAnalyticsOrders(prev => {
-              const merged = mergeOrdersWithoutDuplicates(prev, serverOrders);
-              localStorage.setItem('s_waybill_analytics_orders', JSON.stringify(merged));
-              return merged;
-            });
-          }
+    loadCloudSettings(uid)
+      .then(async (cloud) => {
+        if (!cloud) return;
+        const savedPlats = cloud.platforms;
+        const savedCouriers = cloud.couriers;
+        const savedMappings = cloud.productMappings;
+        const savedApi = cloud.apiConfigs;
 
-          if (Array.isArray(serverMappings) && serverMappings.length > 0) {
-            setProductMappings(serverMappings);
-          } else {
-            // app_data.json에 없으면 기존 /api/mappings 조회
-            fetch('/api/mappings')
-              .then(res => res.json())
-              .then(data => {
-                if (data.success && Array.isArray(data.mappings)) {
-                  setProductMappings(data.mappings);
-                  if (Array.isArray(data.defaultRawNames)) {
-                    setDefaultRawNames(data.defaultRawNames);
-                  }
-                }
-              })
-              .catch(() => {});
-          }
+        if (Array.isArray(savedPlats) && savedPlats.length > 0) {
+          setPlatforms(migratePlatforms(savedPlats as PlatformConfig[]));
+        }
+        if (Array.isArray(savedCouriers) && savedCouriers.length > 0) {
+          setCouriers(savedCouriers as CourierConfig[]);
+        }
+        if (Array.isArray(savedMappings) && savedMappings.length > 0) {
+          setProductMappings(savedMappings as ProductMapping[]);
+        }
+        if (Array.isArray(savedApi) && savedApi.length > 0) {
+          const decrypted = await decryptApiConfigs(savedApi as PlatformApiConfig[]);
+          setApiConfigs(mergeApiConfigs(decrypted));
         }
       })
-      .catch(err => {
-        console.warn("서버 앱 데이터 초기 복원 중 통신 참고:", err);
+      .catch((err) => {
+        console.warn('클라우드 설정 불러오기 실패:', err);
       })
       .finally(() => {
         isAppDataLoadedRef.current = true;
@@ -560,72 +535,42 @@ export default function App() {
       });
   }, []);
 
-  // 로컬 스토리지 캐시 반영
-  useEffect(() => {
-    localStorage.setItem('s_waybill_platforms', JSON.stringify(platforms));
-  }, [platforms]);
-
-  useEffect(() => {
-    localStorage.setItem('s_waybill_couriers', JSON.stringify(couriers));
-  }, [couriers]);
-
-  // 주문 가공 또는 운송장 업데이트 결과가 나오면 시각화 리포트용 주문 데이터 중복 없이 스마트 병합 및 보존
+  // 주문 가공 또는 운송장 업데이트 결과는 시각화용으로 메모리에 중복 없이 병합합니다.
   useEffect(() => {
     if (orderParseResult?.orders && orderParseResult.orders.length > 0) {
-      setAnalyticsOrders(prev => {
-        const merged = mergeOrdersWithoutDuplicates(prev, orderParseResult.orders);
-        try {
-          localStorage.setItem('s_waybill_analytics_orders', JSON.stringify(merged));
-        } catch (e) {
-          console.error("Failed to save analytics orders:", e);
-        }
-        return merged;
-      });
+      setAnalyticsOrders(prev => mergeOrdersWithoutDuplicates(prev, orderParseResult.orders));
     }
   }, [orderParseResult]);
 
   useEffect(() => {
     if (trackingResult?.outputOrders && trackingResult.outputOrders.length > 0) {
-      setAnalyticsOrders(prev => {
-        const merged = mergeOrdersWithoutDuplicates(prev, trackingResult.outputOrders);
-        try {
-          localStorage.setItem('s_waybill_analytics_orders', JSON.stringify(merged));
-        } catch (e) {
-          console.error("Failed to save analytics orders:", e);
-        }
-        return merged;
-      });
+      setAnalyticsOrders(prev => mergeOrdersWithoutDuplicates(prev, trackingResult.outputOrders));
     }
   }, [trackingResult]);
 
-  // 데이터 변경 시 서버 app_data.json에 실시간 자동 동기화 (디바운스 적용)
+  // 설정이 바뀌면 잠시 후 Firestore에 저장합니다. API 키는 암호화해서 저장하고, 주문 데이터는 저장하지 않습니다.
   useEffect(() => {
     if (!isAppDataLoadedRef.current) return;
+    const uid = getCurrentUid();
+    if (!uid) return;
 
-    const timer = setTimeout(() => {
-      fetch('/api/app-data/sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+    const timer = setTimeout(async () => {
+      try {
+        const securedApi = await encryptApiConfigs(apiConfigs);
+        await saveCloudSettings(uid, {
           platforms,
           couriers,
           productMappings,
-          analyticsOrders
-        })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (!data.success) {
-          console.warn("서버 app_data.json 자동 저장 실패:", data.message);
-        }
-      })
-      .catch(err => {
-        console.warn("서버 자동 저장 통신 오류:", err);
-      });
+          apiConfigs: securedApi,
+        });
+      } catch (err) {
+        console.warn('설정 저장 실패:', err);
+        showNotification('error', '설정을 저장하지 못했습니다. 인터넷 연결을 확인해 주세요.');
+      }
     }, 400);
 
     return () => clearTimeout(timer);
-  }, [platforms, couriers, productMappings, analyticsOrders]);
+  }, [platforms, couriers, productMappings, apiConfigs]);
 
   // 기본 플랫폼 선정
   useEffect(() => {
@@ -836,7 +781,6 @@ export default function App() {
       });
 
       setAnalyticsOrders(reprocessed.orders);
-      localStorage.setItem('s_waybill_analytics_orders', JSON.stringify(reprocessed.orders));
 
       // 1단계 주문 데이터가 갱신되면 2단계 운송장 소스 파일이 존재하는 경우 실시간 자동 재매칭 실행
       if (trackingFiles.length > 0) {
@@ -942,7 +886,6 @@ export default function App() {
     if (remainingParsedFiles.length === 0) {
       setOrderParseResult(null);
       setAnalyticsOrders([]);
-      localStorage.removeItem('s_waybill_analytics_orders');
       setNewItemsMappingForm({});
       showNotification('info', "모든 수집 데이터가 삭제되었습니다.");
       return;
@@ -963,7 +906,6 @@ export default function App() {
       validationIssues: orderParseResult?.validationIssues || []
     });
     setAnalyticsOrders(reprocessed.orders);
-    localStorage.setItem('s_waybill_analytics_orders', JSON.stringify(reprocessed.orders));
 
     if (reprocessed.newRawItems.length > 0) {
       const initialForm: { [key: string]: string } = {};
@@ -1011,7 +953,6 @@ export default function App() {
         newRawItems: reprocessed.newRawItems
       });
       setAnalyticsOrders(reprocessed.orders);
-      localStorage.setItem('s_waybill_analytics_orders', JSON.stringify(reprocessed.orders));
 
       if (reprocessed.newRawItems.length > 0) {
         const initialForm: { [key: string]: string } = {};
@@ -1627,7 +1568,6 @@ export default function App() {
 
     setOrderParseResult(updatedParseResult);
     setAnalyticsOrders(processed.orders);
-    localStorage.setItem('s_waybill_analytics_orders', JSON.stringify(processed.orders));
 
     // 미대치 원본 품목이 있다면 Step 1 신규 품목 대치 매핑 폼 활성화
     if (processed.newRawItems.length > 0) {
@@ -1640,7 +1580,7 @@ export default function App() {
   };
 
   // ----------------------------------------------------
-  // 4. 비밀번호 보호 엑셀 서버 기반 복호화 핸들러
+  // 4. 비밀번호 보호 엑셀 복호화 핸들러 (브라우저에서 처리)
   // ----------------------------------------------------
   const handleCancelPasswordPrompt = () => {
     if (passwordPrompt) {
@@ -1667,45 +1607,8 @@ export default function App() {
     setIsDecrypting(true);
 
     try {
-      const fileToBase64 = (f: File): Promise<string> => {
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.readAsDataURL(f);
-          reader.onload = () => {
-            const result = reader.result as string;
-            const base64 = result.split(',')[1];
-            resolve(base64);
-          };
-          reader.onerror = error => reject(error);
-        });
-      };
-
-      const base64Data = await fileToBase64(passwordPrompt.file);
-
-      const response = await fetch('/api/decrypt-excel', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          fileData: base64Data,
-          password: promptPassword
-        })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.message || "비밀번호가 일치하지 않습니다. 올바른 엑셀 비밀번호를 다시 입력해 주세요.");
-      }
-
-      const base64Decrypted = data.decryptedData;
-      const binaryString = window.atob(base64Decrypted);
-      const len = binaryString.length;
-      const bytes = new Uint8Array(len);
-      for (let i = 0; i < len; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
+      // 파일을 서버로 보내지 않고 이 브라우저에서 비밀번호를 해제합니다.
+      const bytes = await decryptExcelFile(passwordPrompt.file, promptPassword);
 
       const updatedCache = {
         ...decryptedFilesCache,
@@ -1983,31 +1886,17 @@ export default function App() {
 
   // --- 전체 설정 & 시각화 데이터 통합 백업 ---
   const handleExportBackup = () => {
-    // 시각화 데이터 추출 (analyticsOrders가 비어있다면 현재 작업 결과물에서 추출)
-    const activeOrders = analyticsOrders.length > 0 
-      ? analyticsOrders 
-      : (trackingResult?.outputOrders || orderParseResult?.orders || []);
-
-    if (analyticsOrders.length === 0 && activeOrders.length > 0) {
-      setAnalyticsOrders(activeOrders);
-      try {
-        localStorage.setItem('s_waybill_analytics_orders', JSON.stringify(activeOrders));
-      } catch (e) {
-        console.error("Failed to save analytics orders:", e);
-      }
-    }
-
+    // 백업 파일에는 설정만 담깁니다. 엑셀 주문 데이터와 API 키는 넣지 않습니다.
     const backupData = {
       platforms,
       couriers,
       productMappings,
-      analyticsOrders: activeOrders,
-      version: "1.2",
+      version: "1.3",
       exportDate: new Date().toISOString()
     };
     const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json;charset=utf-8;' });
-    triggerDownload(blob, `스마트운송장_전체통합백업_${new Date().toISOString().slice(0, 10)}.json`);
-    showNotification('success', `통합 백업 완료: 플랫폼, 품목 사전(${productMappings.length}개) 및 시각화 주문 데이터(${activeOrders.length}건)가 백업 파일에 보존되었습니다.`);
+    triggerDownload(blob, `스마트운송장_설정백업_${new Date().toISOString().slice(0, 10)}.json`);
+    showNotification('success', `설정 백업 완료: 플랫폼, 택배사, 품목 사전(${productMappings.length}개)이 백업 파일에 저장되었습니다.`);
   };
 
   const handleImportBackup = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -2021,14 +1910,13 @@ export default function App() {
         if (parsed.platforms || parsed.productMappings || parsed.couriers || parsed.analyticsOrders) {
           openConfirm(
             "통합 데이터 복원",
-            "기존의 플랫폼 설정, 택배사 설정, 품목 대치 리스트 및 시각화 리포트 데이터가 업로드한 파일의 내용으로 복원됩니다. 정말 계속할까요?",
+            "기존의 플랫폼 설정, 택배사 설정, 품목 대치 리스트가 업로드한 파일의 내용으로 복원됩니다. 정말 계속할까요?",
             () => {
               if (parsed.platforms) setPlatforms(parsed.platforms);
               if (parsed.couriers) setCouriers(parsed.couriers);
               if (parsed.productMappings) setProductMappings(parsed.productMappings);
               if (parsed.analyticsOrders && Array.isArray(parsed.analyticsOrders)) {
                 setAnalyticsOrders(parsed.analyticsOrders);
-                localStorage.setItem('s_waybill_analytics_orders', JSON.stringify(parsed.analyticsOrders));
               }
               showNotification('success', "백업 파일로부터 플랫폼, 품목 사전 및 시각화 리포트 데이터를 성공적으로 복원했습니다!");
             }
@@ -2050,37 +1938,10 @@ export default function App() {
       () => {
         setPlatforms(DEFAULT_PLATFORMS);
         setCouriers(DEFAULT_COURIERS);
+        setProductMappings(DEFAULT_PRODUCT_MAPPINGS);
+        setDefaultRawNames(DEFAULT_PRODUCT_MAPPINGS.map(m => m.rawName));
         setAnalyticsOrders([]);
-        localStorage.removeItem('s_waybill_platforms');
-        localStorage.removeItem('s_waybill_couriers');
-        localStorage.removeItem('s_waybill_mappings');
-        localStorage.removeItem('s_waybill_analytics_orders');
-
-        // 서버 초기화 API 호출
-        fetch('/api/app-data/reset', { method: 'POST' }).catch(() => {});
-        fetch('/api/mappings/reset', {
-          method: 'POST'
-        })
-        .then(res => res.json())
-        .then(data => {
-          if (data.success && Array.isArray(data.mappings)) {
-            setProductMappings(data.mappings);
-            if (Array.isArray(data.defaultRawNames)) {
-              setDefaultRawNames(data.defaultRawNames);
-            }
-            showNotification('success', "초기 기본 설정 및 품목 대치 사전 복원이 완료되었습니다.");
-          } else {
-            setProductMappings(DEFAULT_PRODUCT_MAPPINGS);
-            setDefaultRawNames(DEFAULT_PRODUCT_MAPPINGS.map(m => m.rawName));
-            showNotification('success', "플랫폼 설정이 초기화되었으나, 서버 복원 중 에러가 있어 로컬 캐시를 적용했습니다.");
-          }
-        })
-        .catch(err => {
-          console.error("서버 대치 규칙 초기화 실패:", err);
-          setProductMappings(DEFAULT_PRODUCT_MAPPINGS);
-          setDefaultRawNames(DEFAULT_PRODUCT_MAPPINGS.map(m => m.rawName));
-          showNotification('success', "플랫폼 설정이 초기화되었으나, 서버 연결 실패로 로컬 캐시를 적용했습니다.");
-        });
+        showNotification('success', "초기 기본 설정으로 복원되었습니다.");
       }
     );
   };
@@ -2490,9 +2351,11 @@ export default function App() {
                 )}
 
                 {/* 쇼핑몰 API 자동 연동 수집 센터 모듈 */}
-                <SmartApiConnector 
+                <SmartApiConnector
                   onOrdersSynced={handleOrdersApiSynced}
                   showNotification={showNotification}
+                  configs={apiConfigs}
+                  setConfigs={setApiConfigs}
                 />
                 
                 {/* 1단계 카드: 주문 데이터 가공 */}
@@ -3157,10 +3020,9 @@ export default function App() {
                 onClearOrders={() => {
                   openConfirm(
                     "시각화 데이터 전체 초기화",
-                    "누적 저장된 시각화 리포트 데이터(주문 내역)를 모두 비우시겠습니까?",
+                    "지금 화면의 시각화 리포트 데이터를 모두 비우시겠습니까?",
                     () => {
                       setAnalyticsOrders([]);
-                      localStorage.removeItem('s_waybill_analytics_orders');
                       showNotification('info', "시각화 데이터가 초기화되었습니다.");
                     }
                   );
@@ -3189,7 +3051,7 @@ export default function App() {
                         통합 백업 & 복원 (데이터 전체 관리)
                       </h2>
                       <p className="text-xs text-slate-500 mt-1">
-                        쇼핑몰 플랫폼 설정, 품목 대치 사전({productMappings.length}개 규칙), 그리고 <strong>시각화 분석 리포트 데이터</strong>({analyticsOrders.length}건)를 한꺼번에 백업하거나 복원합니다.
+                        쇼핑몰 플랫폼 설정, 택배사 설정, 품목 대치 사전({productMappings.length}개 규칙)을 파일로 백업하거나 복원합니다.
                       </p>
                     </div>
                     <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-xs font-bold shrink-0 shadow-2xs">
@@ -3199,7 +3061,7 @@ export default function App() {
                   </div>
 
                   <div className="mt-3 p-3 bg-indigo-50/60 border border-indigo-100 rounded-xl text-xs text-indigo-900 leading-relaxed">
-                    <strong>별도의 '내보내기' 없이 자동 저장됩니다:</strong> 엑셀 주문서 수집, 신규 품목 추가, 플랫폼 양식 변경 등 새 데이터가 들어올 때마다 서버의 <code>app_data.json</code> 파일로 자동으로 저장되므로 데이터 손실 걱정 없이 안전합니다.
+                    <strong>설정은 자동으로 저장됩니다:</strong> 플랫폼 양식, 택배사 양식, 품목 대치 사전, 쇼핑몰 연동 설정은 로그인한 계정에 저장되어 다음에 접속해도 그대로 있습니다. <strong>엑셀 주문 데이터는 저장되지 않으며</strong>, 새로고침하면 사라집니다. API 키는 암호화되어 저장되고, 다른 컴퓨터에서는 다시 입력해야 합니다.
                   </div>
                 </div>
 
@@ -3237,14 +3099,13 @@ export default function App() {
                                   if (json.platforms || json.productMappings || json.analyticsOrders) {
                                     openConfirm(
                                       "통합 데이터 복원",
-                                      "기존의 플랫폼 설정, 품목 대치 사전, 그리고 시각화 리포트 데이터가 업로드한 백업 내용으로 복원됩니다. 진행할까요?",
+                                      "기존의 플랫폼 설정과 품목 대치 사전이 업로드한 백업 내용으로 복원됩니다. 진행할까요?",
                                       () => {
                                         if (json.platforms) setPlatforms(json.platforms);
                                         if (json.productMappings) setProductMappings(json.productMappings);
                                         if (json.couriers) setCouriers(json.couriers);
                                         if (json.analyticsOrders && Array.isArray(json.analyticsOrders)) {
                                           setAnalyticsOrders(json.analyticsOrders);
-                                          localStorage.setItem('s_waybill_analytics_orders', JSON.stringify(json.analyticsOrders));
                                         }
                                         showNotification('success', "플랫폼, 품목 사전 및 시각화 데이터가 완벽 복원되었습니다.");
                                       }
@@ -3284,7 +3145,7 @@ export default function App() {
                         백업 / 사전 파일 내보내기
                       </h3>
                       <p className="text-xs text-slate-500 leading-relaxed">
-                        현재 설정된 <strong>플랫폼 양식, 품목 정제 사전, 시각화 분석 데이터</strong>를 백업 파일(.json)로 저장합니다.
+                        현재 설정된 <strong>플랫폼 양식, 택배사 양식, 품목 정제 사전</strong>을 백업 파일(.json)로 저장합니다. 주문 데이터는 포함되지 않습니다.
                       </p>
                     </div>
 

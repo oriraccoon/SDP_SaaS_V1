@@ -22,11 +22,22 @@ export const isFirebaseConfigured = Boolean(config.apiKey && config.authDomain &
 let app: FirebaseApp | null = null;
 let auth: Auth | null = null;
 
-function getFirebaseAuth(): Auth | null {
+export function getFirebaseApp(): FirebaseApp | null {
   if (!isFirebaseConfigured) return null;
   if (!app) app = initializeApp(config);
-  if (!auth) auth = getAuth(app);
+  return app;
+}
+
+function getFirebaseAuth(): Auth | null {
+  const firebaseApp = getFirebaseApp();
+  if (!firebaseApp) return null;
+  if (!auth) auth = getAuth(firebaseApp);
   return auth;
+}
+
+/** 로그인한 계정의 ID. 로그인 전이거나 Firebase 설정이 없으면 null. */
+export function getCurrentUid(): string | null {
+  return getFirebaseAuth()?.currentUser?.uid ?? null;
 }
 
 export function watchUser(callback: (user: User | null) => void): () => void {

@@ -35,7 +35,7 @@ export interface PlatformApiConfig {
   lastSyncCount?: number;
 }
 
-const DEFAULT_API_CONFIGS: PlatformApiConfig[] = [
+export const DEFAULT_API_CONFIGS: PlatformApiConfig[] = [
   {
     id: 'naver',
     name: '네이버 스마트스토어',
@@ -155,39 +155,34 @@ const DEFAULT_API_CONFIGS: PlatformApiConfig[] = [
   }
 ];
 
+/** 저장된 연동 설정을 기본 플랫폼 목록과 합칩니다. (기본 URL은 항상 최신 값 사용) */
+export function mergeApiConfigs(parsed: PlatformApiConfig[]): PlatformApiConfig[] {
+  // 기본 플랫폼 목록의 최신 URL(토스, 식봄, 올웨이즈 등) 반영 및 누락된 기본 플랫폼 추가
+  const updated = DEFAULT_API_CONFIGS.map(def => {
+    const found = parsed.find(p => p.id === def.id);
+    if (found) {
+      return {
+        ...found,
+        sellerUrl: def.sellerUrl,
+        guideUrl: def.guideUrl
+      };
+    }
+    return def;
+  });
+
+  // 사용자 정의 커스텀 플랫폼(id가 custom_으로 시작) 보존
+  const customPlatforms = parsed.filter(p => !DEFAULT_API_CONFIGS.some(def => def.id === p.id));
+  return [...updated, ...customPlatforms];
+}
+
 interface SmartApiConnectorProps {
   onOrdersSynced: (syncedOrders: ProcessedOrder[], summaryMsg: string) => void;
   showNotification?: (type: 'success' | 'error' | 'info', msg: string) => void;
+  configs: PlatformApiConfig[];
+  setConfigs: React.Dispatch<React.SetStateAction<PlatformApiConfig[]>>;
 }
 
-export default function SmartApiConnector({ onOrdersSynced, showNotification }: SmartApiConnectorProps) {
-  const [configs, setConfigs] = useState<PlatformApiConfig[]>(() => {
-    const saved = localStorage.getItem('s_waybill_api_configs');
-    if (saved) {
-      try {
-        const parsed: PlatformApiConfig[] = JSON.parse(saved);
-        // 기본 플랫폼 목록의 최신 URL(토스, 식봄, 올웨이즈 등) 반영 및 누락된 기본 플랫폼 추가
-        const updated = DEFAULT_API_CONFIGS.map(def => {
-          const found = parsed.find(p => p.id === def.id);
-          if (found) {
-            return {
-              ...found,
-              sellerUrl: def.sellerUrl,
-              guideUrl: def.guideUrl
-            };
-          }
-          return def;
-        });
-
-        // 사용자 정의 커스텀 플랫폼(id가 custom_으로 시작) 보존
-        const customPlatforms = parsed.filter(p => !DEFAULT_API_CONFIGS.some(def => def.id === p.id));
-        return [...updated, ...customPlatforms];
-      } catch (e) {
-        return DEFAULT_API_CONFIGS;
-      }
-    }
-    return DEFAULT_API_CONFIGS;
-  });
+export default function SmartApiConnector({ onOrdersSynced, showNotification, configs, setConfigs }: SmartApiConnectorProps) {
 
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [syncProgress, setSyncProgress] = useState<number>(0);
@@ -202,10 +197,6 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification }: 
   const [newClientId, setNewClientId] = useState<string>('');
   const [newClientSecret, setNewClientSecret] = useState<string>('');
 
-  // 로컬 스토리지 자동 저장
-  useEffect(() => {
-    localStorage.setItem('s_waybill_api_configs', JSON.stringify(configs));
-  }, [configs]);
 
   // ESC 키로 모달 닫기
   useEffect(() => {

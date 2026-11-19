@@ -36,6 +36,14 @@ const faqs = [
   },
 ];
 
+const toc = [
+  { id: 'intro', label: '소개' },
+  { id: 'steps', label: '동작 방식' },
+  { id: 'audience', label: '이런 분들께' },
+  { id: 'price', label: '가격' },
+  { id: 'faq', label: '자주 묻는 질문' },
+];
+
 export default function Landing() {
   return (
     <div className="min-h-screen bg-white text-[#191F28]">
@@ -46,9 +54,23 @@ export default function Landing() {
         </a>
       </header>
 
-      <main className="mx-auto max-w-5xl px-6">
+      <div className="mx-auto flex max-w-6xl gap-12 px-6">
+        {/* 왼쪽 목차 (화면이 좁으면 숨김) */}
+        <nav className="sticky top-0 hidden h-screen w-44 shrink-0 flex-col justify-center md:flex">
+          <ul className="space-y-4 text-sm">
+            {toc.map((t) => (
+              <li key={t.id}>
+                <a href={`#${t.id}`} className="text-[#6B7684] hover:text-[#1E5B4A]">
+                  {t.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+      <main className="min-w-0 flex-1">
         {/* 1. 한 문장 소개 */}
-        <section className="pb-24 pt-16 text-center">
+        <section id="intro" className="pb-24 pt-16 text-center">
           <h1 className="text-4xl font-bold leading-snug tracking-tight sm:text-5xl">
             엑셀 정리, 이제 한 번이면 끝나요
           </h1>
@@ -76,7 +98,7 @@ export default function Landing() {
         </section>
 
         {/* 2. 동작 방식 */}
-        <section className="pb-24">
+        <section id="steps" className="pb-24">
           <h2 className="text-2xl font-bold sm:text-3xl">이렇게 쓰면 돼요</h2>
           <div className="mt-8 grid gap-4 sm:grid-cols-2">
             {steps.map((s) => (
@@ -92,7 +114,7 @@ export default function Landing() {
         </section>
 
         {/* 3. 대상 */}
-        <section className="pb-24">
+        <section id="audience" className="pb-24">
           <h2 className="text-2xl font-bold sm:text-3xl">이런 분들께 맞아요</h2>
           <div className="mt-8 grid gap-4 sm:grid-cols-3">
             {audiences.map((a) => (
@@ -105,7 +127,7 @@ export default function Landing() {
         </section>
 
         {/* 4. 가격 */}
-        <section className="pb-24">
+        <section id="price" className="pb-24">
           <div className="rounded-3xl bg-[#1E5B4A] px-8 py-14 text-center text-white">
             <p className="text-base text-[#CFE3DA]">월 구독</p>
             <p className="mt-3 text-5xl font-bold">
@@ -121,7 +143,7 @@ export default function Landing() {
         </section>
 
         {/* 5. FAQ */}
-        <section className="pb-28">
+        <section id="faq" className="pb-28">
           <h2 className="text-2xl font-bold sm:text-3xl">자주 묻는 질문</h2>
           <div className="mt-8 divide-y divide-[#E5E8EB] border-y border-[#E5E8EB]">
             {faqs.map((f) => (
@@ -136,6 +158,7 @@ export default function Landing() {
           </div>
         </section>
       </main>
+      </div>
 
       <footer className="border-t border-[#E5E8EB] py-8 text-center text-xs text-[#8B95A1]">
         {APP_NAME}

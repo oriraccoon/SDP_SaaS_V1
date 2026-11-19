@@ -52,10 +52,19 @@ const faqs = [
   { q: '구독을 그만두면 어떻게 되나요?', a: '구독 기간이 끝나면 작업은 할 수 없지만, 설정은 그대로 남아 있어요. 다시 구독하면 이어서 쓸 수 있어요.' },
 ];
 
+// 목차 선 길이: 마우스 위치(i)에서 멀어질수록 완만하게 줄어든다
+function tocWidth(index: number, hover: number | null): number {
+  const base = 14;
+  if (hover === null) return base;
+  const d = index - hover;
+  return base + 30 * Math.exp(-(d * d) / 1.6);
+}
+
 export default function Landing() {
   const { scrollYProgress } = useScroll();
   const [faqs, setFaqs] = useState<Faq[]>(DEFAULT_FAQS);
   const [active, setActive] = useState<string>('intro');
+  const [hover, setHover] = useState<number | null>(null);
 
   useEffect(() => {
     loadFaqs().then(setFaqs);
@@ -116,25 +125,28 @@ export default function Landing() {
 
       <div className="flex w-full">
         {/* 왼쪽 목차 */}
-        <nav className="fixed left-0 top-0 z-10 hidden h-screen w-56 flex-col justify-center pl-10 lg:flex">
-          <ul className="space-y-5">
-            {toc.map((t) => {
+        <nav
+          className="fixed left-0 top-0 z-10 hidden h-screen w-56 flex-col justify-center pl-10 lg:flex"
+          onMouseLeave={() => setHover(null)}
+        >
+          <ul className="space-y-2">
+            {toc.map((t, i) => {
               const on = active === t.id;
+              const isHover = hover === i;
               return (
-                <li key={t.id}>
-                  <a href={`#${t.id}`} className="group flex items-center gap-4 py-1">
-                    {/* 짧은 선: 평소에는 짧은 선만, 현재 섹션은 길고 진한 초록 */}
+                <li key={t.id} onMouseEnter={() => setHover(i)}>
+                  <a href={`#${t.id}`} className="flex items-center gap-3 py-0.5">
+                    {/* 짧은 선: 마우스 위치에서 멀어질수록 완만하게 줄어드는 길이 */}
                     <span
-                      className={`h-[3px] rounded-full transition-all duration-300 ease-out ${
-                        on ? 'w-14 bg-[#1E5B4A]' : 'w-6 bg-[#C9CFD6] group-hover:w-12 group-hover:bg-[#1E5B4A]'
+                      style={{ width: `${tocWidth(i, hover)}px` }}
+                      className={`h-[2px] shrink-0 rounded-full transition-[width,background-color] duration-300 ease-out ${
+                        on ? 'bg-[#1E5B4A]' : 'bg-[#C9CFD6]'
                       }`}
                     />
-                    {/* 이름: 마우스를 올리면 크기가 커지며 뿅 나타남 */}
+                    {/* 이름: 마우스를 올린 항목만 나타남 */}
                     <span
-                      className={`origin-left whitespace-nowrap font-semibold transition-all duration-300 ease-out ${
-                        on
-                          ? 'translate-x-[-8px] scale-75 text-[#1E5B4A] opacity-0 group-hover:translate-x-0 group-hover:scale-100 group-hover:opacity-100 group-hover:text-base'
-                          : 'translate-x-[-8px] scale-75 text-[#1E5B4A] opacity-0 group-hover:translate-x-0 group-hover:scale-100 group-hover:opacity-100 group-hover:text-base'
+                      className={`whitespace-nowrap text-xs font-semibold text-[#1E5B4A] transition-all duration-200 ease-out ${
+                        isHover ? 'translate-x-0 opacity-100' : '-translate-x-1 opacity-0'
                       }`}
                     >
                       {t.label}

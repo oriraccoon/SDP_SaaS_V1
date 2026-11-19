@@ -1,8 +1,10 @@
 import { initializeApp, type FirebaseApp } from 'firebase/app';
 import {
+  createUserWithEmailAndPassword,
   getAuth,
   GoogleAuthProvider,
   onAuthStateChanged,
+  signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
   type Auth,
@@ -58,6 +60,39 @@ export async function signInWithGoogle(): Promise<void> {
   const a = getFirebaseAuth();
   if (!a) throw new Error('Firebase 설정이 없습니다.');
   await signInWithPopup(a, new GoogleAuthProvider());
+}
+
+/** 이메일과 비밀번호로 로그인. */
+export async function signInWithEmail(email: string, password: string): Promise<void> {
+  const a = getFirebaseAuth();
+  if (!a) throw new Error('Firebase 설정이 없습니다.');
+  await signInWithEmailAndPassword(a, email.trim(), password);
+}
+
+/** 이메일과 비밀번호로 회원가입. 가입과 동시에 로그인됩니다. */
+export async function signUpWithEmail(email: string, password: string): Promise<void> {
+  const a = getFirebaseAuth();
+  if (!a) throw new Error('Firebase 설정이 없습니다.');
+  await createUserWithEmailAndPassword(a, email.trim(), password);
+}
+
+/** Firebase 오류 코드를 사용자에게 보여 줄 문장으로 바꿉니다. */
+export function describeAuthError(e: unknown): string {
+  const code = (e as { code?: string })?.code ?? '';
+  const map: Record<string, string> = {
+    'auth/invalid-email': '이메일 형식이 맞지 않아요.',
+    'auth/missing-password': '비밀번호를 입력해 주세요.',
+    'auth/weak-password': '비밀번호는 6자 이상이어야 해요.',
+    'auth/email-already-in-use': '이미 가입된 이메일이에요. 로그인해 주세요.',
+    'auth/invalid-credential': '이메일 또는 비밀번호가 맞지 않아요.',
+    'auth/wrong-password': '이메일 또는 비밀번호가 맞지 않아요.',
+    'auth/user-not-found': '이메일 또는 비밀번호가 맞지 않아요.',
+    'auth/too-many-requests': '잠시 후 다시 시도해 주세요.',
+    'auth/network-request-failed': '네트워크 연결을 확인해 주세요.',
+    'auth/operation-not-allowed': '이메일 로그인이 아직 켜져 있지 않아요. 관리자에게 알려 주세요.',
+    'auth/popup-closed-by-user': '로그인 창이 닫혔어요.',
+  };
+  return map[code] ?? '로그인에 실패했습니다. 잠시 후 다시 시도해 주세요.';
 }
 
 export async function logout(): Promise<void> {

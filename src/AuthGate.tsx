@@ -1,6 +1,13 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import type { User } from 'firebase/auth';
-import { isFirebaseConfigured, signInWithGoogle, watchUser } from './firebaseAuth';
+import {
+  describeAuthError,
+  isFirebaseConfigured,
+  signInWithEmail,
+  signInWithGoogle,
+  signUpWithEmail,
+  watchUser,
+} from './firebaseAuth';
 
 /**
  * 로그인 게이트.
@@ -29,7 +36,13 @@ export default function AuthGate({ children }: { children: ReactNode }) {
       <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
         <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-8 shadow-md">
           <h1 className="text-lg font-semibold text-slate-900">Smart Delivery 로그인</h1>
-          <p className="mt-2 text-sm text-slate-600">계속하려면 Google 계정으로 로그인하세요.</p>
+          <p className="mt-2 text-sm text-slate-600">이메일로 가입하거나 Google 계정으로 로그인하세요.</p>
+          <EmailAuthForm />
+          <div className="my-5 flex items-center gap-3 text-xs text-slate-400">
+            <span className="h-px flex-1 bg-slate-200" />
+            또는
+            <span className="h-px flex-1 bg-slate-200" />
+          </div>
           <button
             onClick={async () => {
               setError(null);
@@ -39,7 +52,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
                 setError(e?.message || '로그인에 실패했습니다.');
               }
             }}
-            className="mt-6 w-full rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-slate-800"
+            className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-900 hover:bg-slate-50"
           >
             Google로 로그인
           </button>
@@ -50,6 +63,78 @@ export default function AuthGate({ children }: { children: ReactNode }) {
   }
 
   return <>{children}</>;
+}
+
+/** 이메일과 비밀번호로 로그인하거나 회원가입하는 폼. */
+function EmailAuthForm() {
+  const [mode, setMode] = useState<'login' | 'signup'>('login');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const isSignup = mode === 'signup';
+
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    setError(null);
+    if (isSignup && password.length < 6) {
+      setError('비밀번호는 6자 이상이어야 해요.');
+      return;
+    }
+    setBusy(true);
+    try {
+      if (isSignup) await signUpWithEmail(email, password);
+      else await signInWithEmail(email, password);
+    } catch (err) {
+      setError(describeAuthError(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <form onSubmit={submit} className="mt-6 space-y-3">
+      <input
+        type="email"
+        required
+        autoComplete="email"
+        placeholder="이메일"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-slate-900"
+      />
+      <input
+        type="password"
+        required
+        autoComplete={isSignup ? 'new-password' : 'current-password'}
+        placeholder={isSignup ? '비밀번호 (6자 이상)' : '비밀번호'}
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-slate-900"
+      />
+      <button
+        type="submit"
+        disabled={busy}
+        className="w-full rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-60"
+      >
+        {busy ? '처리 중...' : isSignup ? '회원가입' : '이메일로 로그인'}
+      </button>
+      {error && <p className="text-sm text-rose-600">{error}</p>}
+      <p className="pt-1 text-center text-sm text-slate-600">
+        {isSignup ? '이미 계정이 있나요?' : '처음이신가요?'}{' '}
+        <button
+          type="button"
+          onClick={() => {
+            setError(null);
+            setMode(isSignup ? 'login' : 'signup');
+          }}
+          className="font-semibold text-slate-900 underline"
+        >
+          {isSignup ? '로그인하기' : '회원가입하기'}
+        </button>
+      </p>
+    </form>
+  );
 }
 
 function Message({ title, desc }: { title: string; desc?: string }) {

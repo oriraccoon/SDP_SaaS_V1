@@ -64,10 +64,10 @@ import SmartApiConnector, { DEFAULT_API_CONFIGS, mergeApiConfigs, type PlatformA
 import { loadCloudSettings, saveCloudSettings } from './lib/cloudSettings';
 import { encryptApiConfigs, decryptApiConfigs } from './lib/secureKey';
 import { decryptExcelFile } from './utils/decryptExcel';
-import { getCurrentUid } from './firebaseAuth';
+import { getCurrentUid, logout } from './firebaseAuth';
 import { useAccount } from './AccountGate';
 import FeedbackModal from './components/FeedbackModal';
-import { MessageSquare } from 'lucide-react';
+import { LogOut, MessageSquare } from 'lucide-react';
 
 // 2단계 운송장 소스 엑셀 파일 택배사/양식 지능형 자동 감지 헬퍼
 function detectCourierForFile(fileName: string, rawRows?: any[][]): string {
@@ -2249,6 +2249,15 @@ export default function App() {
           >
             <MessageSquare className="w-3.5 h-3.5 shrink-0" />
             <span className="hidden sm:inline">문의 / 버그 신고</span>
+          </button>
+
+          <button
+            onClick={() => logout()}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 shrink-0"
+            title="로그아웃"
+          >
+            <LogOut className="w-3.5 h-3.5 shrink-0" />
+            <span className="hidden sm:inline">로그아웃</span>
           </button>
 
         </div>

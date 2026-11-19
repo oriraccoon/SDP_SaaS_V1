@@ -389,7 +389,7 @@ export default function ExcelValidationDashboard({
 
                 <button
                   onClick={() => setIsFullListModalOpen(false)}
-                  className="p-1 text-slate-400 hover:text-slate-600 rounded-lg transition-colors"
+                  className="p-1 text-slate-500 hover:text-slate-700 rounded-lg transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -492,7 +492,7 @@ export default function ExcelValidationDashboard({
                 </div>
                 <button
                   onClick={() => setSelectedDetailCheck(null)}
-                  className="p-1 text-slate-400 hover:text-slate-600 rounded-lg transition-colors"
+                  className="p-1 text-slate-500 hover:text-slate-700 rounded-lg transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>

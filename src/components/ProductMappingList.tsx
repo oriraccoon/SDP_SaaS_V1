@@ -554,7 +554,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
             )}
             <span>{toastMsg.text}</span>
           </div>
-          <button onClick={() => setToastMsg(null)} className="text-slate-400 hover:text-slate-600">✕</button>
+          <button onClick={() => setToastMsg(null)} className="text-slate-500 hover:text-slate-700">✕</button>
         </div>
       )}
 
@@ -596,7 +596,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
             <div className="flex justify-end pt-1">
               <button
                 onClick={() => setBulkImportConfirm(null)}
-                className="text-xs text-slate-400 hover:text-slate-600"
+                className="text-xs text-slate-500 hover:text-slate-700"
               >
                 취소
               </button>
@@ -682,7 +682,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
               </div>
               <button
                 onClick={() => setShowSmartMatchModal(false)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg"
+                className="p-1.5 text-slate-500 hover:text-slate-700 rounded-lg"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1039,7 +1039,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
                 className="w-full text-xs border-none outline-none bg-transparent text-slate-700"
               />
               {searchQuery && (
-                <button onClick={() => setSearchQuery('')} className="text-xs text-slate-400 hover:text-slate-600">
+                <button onClick={() => setSearchQuery('')} className="text-xs text-slate-500 hover:text-slate-700">
                   지우기
                 </button>
               )}

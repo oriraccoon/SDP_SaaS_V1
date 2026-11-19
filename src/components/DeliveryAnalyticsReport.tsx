@@ -1072,7 +1072,7 @@ export default function DeliveryAnalyticsReport({
             {/* 가로 스크롤 차트 영역 */}
             <div 
               ref={chartScrollRef}
-              className="w-full overflow-x-auto rounded-xl border border-slate-200 bg-slate-900/5 p-2 pt-3 shadow-inner scrollbar-thin"
+              className="w-full overflow-x-auto p-2 pt-3 scrollbar-thin"
             >
               <div 
                 className="h-64"

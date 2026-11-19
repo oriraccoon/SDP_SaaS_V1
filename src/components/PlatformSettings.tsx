@@ -1105,7 +1105,7 @@ export default function PlatformSettings({
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
                 }`}
               >
-                <ShoppingBag className="w-4 h-4 text-indigo-600 shrink-0" />
+                <ShoppingBag className="w-4 h-4 shrink-0" />
                 <span> 1단계 쇼핑몰 플랫폼 감지</span>
                 {parsedFiles.length > 0 && (
                   <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${
@@ -1420,7 +1420,7 @@ export default function PlatformSettings({
                   {keywordSearch && (
                     <button
                       onClick={() => setKeywordSearch('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600 font-bold cursor-pointer"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500 hover:text-slate-700 font-bold cursor-pointer"
                     >
                       ✕
                     </button>
@@ -1792,7 +1792,7 @@ export default function PlatformSettings({
                 {keywordSearch && (
                   <button
                     onClick={() => setKeywordSearch('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600 font-bold cursor-pointer"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500 hover:text-slate-700 font-bold cursor-pointer"
                   >
                     ✕
                   </button>
@@ -2208,7 +2208,7 @@ export default function PlatformSettings({
                         </h4>
                         <button
                           onClick={() => setEditingPlatform(null)}
-                          className="text-xs text-slate-400 hover:text-slate-600 font-bold cursor-pointer"
+                          className="text-xs text-slate-500 hover:text-slate-700 font-bold cursor-pointer"
                         >
                           닫기
                         </button>
@@ -2399,7 +2399,7 @@ export default function PlatformSettings({
                         </h4>
                         <button
                           onClick={() => setEditingCourier(null)}
-                          className="text-xs text-slate-400 hover:text-slate-600 font-bold cursor-pointer"
+                          className="text-xs text-slate-500 hover:text-slate-700 font-bold cursor-pointer"
                         >
                           닫기
                         </button>
@@ -2619,7 +2619,7 @@ export default function PlatformSettings({
               <h3 className="font-bold text-slate-800 text-sm">새 쇼핑몰 추가 프리셋</h3>
               <button 
                 onClick={() => setShowPresetModal(false)}
-                className="text-slate-400 hover:text-slate-600 font-bold cursor-pointer"
+                className="text-slate-500 hover:text-slate-700 font-bold cursor-pointer"
               >
                 ✕
               </button>
@@ -2651,7 +2651,7 @@ export default function PlatformSettings({
                 </button>
                 <button
                   onClick={() => setShowPresetModal(false)}
-                  className="text-slate-400 hover:text-slate-600 cursor-pointer"
+                  className="text-slate-500 hover:text-slate-700 cursor-pointer"
                 >
                   취소
                 </button>
@@ -2669,7 +2669,7 @@ export default function PlatformSettings({
               <h3 className="font-bold text-slate-800 text-sm">새 택배사 추가 프리셋</h3>
               <button 
                 onClick={() => setShowCourierPresetModal(false)}
-                className="text-slate-400 hover:text-slate-600 font-bold cursor-pointer"
+                className="text-slate-500 hover:text-slate-700 font-bold cursor-pointer"
               >
                 ✕
               </button>
@@ -2701,7 +2701,7 @@ export default function PlatformSettings({
                 </button>
                 <button
                   onClick={() => setShowCourierPresetModal(false)}
-                  className="text-slate-400 hover:text-slate-600 cursor-pointer"
+                  className="text-slate-500 hover:text-slate-700 cursor-pointer"
                 >
                   취소
                 </button>
@@ -2755,7 +2755,7 @@ export default function PlatformSettings({
                 <Plus className="w-4 h-4 text-indigo-600" />
                 신규 쇼핑몰 양식으로 내 설정에 저장
               </h3>
-              <button type="button" onClick={() => setShowSaveAsNewModal(false)} className="text-slate-400 hover:text-slate-600 font-bold cursor-pointer">✕</button>
+              <button type="button" onClick={() => setShowSaveAsNewModal(false)} className="text-slate-500 hover:text-slate-700 font-bold cursor-pointer">✕</button>
             </div>
 
             <p className="text-xs text-slate-600 leading-relaxed">
@@ -2828,7 +2828,7 @@ export default function PlatformSettings({
                 <Plus className="w-4 h-4 text-amber-600" />
                 신규 택배사 양식으로 내 설정에 저장
               </h3>
-              <button type="button" onClick={() => setShowSaveAsNewCourierModal(false)} className="text-slate-400 hover:text-slate-600 font-bold cursor-pointer">✕</button>
+              <button type="button" onClick={() => setShowSaveAsNewCourierModal(false)} className="text-slate-500 hover:text-slate-700 font-bold cursor-pointer">✕</button>
             </div>
 
             <p className="text-xs text-slate-600 leading-relaxed">

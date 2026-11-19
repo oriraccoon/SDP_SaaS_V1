@@ -487,16 +487,16 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification }: 
             disabled={isSyncing}
             className={`px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-extrabold rounded-xl text-xs shadow-lg transition cursor-pointer flex items-center gap-2 border border-amber-300/40 ${isSyncing ? 'opacity-70 cursor-not-allowed' : ''}`}
           >
-            <RefreshCw className={`w-4 h-4 text-slate-900 ${isSyncing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 text-white ${isSyncing ? 'animate-spin' : ''}`} />
             <span>{isSyncing ? 'API 동기화 진행중...' : ` 전체 플랫폼 주문 자동 수집 (${enabledCount}개 연동)`}</span>
           </button>
 
           {/* 더보기 토글 버튼 및 플랫폼 추가 버튼 */}
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="px-3 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold rounded-xl text-xs transition flex items-center gap-1.5 cursor-pointer shadow-md"
+            className="px-3 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-xl text-xs transition flex items-center gap-1.5 cursor-pointer shadow-md"
           >
-            <Plus className="w-4 h-4 text-slate-950 stroke-[3]" />
+            <Plus className="w-4 h-4 text-white stroke-[3]" />
             <span>새 플랫폼 추가</span>
           </button>
 
@@ -532,8 +532,8 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification }: 
       {/* 플랫폼 요약 칩 배너 (접혀있을 때) */}
       {!isExpanded && (
         <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
-          <span className="text-slate-400 font-medium shrink-0 flex items-center gap-1 text-[11px]">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+          <span className="text-slate-500 font-medium shrink-0 flex items-center gap-1 text-[11px]">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
             연동 상태:
           </span>
           {configs.map(plat => (
@@ -541,14 +541,14 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification }: 
               key={plat.id}
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] font-semibold transition ${
                 plat.isEnabled
-                  ? 'bg-emerald-950/60 border-emerald-700/60 text-emerald-200'
-                  : 'bg-slate-800/60 border-slate-700/60 text-slate-400 opacity-60'
+                  ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                  : 'bg-slate-100 border-slate-200 text-slate-500 opacity-70'
               }`}
             >
               <span className={`w-2 h-2 rounded-full ${plat.isEnabled ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`} />
               <span>{plat.name}</span>
               {plat.isEnabled && (
-                <span className="text-[10px] text-emerald-400 font-mono">({plat.lastSyncedAt || '준비'})</span>
+                <span className="text-[10px] text-emerald-700 font-mono">({plat.lastSyncedAt || '준비'})</span>
               )}
             </div>
           ))}

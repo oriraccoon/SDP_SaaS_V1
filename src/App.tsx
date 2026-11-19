@@ -2403,7 +2403,7 @@ export default function App() {
                     </div>
                     <button
                       onClick={() => setPasswordErrorFile(null)}
-                      className="text-xs text-slate-400 hover:text-slate-600 font-medium px-2 py-1 rounded hover:bg-slate-100"
+                      className="text-xs text-slate-500 hover:text-slate-700 font-medium px-2 py-1 rounded hover:bg-slate-100"
                     >
                       닫기
                     </button>
@@ -3204,10 +3204,10 @@ export default function App() {
                 </div>
 
                 {/* 메인 2분할: 가져오기 (Import) vs 내보내기 (Export) */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-0 md:divide-x md:divide-slate-200">
                   
                   {/* 1. 파일 가져오기 (복원/업로드) */}
-                  <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200/90 flex flex-col justify-between space-y-4">
+                  <div className="p-0 md:px-8 first:md:pl-0 last:md:pr-0 flex flex-col justify-between space-y-4">
                     <div className="space-y-2">
                       <span className="inline-block text-[10px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2.5 py-0.5 rounded-md">
                         RESTORE & IMPORT
@@ -3274,7 +3274,7 @@ export default function App() {
                   </div>
 
                   {/* 2. 파일 내보내기 (백업/다운로드) */}
-                  <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200/90 flex flex-col justify-between space-y-4">
+                  <div className="p-0 md:px-8 first:md:pl-0 last:md:pr-0 flex flex-col justify-between space-y-4">
                     <div className="space-y-2">
                       <span className="inline-block text-[10px] font-bold text-slate-600 bg-slate-200/70 px-2.5 py-0.5 rounded-md">
                         BACKUP & EXPORT

@@ -88,7 +88,7 @@ export default function AccountGate({ children }: { children: ReactNode }) {
   }
 
   if (error) {
-    return <Message title="확인 실패" desc={error} />;
+    return <FailureScreen message={error} />;
   }
 
   const status: AccountStatus = isAdmin ? 'active' : resolveStatus(account);
@@ -144,6 +144,35 @@ function ExpiredScreen({ status, account }: { status: AccountStatus; account: Ac
           className="mt-6 w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
         >
           로그아웃
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/** 회원 정보 확인에 실패했을 때: 로그아웃하고 처음 화면(랜딩)으로 보냅니다. */
+function FailureScreen({ message }: { message: string }) {
+  const [busy, setBusy] = useState(false);
+  async function goHome() {
+    setBusy(true);
+    try {
+      await logout();
+    } catch (err) {
+      console.warn("로그아웃 실패:", err);
+    }
+    window.location.href = "/";
+  }
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-white px-6 text-center">
+      <div className="w-full max-w-sm">
+        <p className="text-lg font-semibold text-[#191F28]">확인 실패</p>
+        <p className="mt-3 text-base leading-relaxed text-[#6B7684]">{message}</p>
+        <button
+          onClick={goHome}
+          disabled={busy}
+          className="mt-8 w-full rounded-xl bg-[#1E5B4A] px-4 py-4 text-base font-semibold text-white hover:bg-[#184A3C] disabled:opacity-60"
+        >
+          {busy ? "이동 중..." : "처음 화면으로 돌아가기"}
         </button>
       </div>
     </div>

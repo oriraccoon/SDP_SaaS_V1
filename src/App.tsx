@@ -1607,6 +1607,11 @@ export default function App() {
     setIsDecrypting(true);
 
     try {
+      // 옛 .xls(암호)는 브라우저에서 해제할 수 없습니다. 안내만 띄우고 중단합니다.
+      if (passwordPrompt.file.name.toLowerCase().endsWith('.xls')) {
+        throw new Error('암호가 걸린 .xls 파일은 지원하지 않습니다. 엑셀에서 .xlsx로 저장한 뒤 다시 올려 주세요.');
+      }
+
       // 파일을 서버로 보내지 않고 이 브라우저에서 비밀번호를 해제합니다.
       const bytes = await decryptExcelFile(passwordPrompt.file, promptPassword);
 

@@ -79,7 +79,7 @@ export default function Landing() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white text-[#191F28]">
+    <div className="min-h-screen bg-white text-[#191F28]" style={{ fontFamily: "'Inter', 'IBM Plex Sans KR', system-ui, sans-serif" }}>
       {/* 스크롤 진행 막대 */}
       <motion.div
         className="fixed inset-x-0 top-0 z-30 h-1 origin-left bg-[#1E5B4A]"
@@ -116,20 +116,29 @@ export default function Landing() {
 
       <div className="flex w-full">
         {/* 왼쪽 목차 */}
-        <nav className="fixed left-0 top-0 z-10 hidden h-screen w-56 flex-col justify-center border-r border-[#F2F4F6] bg-white pl-10 lg:flex">
-          <ul className="space-y-6 text-base">
+        <nav className="fixed left-0 top-0 z-10 hidden h-screen w-56 flex-col justify-center pl-10 lg:flex">
+          <ul className="space-y-5">
             {toc.map((t) => {
               const on = active === t.id;
               return (
                 <li key={t.id}>
-                  <a
-                    href={`#${t.id}`}
-                    className={`flex items-center gap-3 transition-colors duration-300 ${
-                      on ? 'font-bold text-[#1E5B4A]' : 'text-[#8B95A1] hover:text-[#1E5B4A]'
-                    }`}
-                  >
-                    <span className={`h-5 w-1 rounded-full transition-colors duration-300 ${on ? 'bg-[#1E5B4A]' : 'bg-transparent'}`} />
-                    {t.label}
+                  <a href={`#${t.id}`} className="group flex items-center gap-4 py-1">
+                    {/* 짧은 선: 현재 섹션만 길고 진한 초록 */}
+                    <span
+                      className={`h-[2px] rounded-full transition-all duration-300 ${
+                        on ? 'w-12 bg-[#1E5B4A]' : 'w-6 bg-[#D1D6DB] group-hover:w-10 group-hover:bg-[#8B95A1]'
+                      }`}
+                    />
+                    {/* 이름: 마우스를 올리면 뿅 나타남 */}
+                    <span
+                      className={`origin-left whitespace-nowrap text-sm font-medium transition-all duration-200 ease-out ${
+                        on
+                          ? 'translate-x-[-6px] scale-90 text-[#1E5B4A] opacity-0 group-hover:translate-x-0 group-hover:scale-100 group-hover:opacity-100'
+                          : 'translate-x-[-6px] scale-90 text-[#8B95A1] opacity-0 group-hover:translate-x-0 group-hover:scale-100 group-hover:opacity-100'
+                      }`}
+                    >
+                      {t.label}
+                    </span>
                   </a>
                 </li>
               );

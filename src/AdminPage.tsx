@@ -126,6 +126,7 @@ function MembersTab() {
 
   const activeAccounts = accounts.filter((a) => !a.deletedAt);
   const trashAccounts = accounts.filter((a) => a.deletedAt);
+  const [trashOpen, setTrashOpen] = useState(false);
 
   const run = async (uid: string, action: () => Promise<void>, doneText: string) => {
     setBusy(uid);
@@ -151,12 +152,22 @@ function MembersTab() {
 
       <InviteSection onChanged={reload} />
 
-      {trashAccounts.length > 0 && (
-        <section className="space-y-3 rounded-xl border border-slate-300 bg-slate-100 p-4">
-          <div>
-            <p className="text-sm font-bold text-slate-800">휴지통 ({trashAccounts.length}명)</p>
-            <p className="text-[11px] text-slate-500">휴지통에 들어간 지 {TRASH_RETENTION_DAYS}일이 지나면 자동으로 삭제됩니다.</p>
-          </div>
+      {/* 휴지통 배너: 누르면 휴지통 회원 목록이 펼쳐집니다 */}
+      <button
+        type="button"
+        onClick={() => setTrashOpen((v) => !v)}
+        className="flex w-full items-center justify-between rounded-xl border border-slate-300 bg-slate-100 px-4 py-3 text-left hover:bg-slate-200"
+      >
+        <span>
+          <span className="block text-sm font-bold text-slate-800">휴지통 ({trashAccounts.length}명)</span>
+          <span className="block text-[11px] text-slate-500">휴지통에 들어간 지 {TRASH_RETENTION_DAYS}일이 지나면 자동으로 삭제됩니다.</span>
+        </span>
+        <span className="text-xs font-semibold text-slate-600">{trashOpen ? '접기 ▲' : '펼치기 ▼'}</span>
+      </button>
+
+      {trashOpen && (
+        <section className="space-y-3 rounded-xl border border-slate-200 bg-white p-4">
+          {trashAccounts.length === 0 && <p className="text-sm text-slate-500">휴지통이 비어 있어요.</p>}
           {trashAccounts.map((acc) => {
             const left = Math.max(0, TRASH_RETENTION_DAYS - Math.floor((Date.now() - new Date(acc.deletedAt as string).getTime()) / (24 * 60 * 60 * 1000)));
             return (
@@ -265,7 +276,7 @@ function MembersTab() {
                 disabled={busy === acc.uid}
                 onClick={() => {
                   if (!window.confirm(`${acc.email || '이 회원'}을 휴지통으로 옮깁니다. ${TRASH_RETENTION_DAYS}일 뒤 자동으로 삭제되고, 그 전에는 복구할 수 있습니다. 계속할까요?`)) return;
-                  run(acc.uid, () => updateAccount(acc.uid, { deletedAt: new Date().toISOString(), blocked: true }), '휴지통으로 옮겼습니다.');
+                  run(acc.uid, () => updateAccount(acc.uid, { deletedAt: new Date().toISOString() }), '휴지통으로 옮겼습니다.');
                 }}
                 className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
               >

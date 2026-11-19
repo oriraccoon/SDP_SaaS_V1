@@ -124,7 +124,9 @@ export async function isAdminUser(uid: string): Promise<boolean> {
 
 export function resolveStatus(account: Account | null): AccountStatus {
   if (!account) return 'new';
-  if (account.blocked || account.deletedAt) return 'blocked';
+  // 휴지통에 든 회원은 구독권이 없는 것으로 봅니다 (이용 중지와 구분)
+  if (account.deletedAt) return 'new';
+  if (account.blocked) return 'blocked';
   if (!account.expiresAt) return typeof account.uploadLimit === 'number' ? 'active' : 'new';
   return new Date(account.expiresAt).getTime() > Date.now() ? 'active' : 'expired';
 }

@@ -76,23 +76,27 @@ export async function touchAccount(user: User): Promise<void> {
   const email = user.email ?? '';
   const now = new Date().toISOString();
 
+  // 관리자가 이 이메일을 초대해 두었다면, 처음 가입이든 이미 가입한 계정이든 초대 설정을 적용합니다.
   if (email) {
-    const existing = await getDoc(ref);
-    if (!existing.exists()) {
-      const inviteRef = doc(db, 'invites', email.toLowerCase());
-      const invite = await getDoc(inviteRef);
-      if (invite.exists()) {
-        const data = invite.data() as Invite;
-        await setDoc(ref, {
-          email,
-          lastLoginAt: now,
-          expiresAt: data.expiresAt ?? null,
-          blocked: data.blocked ?? false,
-          features: data.features ?? {},
-        });
-        await deleteDoc(inviteRef);
-        return;
+    const inviteRef = doc(db, 'invites', email.toLowerCase());
+    const invite = await getDoc(inviteRef);
+    if (invite.exists()) {
+      const data = invite.data() as Invite;
+      const applied = {
+        email,
+        lastLoginAt: now,
+        expiresAt: data.expiresAt ?? null,
+        blocked: data.blocked ?? false,
+        features: data.features ?? {},
+      };
+      const existing = await getDoc(ref);
+      if (existing.exists()) {
+        await updateDoc(ref, applied);
+      } else {
+        await setDoc(ref, applied);
       }
+      await deleteDoc(inviteRef);
+      return;
     }
   }
 

@@ -55,9 +55,27 @@ const faqs = [
 export default function Landing() {
   const { scrollYProgress } = useScroll();
   const [faqs, setFaqs] = useState<Faq[]>(DEFAULT_FAQS);
+  const [active, setActive] = useState<string>('intro');
 
   useEffect(() => {
     loadFaqs().then(setFaqs);
+  }, []);
+
+  // 화면 가운데 근처에 걸린 섹션을 현재 섹션으로 본다
+  useEffect(() => {
+    const els = toc
+      .map((t) => document.getElementById(t.id))
+      .filter((el): el is HTMLElement => el !== null);
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) setActive(e.target.id);
+        });
+      },
+      { rootMargin: '-45% 0px -45% 0px' },
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
   }, []);
 
   return (
@@ -68,28 +86,39 @@ export default function Landing() {
         style={{ scaleX: scrollYProgress }}
       />
 
-      <header className="fixed inset-x-0 top-1 z-20 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
+      <header className="fixed inset-x-0 top-1 z-20 border-b border-[#F2F4F6] bg-white/90 backdrop-blur">
+        <div className="flex w-full items-center justify-between px-6 py-5 sm:px-10">
           <span className="text-lg font-bold text-[#1E5B4A]">{APP_NAME}</span>
           <a href="/app" className="text-sm font-semibold text-[#1E5B4A] hover:underline">로그인</a>
         </div>
       </header>
 
-      <div className="mx-auto flex max-w-6xl">
+      <div className="flex w-full">
         {/* 왼쪽 목차 */}
-        <nav className="sticky top-0 hidden h-screen w-40 shrink-0 flex-col justify-center lg:flex">
-          <ul className="space-y-5 pl-6 text-sm">
-            {toc.map((t) => (
-              <li key={t.id}>
-                <a href={`#${t.id}`} className="text-[#8B95A1] hover:text-[#1E5B4A]">{t.label}</a>
-              </li>
-            ))}
+        <nav className="fixed left-0 top-0 z-10 hidden h-screen w-56 flex-col justify-center border-r border-[#F2F4F6] bg-white pl-10 lg:flex">
+          <ul className="space-y-6 text-base">
+            {toc.map((t) => {
+              const on = active === t.id;
+              return (
+                <li key={t.id}>
+                  <a
+                    href={`#${t.id}`}
+                    className={`flex items-center gap-3 transition-colors duration-300 ${
+                      on ? 'font-bold text-[#1E5B4A]' : 'text-[#8B95A1] hover:text-[#1E5B4A]'
+                    }`}
+                  >
+                    <span className={`h-5 w-1 rounded-full transition-colors duration-300 ${on ? 'bg-[#1E5B4A]' : 'bg-transparent'}`} />
+                    {t.label}
+                  </a>
+                </li>
+              );
+            })}
           </ul>
         </nav>
 
-        <main className="min-w-0 flex-1 px-6">
+        <main className="min-w-0 flex-1 px-6 sm:px-12 lg:ml-56 lg:px-20 xl:px-28">
           {/* 1. 소개 */}
-          <section id="intro" className="flex min-h-screen flex-col justify-center pt-24">
+          <section id="intro" className="scroll-mt-24 flex min-h-screen flex-col justify-center pt-24">
             <motion.p initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-base font-semibold text-[#1E5B4A]">
               주문 정리는 {APP_NAME}에 맡기세요
             </motion.p>
@@ -112,7 +141,7 @@ export default function Landing() {
           </section>
 
           {/* 2. 불편함 */}
-          <motion.section id="pain" {...reveal} className="flex min-h-screen flex-col justify-center border-t border-[#F2F4F6] py-24">
+          <motion.section id="pain" {...reveal} className="scroll-mt-24 flex min-h-screen flex-col justify-center border-t border-[#F2F4F6] py-24">
             <p className="text-2xl font-bold leading-snug sm:text-4xl">
               수수료 떼고, 광고비 나가고,<br />남는 게 줄어드는 게 지치시죠?
             </p>
@@ -122,7 +151,7 @@ export default function Landing() {
           </motion.section>
 
           {/* 3. 사용 순서 */}
-          <motion.section id="steps" {...reveal} className="flex min-h-screen flex-col justify-center border-t border-[#F2F4F6] py-24">
+          <motion.section id="steps" {...reveal} className="scroll-mt-24 flex min-h-screen flex-col justify-center border-t border-[#F2F4F6] py-24">
             <p className="text-sm font-semibold text-[#1E5B4A]">사용 순서</p>
             <h2 className="mt-4 text-4xl font-bold leading-tight sm:text-5xl">딱 네 단계면 돼요</h2>
             <motion.div {...listContainer} className="mt-14 divide-y divide-[#F2F4F6]">
@@ -139,7 +168,7 @@ export default function Landing() {
           </motion.section>
 
           {/* 4. 대상 */}
-          <motion.section id="audience" {...reveal} className="flex min-h-screen flex-col justify-center border-t border-[#F2F4F6] py-24">
+          <motion.section id="audience" {...reveal} className="scroll-mt-24 flex min-h-screen flex-col justify-center border-t border-[#F2F4F6] py-24">
             <p className="text-sm font-semibold text-[#1E5B4A]">이런 분들께</p>
             <h2 className="mt-4 text-4xl font-bold leading-tight sm:text-5xl">이런 분들께 맞아요</h2>
             <motion.ul {...listContainer} className="mt-14 space-y-10">
@@ -153,7 +182,7 @@ export default function Landing() {
           </motion.section>
 
           {/* 5. 가격 */}
-          <motion.section id="price" {...reveal} className="flex min-h-screen flex-col items-start justify-center border-t border-[#F2F4F6] py-24">
+          <motion.section id="price" {...reveal} className="scroll-mt-24 flex min-h-screen flex-col items-start justify-center border-t border-[#F2F4F6] py-24">
             <p className="text-lg text-[#6B7684]">월 구독</p>
             <p className="mt-4 text-6xl font-bold text-[#1E5B4A] sm:text-8xl">
               {MONTHLY_PRICE_KRW.toLocaleString('ko-KR')}원
@@ -164,7 +193,7 @@ export default function Landing() {
           </motion.section>
 
           {/* 6. 질문 */}
-          <motion.section id="faq" {...reveal} className="py-24">
+          <motion.section id="faq" {...reveal} className="scroll-mt-24 py-24">
             <h2 className="text-4xl font-bold leading-tight sm:text-5xl">자주 묻는 질문</h2>
             <div className="mt-12 divide-y divide-[#F2F4F6] border-y border-[#F2F4F6]">
               {faqs.map((f) => (

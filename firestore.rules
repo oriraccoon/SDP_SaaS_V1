@@ -73,6 +73,12 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // 랜딩 페이지 질문(FAQ): 로그인 전에도 누구나 읽을 수 있고, 관리자만 고칩니다.
+    match /config/faq {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     // 공지 배너: 로그인한 회원은 읽고, 관리자만 씁니다.
     match /config/notice {
       allow read: if isSignedIn();

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { loadFaqs, saveFaqs, type Faq } from './lib/siteContent';
 import { getCurrentUser, isFirebaseConfigured } from './firebaseAuth';
 import {
   createInvite,
@@ -23,7 +24,7 @@ import {
   type Invite,
 } from './lib/account';
 
-type Tab = 'members' | 'reports' | 'notice';
+type Tab = 'members' | 'reports' | 'notice' | 'faq';
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -64,6 +65,7 @@ export default function AdminPage() {
             ['members', '회원 관리'],
             ['reports', '신고/문의 내용'],
             ['notice', '공지 배너'],
+            ['faq', '랜딩 질문'],
           ] as [Tab, string][]
         ).map(([key, label]) => (
           <button
@@ -82,6 +84,7 @@ export default function AdminPage() {
         {tab === 'members' && <MembersTab />}
         {tab === 'reports' && <ReportsTab />}
         {tab === 'notice' && <NoticeTab />}
+        {tab === 'faq' && <FaqTab />}
       </main>
     </div>
   );
@@ -523,6 +526,96 @@ function InviteSection({ onChanged }: { onChanged: () => void }) {
           ))}
         </div>
       )}
+    </section>
+  );
+}
+
+function FaqTab() {
+  const [items, setItems] = useState<Faq[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    loadFaqs().then((list) => {
+      setItems(list);
+      setLoaded(true);
+    });
+  }, []);
+
+  const update = (i: number, patch: Partial<Faq>) =>
+    setItems((prev) => prev.map((x, idx) => (idx === i ? { ...x, ...patch } : x)));
+  const move = (i: number, dir: -1 | 1) =>
+    setItems((prev) => {
+      const next = [...prev];
+      const j = i + dir;
+      if (j < 0 || j >= next.length) return prev;
+      [next[i], next[j]] = [next[j], next[i]];
+      return next;
+    });
+  const remove = (i: number) => setItems((prev) => prev.filter((_, idx) => idx !== i));
+  const add = () => setItems((prev) => [...prev, { q: '', a: '' }]);
+
+  const save = async () => {
+    const clean = items.map((x) => ({ q: x.q.trim(), a: x.a.trim() })).filter((x) => x.q && x.a);
+    if (clean.length === 0) return setMessage('질문과 답변을 한 개 이상 남겨 주세요.');
+    setSaving(true);
+    setMessage(null);
+    try {
+      await saveFaqs(clean);
+      setItems(clean);
+      setMessage('저장했습니다. 랜딩 페이지에 바로 반영됩니다.');
+    } catch (e: any) {
+      setMessage(`저장 실패: ${e?.message || e}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (!loaded) return <p className="text-sm text-slate-500">불러오는 중...</p>;
+
+  return (
+    <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div>
+        <p className="text-sm font-bold text-slate-900">랜딩 페이지 질문 (FAQ)</p>
+        <p className="text-[11px] text-slate-500">랜딩 페이지의 "자주 묻는 질문" 목록입니다. 순서대로 보입니다.</p>
+      </div>
+
+      {items.map((item, i) => (
+        <div key={i} className="space-y-2 rounded-lg border border-slate-200 p-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-500">질문 {i + 1}</span>
+            <div className="flex gap-2 text-xs">
+              <button onClick={() => move(i, -1)} disabled={i === 0} className="font-semibold text-slate-600 disabled:opacity-30">위로</button>
+              <button onClick={() => move(i, 1)} disabled={i === items.length - 1} className="font-semibold text-slate-600 disabled:opacity-30">아래로</button>
+              <button onClick={() => remove(i)} className="font-semibold text-rose-600">삭제</button>
+            </div>
+          </div>
+          <input
+            value={item.q}
+            onChange={(e) => update(i, { q: e.target.value })}
+            placeholder="질문"
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+          />
+          <textarea
+            value={item.a}
+            onChange={(e) => update(i, { a: e.target.value })}
+            rows={3}
+            placeholder="답변"
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+          />
+        </div>
+      ))}
+
+      <div className="flex flex-wrap items-center gap-3">
+        <button onClick={add} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50">
+          질문 추가
+        </button>
+        <button onClick={save} disabled={saving} className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-700 disabled:opacity-50">
+          {saving ? '저장 중...' : '저장'}
+        </button>
+        {message && <span className="text-xs text-slate-600">{message}</span>}
+      </div>
     </section>
   );
 }

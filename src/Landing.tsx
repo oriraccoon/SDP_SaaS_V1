@@ -1,4 +1,26 @@
+import { useEffect, useState } from 'react';
+import { motion, useScroll } from 'motion/react';
 import { APP_NAME, MONTHLY_PRICE_KRW } from './config/brand';
+import { DEFAULT_FAQS, loadFaqs, type Faq } from './lib/siteContent';
+
+// 섹션이 화면에 들어올 때 아래에서 올라오며 나타나는 공통 설정
+const reveal = {
+  initial: { opacity: 0, y: 48 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, amount: 0.25 },
+  transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] as const },
+};
+
+const listContainer = {
+  initial: {},
+  whileInView: { transition: { staggerChildren: 0.14 } },
+  viewport: { once: true, amount: 0.3 },
+};
+
+const listItem = {
+  initial: { opacity: 0, x: -24 },
+  whileInView: { opacity: 1, x: 0, transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] as const } },
+};
 
 const toc = [
   { id: 'intro', label: '소개' },
@@ -31,9 +53,22 @@ const faqs = [
 ];
 
 export default function Landing() {
+  const { scrollYProgress } = useScroll();
+  const [faqs, setFaqs] = useState<Faq[]>(DEFAULT_FAQS);
+
+  useEffect(() => {
+    loadFaqs().then(setFaqs);
+  }, []);
+
   return (
     <div className="min-h-screen bg-white text-[#191F28]">
-      <header className="fixed inset-x-0 top-0 z-20 bg-white/90 backdrop-blur">
+      {/* 스크롤 진행 막대 */}
+      <motion.div
+        className="fixed inset-x-0 top-0 z-30 h-1 origin-left bg-[#1E5B4A]"
+        style={{ scaleX: scrollYProgress }}
+      />
+
+      <header className="fixed inset-x-0 top-1 z-20 bg-white/90 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
           <span className="text-lg font-bold text-[#1E5B4A]">{APP_NAME}</span>
           <a href="/app" className="text-sm font-semibold text-[#1E5B4A] hover:underline">로그인</a>
@@ -55,63 +90,70 @@ export default function Landing() {
         <main className="min-w-0 flex-1 px-6">
           {/* 1. 소개 */}
           <section id="intro" className="flex min-h-screen flex-col justify-center pt-24">
-            <p className="text-base font-semibold text-[#1E5B4A]">주문 정리는 {APP_NAME}에 맡기세요</p>
-            <h1 className="mt-6 text-5xl font-bold leading-tight tracking-tight sm:text-7xl">
+            <motion.p initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-base font-semibold text-[#1E5B4A]">
+              주문 정리는 {APP_NAME}에 맡기세요
+            </motion.p>
+            <motion.h1
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+              className="mt-6 text-5xl font-bold leading-tight tracking-tight sm:text-7xl"
+            >
               엑셀 정리,<br />이제 한 번이면 끝나요
-            </h1>
-            <p className="mt-8 max-w-xl text-lg leading-relaxed text-[#6B7684]">
+            </motion.h1>
+            <motion.p initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.4 }} className="mt-8 max-w-xl text-lg leading-relaxed text-[#6B7684]">
               주문 엑셀을 올리면 송장 맞추기부터 쇼핑몰 업로드 파일까지 순서대로 만들어 드려요.
-            </p>
-            <div className="mt-12">
+            </motion.p>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.7 }} className="mt-12">
               <a href="/app" className="inline-block rounded-2xl bg-[#1E5B4A] px-10 py-4 text-lg font-bold text-white hover:bg-[#174a3c]">
                 시작하기
               </a>
-            </div>
+            </motion.div>
           </section>
 
           {/* 2. 불편함 */}
-          <section id="pain" className="flex min-h-screen flex-col justify-center border-t border-[#F2F4F6] py-24">
+          <motion.section id="pain" {...reveal} className="flex min-h-screen flex-col justify-center border-t border-[#F2F4F6] py-24">
             <p className="text-2xl font-bold leading-snug sm:text-4xl">
               수수료 떼고, 광고비 나가고,<br />남는 게 줄어드는 게 지치시죠?
             </p>
             <p className="mt-8 max-w-xl text-lg leading-relaxed text-[#6B7684]">
               그래서 {APP_NAME}은 부담 없는 가격에, 셀러님께 꼭 필요한 기능만 드리려고 해요.
             </p>
-          </section>
+          </motion.section>
 
           {/* 3. 사용 순서 */}
-          <section id="steps" className="flex min-h-screen flex-col justify-center border-t border-[#F2F4F6] py-24">
+          <motion.section id="steps" {...reveal} className="flex min-h-screen flex-col justify-center border-t border-[#F2F4F6] py-24">
             <p className="text-sm font-semibold text-[#1E5B4A]">사용 순서</p>
             <h2 className="mt-4 text-4xl font-bold leading-tight sm:text-5xl">딱 네 단계면 돼요</h2>
-            <div className="mt-14 divide-y divide-[#F2F4F6]">
+            <motion.div {...listContainer} className="mt-14 divide-y divide-[#F2F4F6]">
               {steps.map((s) => (
-                <div key={s.no} className="flex gap-8 py-8">
+                <motion.div key={s.no} variants={listItem} className="flex gap-8 py-8">
                   <span className="w-16 shrink-0 text-3xl font-bold text-[#1E5B4A]">{s.no}</span>
                   <div>
                     <h3 className="text-2xl font-bold">{s.title}</h3>
                     <p className="mt-2 text-base leading-relaxed text-[#6B7684]">{s.desc}</p>
                   </div>
-                </div>
+                </motion.div>
               ))}
-            </div>
-          </section>
+            </motion.div>
+          </motion.section>
 
           {/* 4. 대상 */}
-          <section id="audience" className="flex min-h-screen flex-col justify-center border-t border-[#F2F4F6] py-24">
+          <motion.section id="audience" {...reveal} className="flex min-h-screen flex-col justify-center border-t border-[#F2F4F6] py-24">
             <p className="text-sm font-semibold text-[#1E5B4A]">이런 분들께</p>
             <h2 className="mt-4 text-4xl font-bold leading-tight sm:text-5xl">이런 분들께 맞아요</h2>
-            <ul className="mt-14 space-y-10">
+            <motion.ul {...listContainer} className="mt-14 space-y-10">
               {audiences.map((a) => (
-                <li key={a.title}>
+                <motion.li key={a.title} variants={listItem}>
                   <p className="text-2xl font-bold">{a.title}</p>
                   <p className="mt-2 text-lg text-[#6B7684]">{a.desc}</p>
-                </li>
+                </motion.li>
               ))}
-            </ul>
-          </section>
+            </motion.ul>
+          </motion.section>
 
           {/* 5. 가격 */}
-          <section id="price" className="flex min-h-screen flex-col items-start justify-center border-t border-[#F2F4F6] py-24">
+          <motion.section id="price" {...reveal} className="flex min-h-screen flex-col items-start justify-center border-t border-[#F2F4F6] py-24">
             <p className="text-lg text-[#6B7684]">월 구독</p>
             <p className="mt-4 text-6xl font-bold text-[#1E5B4A] sm:text-8xl">
               {MONTHLY_PRICE_KRW.toLocaleString('ko-KR')}원
@@ -119,10 +161,10 @@ export default function Landing() {
             <a href="/app" className="mt-12 inline-block rounded-2xl bg-[#1E5B4A] px-10 py-4 text-lg font-bold text-white hover:bg-[#174a3c]">
               시작하기
             </a>
-          </section>
+          </motion.section>
 
           {/* 6. 질문 */}
-          <section id="faq" className="py-24">
+          <motion.section id="faq" {...reveal} className="py-24">
             <h2 className="text-4xl font-bold leading-tight sm:text-5xl">자주 묻는 질문</h2>
             <div className="mt-12 divide-y divide-[#F2F4F6] border-y border-[#F2F4F6]">
               {faqs.map((f) => (
@@ -135,7 +177,7 @@ export default function Landing() {
                 </details>
               ))}
             </div>
-          </section>
+          </motion.section>
 
           <footer className="border-t border-[#F2F4F6] py-10 text-center text-xs text-[#8B95A1]">{APP_NAME}</footer>
         </main>

@@ -1079,7 +1079,7 @@ export default function PlatformSettings({
                 title="쇼핑몰 양식 및 택배사 컬럼 상세 관리"
               >
                 <Settings className="w-4 h-4 text-amber-700 animate-spin-slow" />
-                <span>쇼핑몰/택배사 상세 설정 ()</span>
+                <span>쇼핑몰/택배사 상세 설정</span>
               </button>
 
               {parsedFiles.length > 0 && onNavigateToProcessTab && (

@@ -29,7 +29,7 @@ export default function FeedbackModal({ onClose, onSent, onError }: FeedbackModa
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 p-4" onClick={onClose}>
       <div
         className="w-full max-w-md rounded-2xl bg-white p-5 shadow-xl space-y-4"
         onClick={(e) => e.stopPropagation()}

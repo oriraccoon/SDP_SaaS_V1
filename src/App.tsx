@@ -951,26 +951,29 @@ export default function App() {
   // 발견된 신규 품목 실시간 즉시 매핑 처리
   const handleAddNewItemMappings = () => {
     const newMappingsToAdd: ProductMapping[] = [];
+    let skippedCount = 0;
     Object.entries(newItemsMappingForm).forEach(([raw, mapped]) => {
-      const mappedStr = String(mapped);
-      // 대치 단어를 입력하지 않고 비워둔 경우에도 버튼을 누르면 원본명(raw) 그대로 사전에 등록
-      const finalMapped = mappedStr.trim() ? mappedStr.trim() : raw.trim();
+      // 짧은 이름을 적은 상품만 품목사전에 넣습니다. 비워 둔 상품은 건너뛰고 카드에 그대로 남깁니다.
+      const finalMapped = String(mapped).trim();
       if (finalMapped) {
         newMappingsToAdd.push({
           rawName: raw,
           mappedName: finalMapped
         });
+      } else {
+        skippedCount++;
       }
     });
 
     if (newMappingsToAdd.length === 0) {
-      showNotification('info', "등록할 신규 품목이 없습니다.");
+      showNotification('info', "짧은 이름을 하나 이상 적어 주세요. '추천 이름으로 모두 채우기'를 눌러도 돼요.");
       return;
     }
 
     const updatedMappings = [...newMappingsToAdd, ...productMappings];
     setProductMappings(updatedMappings);
-    showNotification('success', `새 상품 ${newMappingsToAdd.length}개를 품목사전에 넣었어요.`);
+    const savedNames = newMappingsToAdd.slice(0, 2).map(m => `'${m.mappedName}'`).join(', ') + (newMappingsToAdd.length > 2 ? ' 등' : '');
+    showNotification('success', `${savedNames} ${newMappingsToAdd.length}개를 품목사전에 넣었어요.${skippedCount > 0 ? ` 비워 둔 ${skippedCount}개는 넣지 않았어요.` : ''}`);
 
     // 엑셀 수집 파일 및 API 수집 주문 포함 전체 재대치 실행
     if (orderParseResult && orderParseResult.orders && orderParseResult.orders.length > 0) {

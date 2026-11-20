@@ -18,6 +18,7 @@ import {
   RefreshCw,
   Sparkles,
   Layers,
+  Plug,
   Truck,
   Eye,
   FileCode,
@@ -212,6 +213,12 @@ function migratePlatforms(parsed: PlatformConfig[]): PlatformConfig[] {
 
 export default function App() {
   const { features, account } = useAccount();
+  // 왼쪽 메뉴 하단에 보여 줄 구독 상태
+  const planLabel = account?.expiresAt
+    ? { name: '월 구독', detail: `만료 ${new Date(account.expiresAt).toLocaleDateString('ko-KR')}` }
+    : typeof account?.uploadLimit === 'number'
+      ? { name: '무료 플랜', detail: `월 ${account.uploadLimit}회 업로드` }
+      : { name: '구독 없음', detail: '' };
   // ----------------------------------------------------
   // 1. 상태 선언 및 로컬스토리지 연동
   // ----------------------------------------------------
@@ -2186,8 +2193,7 @@ export default function App() {
             <div>
               <div className="flex items-center gap-2">
                 
-                <span className="text-[10px] bg-slate-100 text-slate-600 border border-slate-200 font-medium px-1.5 py-0.5 rounded-md shrink-0">v1.0.1 PRO</span>
-              </div>
+                              </div>
               <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 hidden xs:block">주문서와 송장을 맞춰 발송 엑셀을 만듭니다</p>
             </div>
           </div>
@@ -2218,6 +2224,7 @@ export default function App() {
           {[
             { key: 'process', label: '주문정리', icon: <Layers className="w-5 h-5 shrink-0" />, selected: activeTab === 'process' && !isSettingsOpen, show: true, action: () => setActiveTab('process') },
             { key: 'analytics', label: '리포트', icon: <BarChart3 className="w-5 h-5 shrink-0" />, selected: activeTab === 'analytics' && !isSettingsOpen, show: features.analytics, action: () => setActiveTab('analytics') },
+            { key: 'api', label: 'API 연동', icon: <Plug className="w-5 h-5 shrink-0" />, selected: false, show: features.apiSync, action: () => { setActiveTab('process'); setTimeout(() => document.getElementById('api-connect-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60); } },
             { key: 'products', label: '품목사전', icon: <Grid className="w-5 h-5 shrink-0" />, selected: isSettingsOpen && settingsSection === 'products', show: true, action: () => openSettings('products') },
             { key: 'settings', label: '설정', icon: <Settings className="w-5 h-5 shrink-0" />, selected: isSettingsOpen && settingsSection !== 'products', show: true, action: () => openSettings('platforms') },
             { key: 'support', label: '문의하기', icon: <MessageSquare className="w-5 h-5 shrink-0" />, selected: false, show: true, action: () => setIsFeedbackOpen(true) },
@@ -2239,6 +2246,11 @@ export default function App() {
 
           {/* 하단: 로그인한 계정과 로그아웃 */}
           <div className="mt-auto flex flex-col gap-2 border-t border-slate-200 pt-3">
+            {isSidebarOpen && (
+              <div className="px-3 text-xs font-semibold text-[#1E5B4A]">
+                {planLabel.name}{planLabel.detail ? ` · ${planLabel.detail}` : ''}
+              </div>
+            )}
             {isSidebarOpen && (
               <div className="flex flex-col gap-0.5 px-3">
                 <span className="text-xs text-slate-500">로그인한 계정</span>
@@ -2280,33 +2292,24 @@ export default function App() {
               {/* 한눈에 보는 작업 순서 */}
               <div className="grid grid-cols-2 overflow-hidden rounded-xl border border-slate-200 bg-white md:grid-cols-4">
                 {[
-                  { no: '1', title: '주문서 올리기', desc: '쇼핑몰 주문 엑셀', outside: false },
-                  { no: '2', title: '택배사에서 송장 받기', desc: '택배사 사이트에서 진행', outside: true },
-                  { no: '3', title: '송장 맞추기', desc: '송장 엑셀과 주문서 올리기', outside: false },
-                  { no: '4', title: '쇼핑몰에 올리기', desc: '쇼핑몰별 파일 업로드', outside: true },
-                ].map((st) => (
-                  <div
-                    key={st.no}
-                    className={`flex flex-col gap-1.5 border-b border-r border-slate-200 p-4 last:border-r-0 md:border-b-0 ${
-                      st.outside ? '' : 'bg-[#F1F7F4]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-bold ${
-                          st.outside ? 'bg-slate-200 text-slate-600' : 'bg-[#1E5B4A] text-white'
-                        }`}
-                      >
-                        {st.no}
-                      </span>
-                      <span className="text-sm font-bold text-slate-900">{st.title}</span>
+                  { no: '1', title: '주문 엑셀 올리기' },
+                  { no: '2', title: '송장 받기' },
+                  { no: '3', title: '송장 맞추기' },
+                  { no: '4', title: '쇼핑몰 올리기' },
+                ].map((st, i) => {
+                  const active = i === (orderParseResult ? 2 : 0);
+                  return (
+                    <div
+                      key={st.no}
+                      className={`flex flex-col gap-0.5 border-b border-r border-slate-200 px-4 py-3 last:border-r-0 md:border-b-0 ${
+                        active ? 'bg-[#1E5B4A] text-white' : 'bg-white text-slate-700'
+                      }`}
+                    >
+                      <span className={`text-xs ${active ? 'text-white/80' : 'text-slate-400'}`}>{st.no}단계</span>
+                      <span className="text-sm font-semibold">{st.title}</span>
                     </div>
-                    <p className="text-xs text-slate-500">
-                      {st.desc}
-                      {st.outside ? ' (이 화면 밖)' : ''}
-                    </p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* 비밀번호 보호 해결 가이드 배너 */}

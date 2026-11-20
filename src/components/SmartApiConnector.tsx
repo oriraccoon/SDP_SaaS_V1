@@ -451,7 +451,7 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification, co
   const enabledCount = configs.filter(c => c.isEnabled).length;
 
   return (
-    <div className="space-y-4 text-slate-900">
+    <div id="api-connect-section" className="space-y-4 text-slate-900">
       {/* 상단 제목 & 원클릭 수집 버튼 */}
       <div className="bg-white border border-slate-200 rounded-2xl shadow-2xs p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div className="space-y-1">

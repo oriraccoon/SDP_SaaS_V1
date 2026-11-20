@@ -72,7 +72,7 @@ import { consumeUploads, uploadsLeft } from './lib/account';
 import { APP_NAME } from './config/brand';
 import { uploadsUsedThisMonth } from './lib/account';
 import FeedbackModal from './components/FeedbackModal';
-import { LogOut, Menu, MessageSquare } from 'lucide-react';
+import { LogOut, Menu, MessageSquare, ChevronDown, ShieldCheck } from 'lucide-react';
 
 // 2단계 운송장 소스 엑셀 파일 택배사/양식 자동 감지 헬퍼
 function detectCourierForFile(fileName: string, rawRows?: any[][]): string {
@@ -237,6 +237,9 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'process' | 'analytics' | 'products' | 'platforms'>('process');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => typeof window === 'undefined' || window.innerWidth >= 768);
+  // 화면 상태만: 끝난 1단계를 펼쳐 볼지, 결과 시트에서 어느 쇼핑몰을 보고 있는지
+  const [step1Open, setStep1Open] = useState(false);
+  const [sheetShop, setSheetShop] = useState<string | null>(null);
   const [settingsSection, setSettingsSection] = useState<'backup' | 'account'>('backup');
   const openSettings = (section: 'backup' | 'account') => {
     setSettingsSection(section);
@@ -2008,6 +2011,25 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
   }, [confirmModal, passwordPrompt, mappingImportConfirm, anomalousModalOpen, previewModal]);
 
+  // 화면에 보여 줄 숫자 (기존 결과에서 세기만 합니다)
+  const orderCount: number = orderParseResult?.orders?.length || 0;
+  const orderFileCount: number = orderParseResult?.parsedFiles?.length || orderFiles.length;
+  const matchedCount: number = trackingResult ? trackingResult.matchCount + trackingResult.softMatchCount : 0;
+  const trackTotal: number = trackingResult?.outputOrders?.length || orderCount;
+  const trackCheckCount: number = trackingResult ? trackingResult.softMatchCount + (trackingResult.unfilledErrors?.length || 0) : 0;
+  const newItemCount: number = orderParseResult?.newRawItems?.length || 0;
+  const shopCounts: [string, number][] = (() => {
+    const rows: any[] = trackingResult?.outputOrders || orderParseResult?.orders || [];
+    const m = new Map<string, number>();
+    rows.forEach((o) => { const k = o.platformName || '기타'; m.set(k, (m.get(k) || 0) + 1); });
+    return [...m.entries()];
+  })();
+  const bundledCount: number = trackingResult?.bundledCount ?? (orderParseResult?.orders || []).filter((o: any) => o.isMulti).length;
+  const step1Collapsed = trackingFiles.length > 0 && !step1Open;
+  const scrollToId = (id: string) => {
+    setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0);
+  };
+
   return (
     <div id="app-root-wrapper" className={`min-h-screen bg-slate-50 text-slate-800 font-sans flex flex-col w-full overflow-x-clip ${
       isSidebarOpen ? 'md:pl-56' : 'md:pl-14'
@@ -2276,7 +2298,7 @@ export default function App() {
         </aside>
 
         {/* 메인 본문 콘텐츠 */}
-        <main className="flex-1 min-w-0 max-w-6xl w-full mx-auto px-4 py-5 pb-24 sm:px-8 sm:py-8">
+        <main className="flex-1 min-w-0 max-w-[1440px] w-full mx-auto px-4 py-5 pb-8 sm:px-8 sm:py-6">
         <AnimatePresence mode="wait">
           
           {/* 탭 1: 가공 및 매칭 */}
@@ -2290,18 +2312,40 @@ export default function App() {
               className="space-y-6"
             >
 
-              {/* 작업 순서: 지금 어디까지 했는지 보여 줍니다. 2·4단계는 택배사·쇼핑몰 사이트에서 하는 일 */}
+              {/* 제목 줄: 주문정리와 처음부터 다시 */}
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="text-2xl font-semibold tracking-tight text-slate-900">주문정리</h1>
+                <span className="sp flex-1" />
+                {(orderParseResult || trackingFiles.length > 0) && (
+                  <button
+                    onClick={() => openConfirm("작업 비우기", "올려 둔 주문 파일, 정리 결과, 송장 파일이 모두 지워져요. 처음부터 다시 할까요?", handleResetProcess)}
+                    className="pressable inline-flex min-h-[44px] items-center gap-1.5 rounded-lg px-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 cursor-pointer"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    처음부터 다시
+                  </button>
+                )}
+              </div>
+
+              {/* 작업 순서: 지금 어디까지 했는지, 단계마다 파일 수와 확인할 수를 보여 줍니다. 2·4단계는 택배사·쇼핑몰 사이트에서 하는 일 */}
               {(() => {
                 const done = [Boolean(orderParseResult), trackingFiles.length > 0, Boolean(trackingResult), false];
                 const current = done.findIndex((d) => !d);
                 const items = [
-                  { title: '주문서 올리기', desc: '쇼핑몰 주문 엑셀', outside: false },
-                  { title: '택배사에서 송장 받기', desc: '택배사 사이트에서 해요', outside: true },
-                  { title: '송장 맞추기', desc: '송장 엑셀 올리기', outside: false },
-                  { title: '쇼핑몰에 올리기', desc: '쇼핑몰 사이트에서 해요', outside: true },
+                  { title: '주문서 올리기', desc: orderParseResult ? `파일 ${orderFileCount}개 · ${orderCount}건` : '쇼핑몰 주문 엑셀', warn: orderParseResult ? anomalousIssues.length : 0 },
+                  { title: '택배사에서 송장 받기', desc: '택배사 사이트에서 해요', warn: 0 },
+                  { title: '송장 맞추기', desc: trackingResult ? `송장 ${trackingFiles.length}개 · ${matchedCount}/${trackTotal}` : '송장 엑셀 올리기', warn: trackCheckCount },
+                  { title: '쇼핑몰에 올리기', desc: '쇼핑몰 사이트에서 해요', warn: 0 },
                 ];
                 return (
-                  <ol aria-label="작업 순서" className="grid grid-cols-2 overflow-hidden rounded-xl border border-slate-200 bg-white md:grid-cols-4">
+                  <div>
+                  <div className="mb-2 flex items-center gap-2 md:hidden" aria-hidden="true">
+                    {items.map((st, i) => (
+                      <span key={st.title} className={`h-1.5 flex-1 rounded-full ${done[i] ? 'bg-brand-600' : i === current ? 'bg-slate-900' : 'bg-slate-200'}`} />
+                    ))}
+                    <span className="ml-1 text-[13px] font-semibold tabular-nums text-slate-600">{Math.min(current + 1, 4)}/4</span>
+                  </div>
+                  <ol aria-label="작업 순서" className="grid grid-cols-1 gap-2 md:grid-cols-4">
                     {items.map((st, i) => {
                       const isDone = done[i];
                       const isCurrent = i === current;
@@ -2309,29 +2353,39 @@ export default function App() {
                         <li
                           key={st.title}
                           aria-current={isCurrent ? 'step' : undefined}
-                          className={`flex flex-col gap-1 border-slate-200 p-4 [&:nth-child(-n+2)]:border-b md:[&:nth-child(-n+2)]:border-b-0 [&:nth-child(odd)]:border-r md:border-r md:last:border-r-0 ${
-                            isCurrent ? 'bg-brand-50' : ''
+                          className={`items-start gap-3 rounded-xl p-3 md:flex md:p-3.5 ${
+                            isCurrent ? 'flex bg-white ring-[1.5px] ring-inset ring-brand-600' : 'hidden'
                           }`}
                         >
-                          <div className="flex items-center gap-2">
-                            {isDone ? (
-                              <CheckCircle2 className="h-6 w-6 shrink-0 text-brand-600" aria-label="완료" />
-                            ) : (
-                              <span
-                                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold tabular-nums ${
-                                  isCurrent ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-500'
-                                }`}
-                              >
-                                {i + 1}
-                              </span>
-                            )}
-                            <span className={`text-sm font-bold ${isDone || isCurrent ? 'text-slate-900' : 'text-slate-500'}`}>{st.title}</span>
+                          {isDone ? (
+                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white" aria-label="완료">
+                              <Check className="h-4 w-4" />
+                            </span>
+                          ) : (
+                            <span
+                              className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold tabular-nums ${
+                                isCurrent ? 'bg-slate-900 text-white' : 'bg-slate-200 text-slate-600'
+                              }`}
+                            >
+                              {i + 1}
+                            </span>
+                          )}
+                          <div className="min-w-0">
+                            <p className={`text-[15px] font-semibold leading-snug ${isDone || isCurrent ? 'text-slate-900' : 'text-slate-600'}`}>{st.title}</p>
+                            <p className="text-[13px] text-slate-600">
+                              {st.desc}
+                              {st.warn > 0 && (
+                                <span className="ml-2 inline-flex items-center gap-1 font-semibold text-amber-800">
+                                  <AlertCircle className="h-3.5 w-3.5" />확인 {st.warn}
+                                </span>
+                              )}
+                            </p>
                           </div>
-                          <p className="pl-8 text-xs text-slate-500">{st.desc}</p>
                         </li>
                       );
                     })}
                   </ol>
+                  </div>
                 );
               })()}
 
@@ -2410,49 +2464,110 @@ export default function App() {
                 </motion.div>
               )}
 
-              {/* 작업 패널 (1단계, 2단계 위에서 아래로 순차 배치) */}
-              <div className="flex flex-col gap-6">
+              {/* 작업 패널: 왼쪽은 단계 카드, 1400px 이상에서는 오른쪽에 확인할 일 */}
+              {(() => {
+                const todoBox = (() => {
+                const todos: { key: string; tone: 'rose' | 'amber' | 'slate'; text: string; actions: { label: string; onClick: () => void }[] }[] = [];
+                if (orderParseResult && anomalousIssues.length > 0) {
+                  todos.push({ key: 'anomalous', tone: 'rose', text: `받는 사람·전화번호·주소를 확인할 주문 ${anomalousIssues.length}건`, actions: [{ label: '주문 확인하기', onClick: () => setAnomalousModalOpen(true) }] });
+                }
+                if (newItemCount > 0) {
+                  todos.push({ key: 'new-items', tone: 'amber', text: `품목사전에 없는 새 품목 ${newItemCount}건`, actions: [
+                    { label: '추천 이름으로 채우기', onClick: () => { handleApplyAllRecommendations(); setStep1Open(true); scrollToId('new-items-panel'); } },
+                    { label: '하나씩 보기', onClick: () => { setStep1Open(true); scrollToId('new-items-panel'); } },
+                  ] });
+                }
+                if (orderParseResult && stepValidationResult) {
+                  todos.push({ key: 'quality', tone: 'slate', text: '엑셀 품질 검사 결과', actions: [{ label: '품질 검사 보기', onClick: () => { setStep1Open(true); scrollToId('quality-1'); } }] });
+                }
+                if (trackingResult && trackCheckCount > 0) {
+                  todos.push({ key: 'tracking', tone: 'amber', text: `송장을 한 번 더 볼 주문 ${trackCheckCount}건`, actions: [{ label: '결과 보고서 보기', onClick: () => scrollToId('waybill-report') }] });
+                }
+                const toneDot = { rose: 'bg-rose-600', amber: 'bg-amber-500', slate: 'bg-slate-400' } as const;
+                const list = (compact: boolean) => todos.length === 0 ? (
+                  <p className="text-sm text-slate-600">{orderParseResult ? '지금은 확인할 일이 없어요.' : '주문서를 올리면 확인할 일이 여기에 모여요.'}</p>
+                ) : (
+                  <ul className={compact ? 'flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-x-5' : 'flex flex-col divide-y divide-slate-100'}>
+                    {todos.map((t) => (
+                      <li key={t.key} className={compact ? 'flex flex-wrap items-center gap-x-2 gap-y-1' : 'py-3 first:pt-0 last:pb-0'}>
+                        <span className="flex items-start gap-2 text-sm text-slate-800">
+                          <span className={`mt-[7px] h-2 w-2 shrink-0 rounded-full ${toneDot[t.tone]}`} aria-hidden="true" />
+                          {t.text}
+                        </span>
+                        <span className={`flex flex-wrap gap-1.5 ${compact ? '' : 'mt-2 pl-4'}`}>
+                          {t.actions.map((a) => (
+                            <button
+                              key={a.label}
+                              onClick={a.onClick}
+                              className="pressable inline-flex min-h-[36px] items-center rounded-lg border border-slate-300 bg-white px-3 text-[13px] font-semibold text-slate-800 hover:bg-slate-50 cursor-pointer"
+                            >
+                              {a.label}
+                            </button>
+                          ))}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                );
+                return { todos, list };
+              })();
+                return (
+              <div className="grid items-start gap-6 min-[1400px]:grid-cols-[minmax(0,1fr)_300px]">
+              <div className="flex min-w-0 flex-col gap-6">
 
-                {/* 데이터가 로드되어 있을 때 눈에 잘 띄는 작업 영역 리셋 컨트롤 바 */}
-                {(orderParseResult || trackingFiles.length > 0) && (
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3">
-                    <p className="text-sm text-slate-600">
-                      올려 둔 파일로 작업 중이에요. 새 파일로 처음부터 하려면 작업을 비우세요.
-                    </p>
-                    <button
-                      onClick={() => openConfirm("작업 비우기", "올려 둔 주문 파일, 정리 결과, 송장 파일이 모두 지워져요. 처음부터 다시 할까요?", handleResetProcess)}
-                      className="pressable self-start sm:self-auto shrink-0 inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-50 cursor-pointer"
-                    >
-                      <RotateCcw className="w-4 h-4" />
-                      처음부터 다시
-                    </button>
-                  </div>
+                {/* 1400px 아래: 확인할 일을 한 줄로 */}
+                {todoBox.todos.length > 0 && (
+                  <section aria-label="확인할 일" className="rounded-xl border border-amber-200 bg-amber-50/60 px-4 py-3 min-[1400px]:hidden">
+                    {todoBox.list(true)}
+                  </section>
                 )}
 
                 {/* 쇼핑몰 API 자동 연동 수집 센터 모듈 */}
                 {features.apiSync && (
+                  <div className={step1Collapsed ? 'max-md:order-4' : ''}>
                   <SmartApiConnector
                     onOrdersSynced={handleOrdersApiSynced}
                     showNotification={showNotification}
                     configs={apiConfigs}
                     setConfigs={setApiConfigs}
                   />
+                  </div>
                 )}
                 
-                {/* 1단계 카드: 주문 데이터 가공 */}
-                <div className="bg-white border border-slate-200 rounded-xl p-5 space-y-4">
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                    <div className="flex items-center gap-2.5">
-                      <span className="w-6 h-6 rounded-full bg-brand-600 text-white text-xs font-bold tabular-nums flex items-center justify-center">1</span>
-                      <h2 className="font-bold text-slate-900 text-base">주문서 올리기</h2>
+                {/* 1단계 카드: 주문 데이터 가공. 송장을 올린 뒤에는 한 줄로 접고, 펼치면 그대로 다 보입니다 */}
+                <div className={`bg-white rounded-xl p-5 space-y-4 ${step1Collapsed ? 'max-md:order-2' : ''} ${orderParseResult && trackingFiles.length === 0 ? 'ring-[1.5px] ring-inset ring-brand-600' : 'border border-slate-200'}`}>
+                  <div className={`flex flex-wrap items-center justify-between gap-2 ${step1Collapsed ? '' : 'border-b border-slate-100 pb-3'}`}>
+                    <div className="flex min-w-0 items-center gap-2.5">
+                      {orderParseResult ? (
+                        <span className="w-6 h-6 shrink-0 rounded-full bg-brand-600 text-white flex items-center justify-center" aria-label="1단계 완료"><Check className="w-3.5 h-3.5" /></span>
+                      ) : (
+                        <span className="w-6 h-6 shrink-0 rounded-full bg-slate-900 text-white text-xs font-semibold tabular-nums flex items-center justify-center">1</span>
+                      )}
+                      <h2 className="font-semibold text-slate-900 text-base">
+                        {orderParseResult && trackingFiles.length === 0 ? '지금 할 일: 정리된 파일을 받아 택배사 사이트에 올리기' : '주문서 올리기'}
+                      </h2>
                     </div>
-                    {orderParseResult && (
-                      <span className="text-xs bg-emerald-50 text-emerald-700 font-semibold px-2 py-0.5 rounded">
-                        수령인 {orderParseResult.orders.length}건 정렬 완료
-                      </span>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {orderParseResult && (
+                        <span className="inline-flex items-center gap-1 rounded bg-emerald-50 px-2 py-0.5 text-[13px] font-semibold text-emerald-800">
+                          <CheckCircle2 className="h-3.5 w-3.5" />
+                          파일 {orderFileCount}개 · {orderCount}건 정리됨
+                        </span>
+                      )}
+                      {trackingFiles.length > 0 && (
+                        <button
+                          onClick={() => setStep1Open(!step1Open)}
+                          aria-expanded={!step1Collapsed}
+                          className="pressable inline-flex min-h-[36px] items-center gap-1 rounded-lg px-2.5 text-[13px] font-semibold text-slate-700 hover:bg-slate-100 cursor-pointer"
+                        >
+                          {step1Collapsed ? '펼치기' : '접기'}
+                          <ChevronDown className={`h-4 w-4 transition-transform ${step1Collapsed ? '' : 'rotate-180'}`} />
+                        </button>
+                      )}
+                    </div>
                   </div>
 
+                  {!step1Collapsed && (<>
                   <p className="text-sm text-slate-600 leading-relaxed max-w-[68ch]">
                     쇼핑몰에서 내려받은 주문 엑셀을 올려 주세요. 어느 쇼핑몰 파일인지 알아서 구분하고, 같은 사람에게 갈 주문은 위쪽에 모아 택배사에 넣을 파일로 정리해요.
                   </p>
@@ -2478,7 +2593,7 @@ export default function App() {
                       setPasswordErrorFile(null);
                       await processMultipleOrderFiles(updatedFiles);
                     }}
-                    className="relative border-2 border-dashed border-slate-200 hover:border-brand-600 rounded-xl p-6 bg-slate-50 text-center transition cursor-pointer"
+                    className={`relative border-2 border-dashed border-slate-200 hover:border-brand-600 rounded-xl bg-slate-50 text-center transition cursor-pointer ${orderFiles.length > 0 ? 'p-3' : 'p-6'}`}
                   >
                     <input
                       type="file"
@@ -2487,7 +2602,7 @@ export default function App() {
                       onChange={handleOrderFileUpload}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     />
-                    <Upload className="w-8 h-8 text-brand-600 mx-auto mb-2" />
+                    {orderFiles.length === 0 && <Upload className="w-8 h-8 text-brand-600 mx-auto mb-2" />}
                     {orderFiles.length > 0 ? (
                       <div className="space-y-1">
                         <div className="text-sm font-semibold text-slate-800">
@@ -2611,9 +2726,9 @@ export default function App() {
                           </div>
                           <button
                             onClick={() => setAnomalousModalOpen(true)}
-                            className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold transition shadow-sm shrink-0 flex items-center justify-center gap-1.5 cursor-pointer"
+                            className="pressable min-h-[40px] px-3.5 bg-white hover:bg-rose-100 text-rose-800 border border-rose-300 rounded-lg text-sm font-semibold shrink-0 flex items-center justify-center gap-1.5 cursor-pointer"
                           >
-                            <Eye className="w-4 h-4 text-white" />
+                            <Eye className="w-4 h-4" />
                             주문 확인하기
                           </button>
                         </div>
@@ -2621,7 +2736,7 @@ export default function App() {
 
                       {/* 4번 요구사항: 미매칭 품목 자동 정제 규칙 추천 (투명도 있는 placeholder + 가이드 추천) */}
                       {orderParseResult.newRawItems && orderParseResult.newRawItems.length > 0 && (
-                        <div className="bg-amber-50/60 border border-amber-200 rounded-xl p-4 space-y-3">
+                        <div id="new-items-panel" className="scroll-mt-6 bg-amber-50/60 border border-amber-200 rounded-xl p-4 space-y-3">
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-amber-200/60 pb-2.5">
                             <div className="flex items-center gap-2">
                                                             <div>
@@ -2735,7 +2850,7 @@ export default function App() {
 
                   {/* 1단계 엑셀 품질 검사 대시보드 */}
                   {orderParseResult && stepValidationResult && (
-                    <div className="pt-2">
+                    <div id="quality-1" className="pt-2 scroll-mt-6">
                       <ExcelValidationDashboard
                         validationResult={stepValidationResult}
                         stepFilter={1}
@@ -2746,23 +2861,21 @@ export default function App() {
                       />
                     </div>
                   )}
+                  </>)}
                 </div>
 
                 {/* 2단계 카드: 운송장 매칭 (1단계와 동일하게 다중 파일 & 자동 감지 지원) */}
-                <div className="bg-white border border-slate-200 rounded-xl p-5 space-y-4">
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                    <div className="flex items-center gap-2.5">
-                      <span className="w-6 h-6 rounded-full bg-brand-600 text-white text-xs font-bold tabular-nums flex items-center justify-center">3</span>
-                      <h2 className="font-bold text-slate-900 text-base">송장 맞추기</h2>
+                <div className={`bg-white rounded-xl p-5 space-y-4 ${step1Collapsed ? 'max-md:order-1' : ''} ${orderParseResult && trackingFiles.length > 0 ? 'ring-[1.5px] ring-inset ring-brand-600' : 'border border-slate-200'}`}>
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                    <div className="flex min-w-0 items-center gap-2.5">
+                      <span className={`w-6 h-6 shrink-0 rounded-full text-white text-xs font-semibold tabular-nums flex items-center justify-center ${trackingResult ? 'bg-brand-600' : 'bg-slate-900'}`}>3</span>
+                      <h2 className="font-semibold text-slate-900 text-base">
+                        {trackingResult ? '지금 할 일: 결과를 확인하고 쇼핑몰 파일 받기' : '송장 맞추기'}
+                      </h2>
                     </div>
-                    {trackingResult && (
-                      <span className="text-xs bg-emerald-50 text-emerald-700 font-semibold px-2 py-0.5 rounded">
-                        완료: {trackingResult.matchCount + trackingResult.softMatchCount}건 매칭 성공
-                      </span>
-                    )}
                   </div>
 
-                  <p className="text-sm text-slate-600 leading-relaxed max-w-[68ch]">
+                  <p className={`text-sm text-slate-600 leading-relaxed max-w-[68ch] ${trackingResult ? 'hidden' : ''}`}>
                     택배사 사이트에서 받은 송장 엑셀을 올려 주세요. 받는 사람, 상품, 수량, 우편번호를 맞춰 보고 주문마다 송장 번호를 붙여요.
                   </p>
 
@@ -2786,7 +2899,7 @@ export default function App() {
                       setTrackingFiles(updatedFiles);
                       await processMultipleTrackingFiles(updatedFiles);
                     }}
-                    className="relative border-2 border-dashed border-slate-200 hover:border-brand-600 rounded-xl p-6 bg-slate-50 text-center transition cursor-pointer"
+                    className={`relative border-2 border-dashed border-slate-200 hover:border-brand-600 rounded-xl bg-slate-50 text-center transition cursor-pointer ${trackingFiles.length > 0 ? 'p-3' : 'p-6'}`}
                   >
                     <input
                       type="file"
@@ -2795,7 +2908,7 @@ export default function App() {
                       onChange={handleSourceFileUpload}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     />
-                    <Upload className="w-8 h-8 mx-auto mb-2 text-brand-600" />
+                    {trackingFiles.length === 0 && <Upload className="w-8 h-8 mx-auto mb-2 text-brand-600" />}
                     <div>
                       <div className="text-sm font-semibold text-slate-800">
                         {trackingFiles.length > 0 ? "송장 엑셀 더 올리기" : "송장 엑셀을 끌어다 놓거나 눌러서 고르세요"}
@@ -2887,29 +3000,113 @@ export default function App() {
                     </div>
                   )}
 
-                  {/* 실행 및 미리보기/다운로드 영역 */}
-                  {trackingFiles.length > 0 && orderParseResult && (
-                    <div className="bg-slate-50 rounded-xl p-4 border border-slate-150 space-y-3">
-                      {trackingResult && (
-                        <div className="space-y-2 w-full">
-                          <button
-                            onClick={handlePreviewStep2Excel}
-                            className="pressable w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 rounded-lg text-sm font-semibold cursor-pointer"
-                          >
-                            <Eye className="w-4 h-4" />
-                            송장 붙인 파일 미리 보기
-                          </button>
+                  {/* 결과: 맞춘 수, 세부 칩, 결과 시트 처음 8줄, 받기 */}
+                  {trackingFiles.length > 0 && orderParseResult && trackingResult && (() => {
+                    const rows: any[] = trackingResult.outputOrders || [];
+                    const shops = [...new Set(rows.map((o: any) => o.platformName || '기타'))];
+                    const activeShop = sheetShop && shops.includes(sheetShop) ? sheetShop : shops[0];
+                    const shopRows = rows.filter((o: any) => (o.platformName || '기타') === activeShop);
+                    const label: Record<string, string> = { exact: '완전 일치', soft: '비슷한 주문', bundled: '합포장', unmatched: '송장 없음' };
+                    return (
+                      <div className="space-y-4">
+                        <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
+                          <p className="font-mono text-4xl font-medium tabular-nums tracking-tight text-slate-900">
+                            {matchedCount}<span className="text-slate-400"> / {trackTotal}</span>
+                          </p>
+                          <ul className="flex flex-wrap gap-2 pb-1 text-[13px] font-semibold">
+                            <li className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-emerald-800"><CheckCircle2 className="h-3.5 w-3.5" />완전 일치 {trackingResult.matchCount}</li>
+                            {trackingResult.softMatchCount > 0 && (
+                              <li className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-amber-900"><AlertCircle className="h-3.5 w-3.5" />비슷한 주문 {trackingResult.softMatchCount}</li>
+                            )}
+                            {(trackingResult.unfilledErrors?.length || 0) > 0 && (
+                              <li className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-1 text-rose-800"><AlertCircle className="h-3.5 w-3.5" />송장 없음 {trackingResult.unfilledErrors.length}</li>
+                            )}
+                          </ul>
+                        </div>
+
+                        {rows.length > 0 && (
+                          <div className="overflow-hidden rounded-lg border border-slate-200">
+                            {shops.length > 1 && (
+                              <div role="tablist" aria-label="쇼핑몰" className="flex gap-1 overflow-x-auto border-b border-slate-200 bg-slate-50 px-2 pt-2">
+                                {shops.map((sh) => (
+                                  <button
+                                    key={sh}
+                                    role="tab"
+                                    aria-selected={sh === activeShop}
+                                    onClick={() => setSheetShop(sh)}
+                                    className={`-mb-px min-h-[40px] shrink-0 rounded-t-md border px-3 text-[13px] font-semibold cursor-pointer ${sh === activeShop ? 'border-slate-200 border-b-white bg-white text-slate-900' : 'border-transparent text-slate-600 hover:text-slate-900'}`}
+                                  >
+                                    {sh} <span className="font-mono tabular-nums text-slate-500">{rows.filter((o: any) => (o.platformName || '기타') === sh).length}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                            <div className="overflow-x-auto">
+                              <table className="w-full min-w-[560px] text-left text-[13px]">
+                                <thead className="bg-slate-50 text-slate-600">
+                                  <tr>
+                                    <th className="px-3 py-2 font-semibold">받는 사람</th>
+                                    <th className="px-3 py-2 font-semibold">상품</th>
+                                    <th className="px-3 py-2 text-right font-semibold">수량</th>
+                                    <th className="px-3 py-2 font-semibold">송장 번호</th>
+                                    <th className="px-3 py-2 font-semibold">맞춘 방법</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {shopRows.slice(0, 8).map((o: any, i: number) => {
+                                    const odd = o.matchType === 'soft' || o.matchType === 'unmatched' || !o.trackingNumber;
+                                    return (
+                                      <tr key={o.id ?? i} className={`border-t border-slate-100 ${odd ? 'bg-amber-50' : ''}`}>
+                                        <td className="px-3 py-2 text-slate-900">{o.수령인}</td>
+                                        <td className="max-w-[260px] truncate px-3 py-2 text-slate-700" title={o.상품명}>{o.상품명}</td>
+                                        <td className="px-3 py-2 text-right font-mono tabular-nums text-slate-700">{o.수량}</td>
+                                        <td className="px-3 py-2 font-mono tabular-nums text-slate-800">{o.trackingNumber || '—'}</td>
+                                        <td className={`px-3 py-2 font-semibold ${odd ? 'text-amber-900' : 'text-slate-600'}`}>
+                                          {odd && <AlertCircle className="mr-1 inline h-3.5 w-3.5 align-[-2px]" />}
+                                          {label[o.matchType] || (o.trackingNumber ? '맞춤' : '송장 없음')}
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+                            {shopRows.length > 8 && (
+                              <button
+                                onClick={handlePreviewStep2Excel}
+                                className="w-full border-t border-slate-200 bg-slate-50 px-3 py-2.5 text-[13px] font-semibold text-slate-700 hover:bg-slate-100 cursor-pointer"
+                              >
+                                {shopRows.length - 8}줄 더 있어요 · 미리 보기에서 전체 보기
+                              </button>
+                            )}
+                          </div>
+                        )}
+
+                        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
                           <button
                             onClick={handleDownloadFinalTracking}
-                            className="pressable w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-bold"
+                            className="pressable inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg bg-brand-600 px-4 text-sm font-semibold text-white hover:bg-brand-700 cursor-pointer"
                           >
-                            <Download className="w-4 h-4" />
-                            송장 붙인 파일 받기
+                            <Download className="h-4 w-4" />
+                            쇼핑몰 파일 모두 받기
+                          </button>
+                          <button
+                            onClick={handlePreviewStep2Excel}
+                            className="pressable inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 hover:bg-slate-50 cursor-pointer"
+                          >
+                            <Eye className="h-4 w-4" />
+                            미리 보기
+                          </button>
+                          <button
+                            onClick={() => scrollToId('waybill-report')}
+                            className="inline-flex min-h-[44px] items-center justify-center px-2 text-sm font-semibold text-brand-700 underline-offset-4 hover:underline cursor-pointer"
+                          >
+                            결과 보고서
                           </button>
                         </div>
-                      )}
-                    </div>
-                  )}
+                      </div>
+                    );
+                  })()}
 
                   {isProcessingTracking && (
                     <div className="flex items-center justify-center gap-2 text-xs text-brand-600 py-2">
@@ -2930,24 +3127,11 @@ export default function App() {
                   )}
                 </div>
 
-              </div>
-
-
-
               {/* 운송장 결과 보고서 대시보드 */}
               {trackingResult && (
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-base font-bold text-slate-900">송장 맞추기 결과</h3>
-                    <button
-                      onClick={() => openConfirm("작업 비우기", "올려 둔 주문 파일, 정리 결과, 송장 파일이 모두 지워져요. 처음부터 다시 할까요?", handleResetProcess)}
-                      className="px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <RotateCcw className="w-3.5 h-3.5 text-rose-600" />
-                      작업 영역 리셋하고 처음부터 하기
-                    </button>
-                  </div>
-                  
+                <section id="waybill-report" className="scroll-mt-6 space-y-4 max-md:order-3">
+                  <h2 className="text-lg font-semibold text-slate-900">결과 보고서</h2>
+
                   <WaybillReportDashboard
                     matchCount={trackingResult.matchCount}
                     softMatchCount={trackingResult.softMatchCount}
@@ -2959,8 +3143,23 @@ export default function App() {
                     outputOrders={trackingResult.outputOrders}
                   />
 
-                </div>
+                </section>
               )}
+              </div>
+
+              {/* 1400px 이상: 오른쪽 확인할 일 */}
+              <aside aria-label="확인할 일" className="hidden min-[1400px]:block sticky top-6 rounded-xl border border-slate-200 bg-white p-4">
+                <h2 className="mb-3 flex items-center gap-2 text-[15px] font-semibold text-slate-900">
+                  확인할 일
+                  {todoBox.todos.length > 0 && (
+                    <span className="rounded-full bg-slate-900 px-2 py-0.5 text-xs font-semibold tabular-nums text-white">{todoBox.todos.length}</span>
+                  )}
+                </h2>
+                {todoBox.list(false)}
+              </aside>
+              </div>
+                );
+              })()}
 
             </motion.div>
           )}
@@ -3358,11 +3557,53 @@ export default function App() {
       />
 
       {/* 하단 푸터 */}
-      <footer id="main-footer" className="border-t border-slate-200 py-4 text-center text-xs text-slate-500 shrink-0">
-        <div className="max-w-6xl mx-auto px-4">
-          주문 파일은 이 브라우저 안에서만 처리하고 서버에 저장하지 않아요.
+      {/* 아래쪽 집계 줄: 쇼핑몰별 건수, 합포장, 송장, 서버 저장 없음 */}
+      <footer id="main-footer" className="shrink-0 border-t border-slate-200 bg-white/95 pb-[calc(4.5rem+env(safe-area-inset-bottom))] backdrop-blur md:sticky md:bottom-0 md:z-10 md:pb-0">
+        <div className="mx-auto flex max-w-[1440px] flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2.5 text-[13px] text-slate-600 sm:px-8">
+          {activeTab === 'process' && orderParseResult && (
+            <>
+              {shopCounts.map(([shop, n]) => (
+                <span key={shop} className="whitespace-nowrap">{shop} <span className="font-mono tabular-nums text-slate-900">{n}</span></span>
+              ))}
+              {bundledCount > 0 && (
+                <span className="whitespace-nowrap">합포장 <span className="font-mono tabular-nums text-slate-900">{bundledCount}</span></span>
+              )}
+              {trackingResult && (
+                <span className="whitespace-nowrap">송장 <span className="font-mono tabular-nums text-slate-900">{matchedCount}/{trackTotal}</span></span>
+              )}
+            </>
+          )}
+          <span className="ml-auto inline-flex items-center gap-1.5 whitespace-nowrap text-slate-500">
+            <ShieldCheck className="h-3.5 w-3.5" />
+            브라우저 안에서만 처리 · 서버 저장 없음
+          </span>
         </div>
       </footer>
+
+      {/* 휴대폰 아래쪽 탭바: 화면을 바꾸는 메뉴만. 설정·문의·로그아웃은 왼쪽 위 메뉴에 그대로 */}
+      <nav aria-label="주요 화면" className="fixed inset-x-0 bottom-0 z-20 grid auto-cols-fr grid-flow-col border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] md:hidden">
+        {[
+          { key: 'process', label: '주문정리', icon: <Layers className="h-5 w-5" />, show: true },
+          { key: 'analytics', label: '리포트', icon: <BarChart3 className="h-5 w-5" />, show: features.analytics },
+          { key: 'products', label: '품목사전', icon: <ClipboardList className="h-5 w-5" />, show: true },
+          { key: 'platforms', label: '플랫폼 설정', icon: <Grid className="h-5 w-5" />, show: true },
+        ]
+          .filter((t) => t.show)
+          .map((t) => {
+            const selected = activeTab === t.key && !isSettingsOpen;
+            return (
+              <button
+                key={t.key}
+                onClick={() => setActiveTab(t.key as typeof activeTab)}
+                aria-current={selected ? 'page' : undefined}
+                className={`flex min-h-[60px] flex-col items-center justify-center gap-0.5 text-xs font-semibold cursor-pointer ${selected ? 'text-brand-700' : 'text-slate-600'}`}
+              >
+                {t.icon}
+                {t.label}
+              </button>
+            );
+          })}
+      </nav>
 
     </div>
   );

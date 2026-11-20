@@ -6,7 +6,8 @@
  * 팔레트와 radius, 그림자, 폰트만 여기서 바꿉니다. 기능 코드는 건드리지 않습니다.
  */
 @theme {
-  --font-sans: "Inter", "Noto Sans KR", ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Malgun Gothic", sans-serif;
+  --font-sans: "Instrument Sans", "Noto Sans KR", ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Malgun Gothic", sans-serif;
+  --font-mono: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 
   /* Neutral: Notion의 따뜻한 회색 + Linear의 선명한 대비 */
   --color-slate-50: #fbfbfa;

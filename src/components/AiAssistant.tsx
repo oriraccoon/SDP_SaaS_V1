@@ -16,7 +16,7 @@ export default function AiAssistant() {
         <div
           role="dialog"
           aria-label="AI 도우미"
-          className="ai-panel fixed bottom-4 left-4 right-4 z-30 flex h-[min(520px,70vh)] origin-bottom-right flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl sm:left-auto sm:w-[360px]"
+          className="ai-panel fixed bottom-20 md:bottom-16 left-4 right-4 z-30 flex h-[min(520px,70vh)] origin-bottom-right flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl sm:left-auto sm:w-[360px]"
         >
           <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
             <div className="flex items-center gap-2">
@@ -80,7 +80,7 @@ export default function AiAssistant() {
           onClick={() => setOpen(true)}
           aria-label="AI 도우미 열기 (준비 중)"
           title="AI 도우미 (준비 중)"
-          className="pressable fixed bottom-4 right-4 z-30 flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-brand-600 shadow-md hover:bg-brand-50"
+          className="pressable fixed bottom-20 md:bottom-16 right-4 z-30 flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-brand-600 shadow-md hover:bg-brand-50"
         >
           <MessageCircle className="h-5 w-5" />
         </button>

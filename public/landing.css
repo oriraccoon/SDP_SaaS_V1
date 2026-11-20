@@ -86,3 +86,66 @@
 
 /* the close word: the Latin face with Hangul fallback sits lower, so give its line room */
 .close__word { line-height: 1; }
+
+/* ---------- side table of contents (the client's ask, in a Toss-like hand): short grey lines in the left gutter,
+   the current section a longer ink line; hovering grows the lines near the pointer and shows every name ---------- */
+.toc { position: fixed; left: 24px; top: 50%; transform: translateY(-50%); z-index: 9; display: none; }
+@media (min-width: 1200px) and (hover: hover) { .toc { display: block; } }
+.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.toc a { display: flex; align-items: center; gap: 10px; min-height: 20px; text-decoration: none; color: #8b95a1; }
+.toc__line { width: calc(12px + 24px * var(--grow, 0)); height: 2px; border-radius: 2px; background: #d1d6db;
+  transition: width 260ms cubic-bezier(.2,.8,.2,1), background-color 150ms ease; }
+.toc a[aria-current] .toc__line { width: max(24px, calc(12px + 24px * var(--grow, 0))); background: var(--p-ink); }
+.toc__label { font: 500 13px/1 var(--font-text); white-space: nowrap; padding: 6px 8px; border-radius: 8px; background: #fff;
+  box-shadow: 0 2px 10px rgb(0 0 0 / .08); opacity: 0; transform: translateX(-4px); pointer-events: none;
+  transition: opacity 150ms ease, transform 200ms cubic-bezier(.2,.8,.2,1); }
+.toc:hover .toc__label { opacity: 1; transform: none; pointer-events: auto; }
+.toc a[aria-current] .toc__label { color: var(--p-ink); }
+.toc a:hover .toc__label { color: var(--p-action); }
+.toc[data-tone="dark"] .toc__line { background: rgb(255 255 255 / .28); }
+.toc[data-tone="dark"] a[aria-current] .toc__line { background: #fff; }
+@media (prefers-reduced-motion: reduce) { .toc__line, .toc__label { transition: none; } }
+
+/* pricing: the app's own usage meter under the plans */
+.usage { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: var(--s-6); padding: 16px 20px; font: 400 14px/1.4 var(--font-text); }
+.usage__who { display: grid; gap: 2px; min-width: 120px; }
+.usage__label, .usage__note { font-size: 13px; color: var(--u-muted, var(--muted)); }
+.usage__who b, .usage__meter b { font-weight: 500; }
+.usage__meter { display: grid; gap: 8px; flex: 1 1 260px; }
+.usage__meter i { display: block; height: 6px; border-radius: 3px; background: color-mix(in oklab, var(--ink) 10%, transparent); position: relative; overflow: hidden; }
+.usage__meter i::after { content: ""; position: absolute; inset: 0; width: calc(var(--k) * 100%); background: var(--accent); border-radius: 3px; }
+
+/* FAQ: the app's own contact window */
+.ask { margin-top: var(--s-4); font: 400 14px/1.45 var(--font-text); }
+.ask__head { display: flex; align-items: center; height: 48px; padding: 0 16px; border-bottom: 1px solid var(--u-line); }
+.ask__head b { font-weight: 500; }
+.ask__x { color: var(--u-muted, var(--muted)); font-size: 18px; }
+.ask__chips { display: flex; gap: 6px; flex-wrap: wrap; padding: 14px 16px 0; }
+.ask__chips span { padding: 5px 10px; border-radius: 999px; font-size: 13px; background: color-mix(in oklab, var(--ink) 6%, transparent); }
+.ask__chips .is-on { background: var(--ink); color: var(--bg); }
+.ask__field { margin: 12px 16px 0; padding: 12px; min-height: 72px; border: 1px solid var(--u-line); border-radius: 8px; }
+.ask__foot { display: flex; align-items: center; gap: 10px; padding: 12px 16px 16px; font-size: 13px; color: var(--u-muted, var(--muted)); }
+
+/* phone: the shipping file keeps its first, product and number columns; the notify stack keeps two notes */
+@media (max-width: 639px) {
+  .sheet__table th:nth-child(3), .sheet__table td:nth-child(3) { display: none; }
+  .sheet__table th, .sheet__table td { padding-left: 10px; padding-right: 10px; }
+  #features .ui-note:nth-child(3) { display: none; }
+}
+
+/* screen fit after the usage meter and the contact window */
+@media (min-width: 1024px) and (max-width: 1279px) { #price .usage { display: none; } }
+@media (min-width: 640px) and (max-width: 1023px) { #price { --h: 2; } #faq .ask { display: none; } }
+@media (max-width: 639px) {
+  .ly-piece--main .d-row:nth-child(n+3) { display: none; }
+  #faq .ask__chips, #faq .ask__field { display: none; }
+  #faq .ask__head { height: 44px; }
+}
+/* phone pricing: compact plan cards, the features as one wrapped line */
+@media (max-width: 639px) {
+  #price .card--plan { gap: var(--s-3); padding: var(--s-5); }
+  #price .card--plan .checks { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0; }
+  #price .card--plan .price .t-stat { font-size: 28px; }
+  #price .grid { gap: var(--s-3); }
+  #price .usage__note { display: none; }
+}

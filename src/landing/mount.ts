@@ -27,6 +27,42 @@ const ARROW =
   '<svg class="m-arrow" viewBox="0 0 12 12" aria-hidden="true"><path class="m-arrow__stem" d="M1 6h8"/><path class="m-arrow__head" d="M4.5 2.5 8 6l-3.5 3.5"/></svg>';
 const shops = SUPPORTED_SHOPS.join(', ');
 
+// ---------- nav and the side table of contents ----------
+const TOC: [string, string][] = [
+  ['intro', '소개'],
+  ['app', '화면'],
+  ['features', '기능'],
+  ['price', '가격'],
+  ['privacy', '개인정보'],
+  ['faq', '질문'],
+];
+
+// 목차: 화면 가운데에 걸린 섹션을 지금 섹션으로 보고, 마우스 근처의 선일수록 길게 늘입니다
+function wireToc(): void {
+  const toc = document.querySelector<HTMLElement>('.toc');
+  if (!toc) return;
+  const links = [...toc.querySelectorAll<HTMLAnchorElement>('a[data-toc]')];
+  const setActive = (id: string) => {
+    links.forEach((a) => (a.dataset.toc === id ? a.setAttribute('aria-current', 'location') : a.removeAttribute('aria-current')));
+    toc.dataset.tone = id === 'privacy' ? 'dark' : '';
+  };
+  const io = new IntersectionObserver(
+    (entries) => entries.forEach((e) => e.isIntersecting && setActive(e.target.id)),
+    { rootMargin: '-45% 0px -45% 0px' },
+  );
+  TOC.forEach(([id]) => {
+    const el = document.getElementById(id);
+    if (el) io.observe(el);
+  });
+  setActive('intro');
+  links.forEach((a, i) =>
+    a.addEventListener('pointerenter', () =>
+      links.forEach((b, j) => b.style.setProperty('--grow', String(Math.exp(-((i - j) ** 2) / 1.6)))),
+    ),
+  );
+  toc.addEventListener('pointerleave', () => links.forEach((b) => b.style.removeProperty('--grow')));
+}
+
 // ---------- nav ----------
 const nav = `
 <header class="nav nav--centre">
@@ -48,6 +84,11 @@ const nav = `
       <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 5h14M2 13h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
     </button>
   </div>
+  <nav class="toc" aria-label="페이지 목차">
+    <ol>
+      ${TOC.map(([id, label]) => `<li><a href="#${id}" data-toc="${id}"><span class="toc__line" aria-hidden="true"></span><span class="toc__label">${label}</span></a></li>`).join('')}
+    </ol>
+  </nav>
 </header>`;
 
 // ---------- hero: collage ----------
@@ -62,7 +103,7 @@ const heroRows: [string, string, string, string, string][] = [
 ];
 
 const hero = `
-<section class="hero hero--collage" data-enter aria-labelledby="hero-h">
+<section class="hero hero--collage" id="intro" data-enter aria-labelledby="hero-h">
   <div class="wrap"><div class="hero-text grid hero__grid">
     <div class="hero__text span-5">
       <h1 id="hero-h">온라인 셀러를 위한 주문·송장 엑셀 정리</h1>
@@ -215,7 +256,7 @@ const features = `
           <h3>쇼핑몰 양식을 알아서 구분해요</h3>
           <p>${SUPPORTED_SHOPS.length}곳의 주문 엑셀을 한꺼번에 올려도 파일마다 어느 쇼핑몰 양식인지 읽어 내요.</p>
           <div class="panel" ${mesh(21)}>
-            <div class="stage stage--fade-b"><div class="at-rise fit" style="--fit-max:380px;--ax:max(24px, 50% - 190px);--ay:calc(100% - 180px);--ay-sm:calc(100% - 180px)" data-ui-loop>
+            <div class="stage stage--fade-b"><div class="at-rise fit" style="--fit-max:380px;--ax:max(24px, 50% - 190px);--ay:56px;--ay-sm:24px" data-ui-loop>
               <div class="ui ui-notify" data-ui="notify">
                 <ul class="ui-notify__list" data-notify-list>
                   <li class="ui-note"><span class="ui-note__ico">${XLSX}</span><span class="ui-note__text"><span class="ui-note__title">쿠팡 양식으로 읽었어요<time>방금</time></span><span class="ui-note__body">11월_쿠팡_주문.xlsx, 주문 98건</span></span></li>
@@ -251,9 +292,7 @@ const features = `
       <article class="card card--row card--open span-6">
         <h3>확인할 주문을 먼저 보여 줘요</h3>
         <p>받는 사람 이름이 비었거나 전화번호가 10자리보다 짧은 주문을 송장을 뽑기 전에 골라 둬요.</p>
-        <div class="panel panel--device">
-          <div class="panel__bar"><span class="mark" data-mark="dots" aria-hidden="true"></span><span>${APP_NAME}</span><span class="muted">확인할 주문 3건</span><span class="sp"></span><span class="panel__status"><i></i>정리 중</span></div>
-          <div class="panel__screen" ${mesh(47)}>
+        <div class="panel" ${mesh(47)}>
             <div class="stage stage--fade-b"><div class="at-corner fit" style="--ax:24px;--ay:28px;--fit-max:456px">
               <div class="ui ui-panel ui-win" data-ui="window" data-ui-opts='{"compact":true}' data-open="확인 필요" data-work="확인 중" data-done="고침">
                 <div class="ui-win__bar"><span class="ui-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="ui-win__crumb">확인할 주문</span><span class="ui-spacer"></span></div>
@@ -269,7 +308,6 @@ const features = `
                 </div>
               </div>
             </div></div>
-          </div>
         </div>
       </article>
       <article class="card card--row card--open span-6">
@@ -300,7 +338,7 @@ const features = `
 
 // ---------- pricing ----------
 const pricing = `
-<section class="section" id="price" aria-labelledby="price-h" style="--hm: 2">
+<section class="section" id="price" aria-labelledby="price-h">
   <div class="wrap">
     <div class="section-head">
       <h2 id="price-h">월 단위 요금</h2>
@@ -319,6 +357,12 @@ const pricing = `
         </article>`;
       }).join('')}
     </div>
+    <div class="usage ui ui-panel" role="img" aria-label="무료 플랜을 쓰는 계정의 사이드바: 이번 달 업로드 5회 중 3회 사용">
+      <span class="mark" data-mark="dots" aria-hidden="true"></span>
+      <div class="usage__who"><span class="usage__label">로그인한 계정</span><b>내 계정</b></div>
+      <div class="usage__meter"><span>무료 플랜 · 이번 달 <b>3 / ${FREE_MONTHLY_UPLOADS}회</b> 사용</span><i style="--k:${3 / FREE_MONTHLY_UPLOADS}"></i></div>
+      <span class="usage__note">${FREE_MONTHLY_UPLOADS}회를 다 쓰면 다음 달 1일에 다시 채워져요</span>
+    </div>
   </div>
 </section>`;
 
@@ -326,7 +370,7 @@ const pricing = `
 const privacy = `
 <section class="section ground-inverse" id="privacy" aria-labelledby="privacy-h" data-moment="line-carries-colour" data-moment-opts='{"from":"base"}'>
   <div class="wrap">
-    <div class="grid grid--top">
+    <div class="grid grid--top fill">
       <div class="span-5 stack-6">
         <h2 id="privacy-h">주문 파일은 이 브라우저 안에서만 다뤄요</h2>
         <p class="t-lead">받는 사람 이름, 주소, 연락처가 든 엑셀을 서버로 보내지 않아요. 비밀번호가 걸린 엑셀도 내 컴퓨터에서 풀어요.</p>
@@ -336,7 +380,7 @@ const privacy = `
           <li><b>택배사</b><span>${SUPPORTED_COURIERS.join(', ')} 송장 엑셀</span></li>
         </ul>
       </div>
-      <div class="frame frame--split span-6 start-7">
+      <div class="frame frame--split frame--fill span-6 start-7">
         <div class="stage stage--fade-br"><div class="at-corner to-edge" style="--ax:56px;--ay:56px">
           <div class="ui ui-panel unlock" role="img" aria-label="비밀번호가 걸린 스마트스토어 주문 엑셀을 브라우저에서 여는 창">
             <div class="unlock__head">${XLSX}<span class="unlock__name">11월_스마트스토어_주문.xlsx</span><span class="ui-spacer"></span><span class="unlock__lock">비밀번호 필요</span></div>
@@ -367,7 +411,13 @@ const faq = `
     <div class="grid grid--top">
       <div class="span-5 stack-4">
         <h2 id="faq-h">자주 묻는 질문</h2>
-        <p class="muted">더 궁금한 점은 로그인한 뒤 왼쪽 메뉴의 문의하기로 보내 주세요.</p>
+        <p>더 궁금한 점은 로그인한 뒤 왼쪽 메뉴의 문의하기로 보내 주세요.</p>
+        <div class="ask ui ui-panel" role="img" aria-label="${APP_NAME} 앱의 문의하기 창">
+          <div class="ask__head"><b>문의하기</b><span class="ui-spacer"></span><span class="ask__x" aria-hidden="true">×</span></div>
+          <div class="ask__chips"><span class="is-on">사용 방법</span><span>버그 신고</span><span>기능 제안</span></div>
+          <div class="ask__field">롯데택배 송장 엑셀은 어느 칸을 맞추면 되나요?</div>
+          <div class="ask__foot"><span>답변은 가입한 이메일로 보내 드려요</span><span class="ui-spacer"></span><span class="ui-btn ui-btn--primary">보내기</span></div>
+        </div>
       </div>
       <div class="faq span-6 start-7" data-faq-list>${faqItems(DEFAULT_FAQS)}</div>
     </div>
@@ -398,8 +448,8 @@ const footer = `
           <a class="nav__logo" href="#top"><span class="mark" data-mark="dots" aria-hidden="true"></span>${APP_NAME}</a>
           <p class="footer__lede">온라인 셀러의 주문 엑셀과 송장 파일을 정리하는 서비스예요.</p>
         </div>
-        <div class="span-2 footer__col"><h3>서비스</h3><ul><li><a href="#app">화면</a></li><li><a href="#features">기능</a></li><li><a href="#price">가격</a></li></ul></div>
-        <div class="span-2 footer__col"><h3>도움말</h3><ul><li><a href="#privacy">개인정보</a></li><li><a href="#faq">질문</a></li></ul></div>
+        <div class="span-3 footer__col"><h3>서비스</h3><ul><li><a href="#app">화면</a></li><li><a href="#features">기능</a></li><li><a href="#price">가격</a></li></ul></div>
+        <div class="span-3 footer__col"><h3>도움말</h3><ul><li><a href="#privacy">개인정보</a></li><li><a href="#faq">질문</a></li></ul></div>
         <div class="span-2 footer__col"><h3>계정</h3><ul><li><a href="${APP_URL}">로그인</a></li></ul></div>
       </div>
       <div class="footer__legal">
@@ -417,6 +467,8 @@ export function mountLanding(): void {
     'afterbegin',
     `${nav}<main id="top">${hero}${app}${features}${pricing}${privacy}${faq}</main>${footer}`,
   );
+
+  wireToc();
 
   // 관리자가 바꾼 질문이 있으면 불러와서 바꿉니다
   loadFaqs().then((items) => {

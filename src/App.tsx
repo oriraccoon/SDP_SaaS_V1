@@ -234,7 +234,7 @@ export default function App() {
 
   const [activeTab, setActiveTab] = useState<'process' | 'analytics'>('process');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [settingsSection, setSettingsSection] = useState<'platforms' | 'products' | 'backup' | 'account'>('platforms');
   const openSettings = (section: 'platforms' | 'products' | 'backup' | 'account') => {
     setSettingsSection(section);
@@ -2185,7 +2185,7 @@ export default function App() {
           <div className="flex items-center gap-2.5">
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-base sm:text-lg font-bold tracking-tight text-[#1E5B4A]">{APP_NAME}</h1>
+                
                 <span className="text-[10px] bg-slate-100 text-slate-600 border border-slate-200 font-medium px-1.5 py-0.5 rounded-md shrink-0">v1.0.1 PRO</span>
               </div>
               <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 hidden xs:block">주문서와 송장을 맞춰 발송 엑셀을 만듭니다</p>
@@ -2198,7 +2198,7 @@ export default function App() {
 
       <div className="flex flex-1 min-h-0">
         <aside
-          className={`fixed inset-y-0 left-0 z-30 flex flex-col gap-1 overflow-y-auto border-r border-slate-200 bg-white py-3 transition-all duration-200 ${
+          className={`fixed inset-y-0 left-0 z-30 flex flex-col gap-1 overflow-y-auto border-r border-slate-200 bg-[#F7F8FA] py-4 transition-all duration-200 ${
             isSidebarOpen ? 'w-56 px-3' : 'w-14 px-2'
           }`}
         >
@@ -2210,6 +2210,10 @@ export default function App() {
           >
             <Menu className="w-5 h-5" />
           </button>
+
+          {isSidebarOpen && (
+            <span className="px-3 pb-5 pt-1 text-lg font-bold text-[#1E5B4A]">{APP_NAME}</span>
+          )}
 
           {[
             { key: 'process', label: '주문정리', icon: <Layers className="w-5 h-5 shrink-0" />, selected: activeTab === 'process' && !isSettingsOpen, show: true, action: () => setActiveTab('process') },
@@ -2226,7 +2230,7 @@ export default function App() {
                 title={item.label}
                 className={`flex h-10 items-center gap-3 rounded-lg text-sm font-semibold transition ${
                   isSidebarOpen ? 'w-full px-3' : 'w-10 justify-center'
-                } ${item.selected ? 'bg-[#E9F3EE] text-[#1E5B4A] shadow-[inset_3px_0_0_#1E5B4A]' : 'text-slate-600 hover:bg-slate-100'}`}
+                } ${item.selected ? 'bg-white text-[#1E5B4A] shadow-[inset_3px_0_0_#1E5B4A]' : 'text-slate-600 hover:bg-slate-100'}`}
               >
                 {item.icon}
                 {isSidebarOpen && <span className="whitespace-nowrap">{item.label}</span>}
@@ -2236,9 +2240,14 @@ export default function App() {
           {/* 하단: 로그인한 계정과 로그아웃 */}
           <div className="mt-auto flex flex-col gap-2 border-t border-slate-200 pt-3">
             {isSidebarOpen && (
-              <span className="truncate px-3 text-xs text-slate-500" title={account?.email ?? ''}>
-                {account?.email || '로그인한 계정'}
-              </span>
+              <div className="flex flex-col gap-0.5 px-3">
+                <span className="text-xs text-slate-500">로그인한 계정</span>
+                {account?.email && (
+                  <span className="truncate text-sm font-medium text-slate-800" title={account.email}>
+                    {account.email}
+                  </span>
+                )}
+              </div>
             )}
             <button
               onClick={() => openConfirm('로그아웃', '로그아웃 하시겠습니까? 저장되지 않은 작업은 사라집니다.', () => logout())}

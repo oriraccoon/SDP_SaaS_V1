@@ -288,7 +288,7 @@ export default function App() {
       updatedForm[item] = rec;
     });
     setNewItemsMappingForm(updatedForm);
-    showNotification('info', "모든 미매칭 항목에 AI 추천 정제어가 입력되었습니다.");
+    showNotification('info', "처음 보는 상품마다 AI가 추천한 짧은 이름을 넣었어요.");
   };
 
   // 2단계 (운송장 업데이트) 상태 - 1단계와 동일하게 다중 파일 및 자동 감지 지원
@@ -476,7 +476,7 @@ export default function App() {
     const existingFiltered = productMappings.filter(m => m.rawName !== rawName);
     const updated = [...existingFiltered, { rawName, mappedName: newMappedName }];
     setProductMappings(updated);
-    showNotification('success', `'${rawName}' ➔ '${newMappedName}' 정제 규칙이 저장되어 주문에 반영되었습니다.`);
+    showNotification('success', `'${rawName}' ➔ '${newMappedName}'(으)로 품목사전에 넣고 주문에 반영했어요.`);
 
     if (orderFiles.length > 0) {
       processMultipleOrderFiles(orderFiles, customFilePlatforms, decryptedFilesCache, updated);
@@ -970,7 +970,7 @@ export default function App() {
 
     const updatedMappings = [...newMappingsToAdd, ...productMappings];
     setProductMappings(updatedMappings);
-    showNotification('success', `신규 품목 ${newMappingsToAdd.length}개의 정제 규칙이 사전에 등록되었습니다.`);
+    showNotification('success', `새 상품 ${newMappingsToAdd.length}개를 품목사전에 넣었어요.`);
 
     // 엑셀 수집 파일 및 API 수집 주문 포함 전체 재대치 실행
     if (orderParseResult && orderParseResult.orders && orderParseResult.orders.length > 0) {
@@ -1728,7 +1728,7 @@ export default function App() {
   // --- 품목 대치 사전 전용 내보내기 ---
   const handleExportProductMappingsExcel = () => {
     if (productMappings.length === 0) {
-      showNotification('error', "내보낼 품목 대치 규칙이 존재하지 않습니다.");
+      showNotification('error', "품목사전이 비어 있어 내보낼 게 없어요.");
       return;
     }
     const data = productMappings.map(m => ({
@@ -1739,12 +1739,12 @@ export default function App() {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, '품목대치사전');
     XLSX.writeFile(wb, `품목대치사전_${new Date().toISOString().slice(0, 10)}.xlsx`);
-    showNotification('success', "품목 대치 사전 엑셀(.xlsx) 파일 내보내기가 완료되었습니다.");
+    showNotification('success', "품목사전을 엑셀(.xlsx) 파일로 내보냈어요.");
   };
 
   const handleExportProductMappingsCSV = () => {
     if (productMappings.length === 0) {
-      showNotification('error', "내보낼 품목 대치 규칙이 존재하지 않습니다.");
+      showNotification('error', "품목사전이 비어 있어 내보낼 게 없어요.");
       return;
     }
     const data = productMappings.map(m => ({
@@ -1755,29 +1755,29 @@ export default function App() {
     const csvOutput = XLSX.utils.sheet_to_csv(ws);
     const blob = new Blob(["\uFEFF" + csvOutput], { type: 'text/csv;charset=utf-8;' });
     triggerDownload(blob, `품목대치사전_${new Date().toISOString().slice(0, 10)}.csv`);
-    showNotification('success', "품목 대치 사전 CSV(.csv) 파일 내보내기가 완료되었습니다.");
+    showNotification('success', "품목사전을 CSV(.csv) 파일로 내보냈어요.");
   };
 
   const handleExportProductMappingsJSON = () => {
     if (productMappings.length === 0) {
-      showNotification('error', "내보낼 품목 대치 규칙이 존재하지 않습니다.");
+      showNotification('error', "품목사전이 비어 있어 내보낼 게 없어요.");
       return;
     }
     const blob = new Blob([JSON.stringify(productMappings, null, 2)], { type: 'application/json;charset=utf-8;' });
     triggerDownload(blob, `품목대치사전_${new Date().toISOString().slice(0, 10)}.json`);
-    showNotification('success', "품목 대치 사전 JSON(.json) 파일 내보내기가 완료되었습니다.");
+    showNotification('success', "품목사전을 JSON(.json) 파일로 내보냈어요.");
   };
 
   const handleCopyProductMappingsClipboard = () => {
     if (productMappings.length === 0) {
-      showNotification('error', "복사할 품목 대치 규칙이 존재하지 않습니다.");
+      showNotification('error', "품목사전이 비어 있어 복사할 게 없어요.");
       return;
     }
     const text = productMappings
       .map(m => `'${m.rawName}' : '${m.mappedName}'`)
       .join(',\n');
     navigator.clipboard.writeText(text)
-      .then(() => showNotification('success', "전체 품목 대치 규칙 텍스트가 클립보드에 복사되었습니다."))
+      .then(() => showNotification('success', "품목사전 전체를 글자로 복사했어요."))
       .catch(() => showNotification('error', "클립보드 복사에 실패했습니다."));
   };
 
@@ -1805,7 +1805,7 @@ export default function App() {
           if (parsed.length > 0) {
             setMappingImportConfirm({ isOpen: true, parsed });
           } else {
-            showNotification('error', "JSON 파일에 유효한 품목 대치 데이터가 없습니다.");
+            showNotification('error', "JSON 파일에서 품목사전 내용을 찾지 못했어요.");
           }
         } catch {
           showNotification('error', "JSON 파일 형식이 올바르지 않습니다.");
@@ -1842,7 +1842,7 @@ export default function App() {
           if (parsed.length > 0) {
             setMappingImportConfirm({ isOpen: true, parsed });
           } else {
-            showNotification('error', "엑셀/CSV 파일에서 품목 대치 규칙을 읽지 못했습니다.");
+            showNotification('error', "엑셀/CSV 파일에서 품목사전 내용을 읽지 못했어요.");
           }
         } catch {
           showNotification('error', "파일을 읽는 중 오류가 발생했습니다.");
@@ -1886,7 +1886,7 @@ export default function App() {
         if (parsed.length > 0) {
           setMappingImportConfirm({ isOpen: true, parsed });
         } else {
-          showNotification('error', "TXT 파일에서 대치 규칙을 읽지 못했습니다.");
+          showNotification('error', "TXT 파일에서 품목사전 내용을 읽지 못했어요.");
         }
       };
       reader.readAsText(file);
@@ -1901,7 +1901,7 @@ export default function App() {
 
     if (overwrite) {
       setProductMappings(parsed);
-      showNotification('success', `총 ${parsed.length}개 품목 대치 규칙으로 전체 교체되었습니다.`);
+      showNotification('success', `품목사전을 파일 내용 ${parsed.length}개로 모두 바꿨어요.`);
     } else {
       const merged = [...productMappings];
       let addedCount = 0;
@@ -1912,7 +1912,7 @@ export default function App() {
         }
       });
       setProductMappings(merged);
-      showNotification('success', `신규 ${addedCount}개 품목 대치 규칙이 추가되었습니다.`);
+      showNotification('success', `새 상품 ${addedCount}개를 품목사전에 더했어요.`);
     }
 
     setMappingImportConfirm(null);
@@ -3501,13 +3501,13 @@ export default function App() {
                 <Upload className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-bold text-slate-800 text-sm">품목 대치 사전 가져오기</h3>
-                <p className="text-xs text-brand-600 font-semibold">총 {mappingImportConfirm.parsed.length}개의 대치 규칙 탐지됨</p>
+                <h3 className="font-bold text-slate-800 text-sm">품목사전 가져오기</h3>
+                <p className="text-xs text-brand-600 font-semibold">파일에서 {mappingImportConfirm.parsed.length}개를 찾았어요</p>
               </div>
             </div>
 
             <p className="text-xs text-slate-600 leading-relaxed">
-              불러온 대치 규칙을 기존 품목 대치 사전에 어떻게 적용할까요?
+              지금 품목사전에 어떻게 넣을까요?
             </p>
 
             <div className="space-y-2 pt-1">
@@ -3515,16 +3515,16 @@ export default function App() {
                 onClick={() => handleApplyMappingImport(false)}
                 className="w-full text-left p-3.5 bg-brand-50/80 hover:bg-brand-100 border border-brand-200 text-[#0F3A2F] rounded-xl text-xs font-semibold transition flex flex-col gap-0.5 cursor-pointer"
               >
-                <span> 기존 사전에 추가 (병합) [Enter]</span>
-                <span className="text-xs text-brand-600 font-normal">기존 목록을 유지하고 중복되지 않은 신규 항목만 추가합니다.</span>
+                <span>지금 사전에 더하기 [Enter]</span>
+                <span className="text-xs text-brand-600 font-normal">지금 목록은 그대로 두고, 없던 것만 더해요.</span>
               </button>
 
               <button
                 onClick={() => handleApplyMappingImport(true)}
                 className="w-full text-left p-3.5 bg-rose-50/80 hover:bg-rose-100 border border-rose-200 text-rose-900 rounded-xl text-xs font-semibold transition flex flex-col gap-0.5 cursor-pointer"
               >
-                <span> 기존 사전 전체 교체 (덮어쓰기)</span>
-                <span className="text-xs text-rose-600 font-normal">기존 목록을 지우고 업로드한 파일 데이터로 전체 대체합니다.</span>
+                <span>지금 사전을 모두 바꾸기</span>
+                <span className="text-xs text-rose-600 font-normal">지금 목록을 지우고 파일 내용으로 바꿔요.</span>
               </button>
             </div>
 

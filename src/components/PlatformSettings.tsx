@@ -728,7 +728,7 @@ export default function PlatformSettings({
   // 감지/선택된 쇼핑몰 양식에 최신 스마트 매칭/설정 덮어씌우기
   const handleOverwriteActivePlatform = () => {
     if (!activePlatform || !activeFile) {
-      alert('덮어쓸 쇼핑몰 양식이나 파일을 고르지 않았어요.');
+      alert('저장할 쇼핑몰 양식이나 파일을 골라 주세요.');
       return;
     }
 
@@ -1303,7 +1303,7 @@ export default function PlatformSettings({
                         className="min-h-[36px] rounded-lg border border-slate-300 bg-white px-2 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600/30 cursor-pointer"
                       >
                         {!platforms.some(p => p.id === activePlatform.id) && (
-                          <option value={activePlatform.id}>{activePlatform.name}</option>
+                          <option value={activePlatform.id}>{activePlatform.id.startsWith('unregistered') ? '처음 보는 양식' : activePlatform.name}</option>
                         )}
                         {platforms.map(p => (
                           <option key={p.id} value={p.id}>{p.name}</option>
@@ -2426,7 +2426,7 @@ export default function PlatformSettings({
                     onClick={() => applyCourierPreset(preset)}
                     className="flex items-center justify-between p-3.5 border border-slate-200 hover:border-brand-600 hover:bg-brand-50/40 rounded-xl text-left transition cursor-pointer"
                   >
-                    <div className="font-semibold text-slate-800 text-xs">{preset.name}</div>
+                    <div className="font-semibold text-slate-800 text-xs">{preset.name.replace(/\s*표준 템플릿$/, '')}</div>
                     <span className="text-xs text-brand-600 bg-brand-50 px-2 py-1 rounded font-bold">고르기</span>
                   </button>
                 ))}
@@ -2525,7 +2525,7 @@ export default function PlatformSettings({
                   type="text"
                   value={newPlatformPatternInput}
                   onChange={(e) => setNewPlatformPatternInput(e.target.value)}
-                  placeholder="예: 11st, order, coupang (파일명에 이 단어가 들어있으면 자동 매칭)"
+                  placeholder="예: 11st, order, coupang"
                   className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-600/20 focus:border-brand-600 font-medium"
                 />
                 <p className="text-xs text-slate-400 mt-1">
@@ -2598,7 +2598,7 @@ export default function PlatformSettings({
                   type="text"
                   value={newCourierPatternInput}
                   onChange={(e) => setNewCourierPatternInput(e.target.value)}
-                  placeholder="예: hanjin, lotte, cj (운송장 파일명에 이 단어가 있으면 자동 매칭)"
+                  placeholder="예: hanjin, lotte, cj"
                   className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-medium"
                 />
                 <p className="text-xs text-slate-400 mt-1">

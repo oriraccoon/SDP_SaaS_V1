@@ -158,6 +158,8 @@ export interface ConfirmDialogProps {
   onConfirm: () => void;
   onCancel: () => void;
   zIndex?: number;
+  /** 팝업을 연 화면이 Esc를 따로 처리하면 false */
+  closeOnEsc?: boolean;
 }
 
 export function ConfirmDialog({
@@ -172,6 +174,7 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
   zIndex,
+  closeOnEsc = true,
 }: ConfirmDialogProps) {
   const confirmClass = tone === 'danger' ? btn.danger : tone === 'brand' ? btn.primary : btn.dark;
   return (
@@ -183,6 +186,7 @@ export function ConfirmDialog({
       iconTone={tone === 'danger' ? 'danger' : tone === 'brand' ? 'brand' : 'neutral'}
       size="sm"
       zIndex={zIndex}
+      closeOnEsc={closeOnEsc}
       hideClose
       footer={
         <>

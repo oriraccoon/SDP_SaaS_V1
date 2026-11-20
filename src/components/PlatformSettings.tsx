@@ -2333,6 +2333,7 @@ export default function PlatformSettings({
           icon={<Trash2 className="w-4 h-4" />}
           confirmLabel="지우기"
           zIndex={60}
+          closeOnEsc={false}
           onCancel={() => setDeletingPlatform(null)}
           onConfirm={() => executeDeletePlatform(deletingPlatform.id)}
         />
@@ -2448,6 +2449,7 @@ export default function PlatformSettings({
           icon={<Trash2 className="w-4 h-4" />}
           confirmLabel="지우기"
           zIndex={60}
+          closeOnEsc={false}
           onCancel={() => setDeletingCourier(null)}
           onConfirm={() => executeDeleteCourier(deletingCourier.id)}
         />

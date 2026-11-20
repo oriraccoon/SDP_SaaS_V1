@@ -7,6 +7,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
+import Modal, { btn, ConfirmDialog } from './ui/Modal';
 import { findBestIntelligentMatch, calculateSmartSimilarity, extractCleanProductRecommendation } from '../utils/excelProcessor';
 
 interface ProductMappingListProps {
@@ -568,216 +569,127 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
         className="hidden"
       />
 
-      {/* 대량 추가 파싱 결과 확인 모달 */}
+      {/* 여러 개 한 번에 넣기: 어떻게 넣을지 */}
       {bulkImportConfirm && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-100">
-            <h3 className="font-bold text-slate-800 text-base flex items-center gap-2">
-              <Layers className="w-5 h-5 text-brand-600" />
-              여러 개 한 번에 넣기
-            </h3>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              분석 결과 <strong className="text-brand-600 font-bold">{bulkImportConfirm.parsed.length}개</strong>를 읽었어요. 
-              지금 목록에 어떻게 넣을까요?
-            </p>
-            <div className="grid grid-cols-2 gap-3 pt-2">
-              <button
-                onClick={() => handleBulkConfirmDecision(false)}
-                className="px-4 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition"
-              >
-                지금 목록에 더하기
-              </button>
-              <button
-                onClick={() => handleBulkConfirmDecision(true)}
-                className="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-semibold transition shadow-md"
-              >
-                지금 목록을 지우고 바꾸기
-              </button>
-            </div>
-            <div className="flex justify-end pt-1">
-              <button
-                onClick={() => setBulkImportConfirm(null)}
-                className="text-xs text-slate-500 hover:text-slate-700"
-              >
-                취소
-              </button>
-            </div>
+        <Modal
+          onClose={() => setBulkImportConfirm(null)}
+          title={`${bulkImportConfirm.parsed.length}개를 읽었어요`}
+          description="지금 품목사전에 어떻게 넣을까요?"
+          icon={<Layers className="w-4 h-4" />}
+          iconTone="brand"
+          size="sm"
+          closeOnEsc={false}
+          footer={<button type="button" onClick={() => setBulkImportConfirm(null)} className={btn.secondary}>취소</button>}
+        >
+          <div className="space-y-2">
+            <button
+              type="button"
+              onClick={() => handleBulkConfirmDecision(false)}
+              className="w-full rounded-xl border-2 border-brand-600 bg-brand-50 px-4 py-3 text-left transition hover:bg-brand-100 cursor-pointer"
+            >
+              <div className="text-sm font-semibold text-brand-900">지금 목록에 더하기</div>
+              <div className="text-[13px] text-slate-600">지금 목록은 그대로 두고 없던 것만 더해요.</div>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleBulkConfirmDecision(true)}
+              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-left transition hover:bg-slate-50 cursor-pointer"
+            >
+              <div className="text-sm font-semibold text-slate-900">지금 목록을 지우고 바꾸기</div>
+              <div className="text-[13px] text-slate-600">지금 목록이 모두 지워지고 읽은 내용으로 바뀌어요.</div>
+            </button>
           </div>
-        </div>
+        </Modal>
       )}
 
-      {/* 단일 항목 삭제 확인 모달 */}
+      {/* 하나 지우기 */}
       {singleDeleteTarget && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 space-y-4 border border-slate-100">
-            <h3 className="font-bold text-slate-800 text-base flex items-center gap-1.5 text-rose-600">
-              <AlertTriangle className="w-5 h-5 shrink-0" />
-              지우기
-            </h3>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              '<strong className="text-slate-800">{singleDeleteTarget}</strong>'을(를) 지울까요?
-            </p>
-            <div className="flex justify-end gap-2 pt-2">
-              <button
-                onClick={() => setSingleDeleteTarget(null)}
-                className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition"
-              >
-                취소
-              </button>
-              <button
-                onClick={() => executeDelete(singleDeleteTarget)}
-                className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-semibold transition shadow-md"
-              >
-                삭제
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfirmDialog
+          title="이 상품을 품목사전에서 지울까요?"
+          detail={(() => {
+            const m = mappings.find(x => x.rawName === singleDeleteTarget);
+            return m && m.mappedName ? <>{m.rawName} → <b className="font-semibold">{m.mappedName}</b></> : singleDeleteTarget;
+          })()}
+          message="지우면 다음 정리부터 원래 긴 이름으로 나와요. 되돌릴 수 없어요."
+          tone="danger"
+          icon={<Trash2 className="w-4 h-4" />}
+          confirmLabel="지우기"
+          closeOnEsc={false}
+          onCancel={() => setSingleDeleteTarget(null)}
+          onConfirm={() => executeDelete(singleDeleteTarget)}
+        />
       )}
 
-      {/* 일괄/전체 삭제 재확인 모달 */}
+      {/* 모두 지우기 / 고른 것 지우기 */}
       {showDeleteModal?.isOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 space-y-4 border border-slate-100">
-            <h3 className="font-bold text-slate-800 text-base flex items-center gap-1.5 text-rose-600">
-              <AlertTriangle className="w-5 h-5 shrink-0" />
-              {showDeleteModal.type === 'all' ? '모두 지우기' : '고른 것 지우기'}
-            </h3>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              {showDeleteModal.type === 'all' 
-                ? `품목사전 ${mappings.length}개를 모두 지울까요? 되돌릴 수 없어요.`
-                : `고른 ${showDeleteModal.count}개를 지울까요?`
-              }
-            </p>
-            <div className="flex justify-end gap-2 pt-2">
-              <button
-                onClick={() => setShowDeleteModal(null)}
-                className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition"
-              >
-                취소
-              </button>
-              <button
-                onClick={showDeleteModal.type === 'all' ? executeDeleteAll : executeDeleteSelected}
-                className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-semibold transition shadow-md"
-              >
-                지우기
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfirmDialog
+          title={showDeleteModal.type === 'all' ? `품목사전 ${mappings.length}개를 모두 지울까요?` : `고른 ${showDeleteModal.count}개를 지울까요?`}
+          message="지우면 다음 정리부터 원래 긴 이름으로 나와요. 되돌릴 수 없어요."
+          tone="danger"
+          icon={<Trash2 className="w-4 h-4" />}
+          confirmLabel={showDeleteModal.type === 'all' ? '모두 지우기' : '지우기'}
+          closeOnEsc={false}
+          onCancel={() => setShowDeleteModal(null)}
+          onConfirm={showDeleteModal.type === 'all' ? executeDeleteAll : executeDeleteSelected}
+        />
       )}
 
-      {/* 자동 맞춤 결과 및 승인 모달 */}
+      {/* 바꿀 이름 추천 */}
       {showSmartMatchModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 space-y-4 border border-slate-100 max-h-[85vh] flex flex-col">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div>
-                <h3 className="font-bold text-slate-800 text-base flex items-center gap-2">
-                  <Lightbulb className="w-5 h-5 text-amber-500" />
-                  바꿀 이름 추천 ({smartCandidates.length}건)
-                </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  이미 있는 이름과 비슷한 상품을 찾아 바꿀 이름을 골라 두었어요. 맞는 것만 체크하세요.
-                </p>
-              </div>
-              <button
-                onClick={() => setShowSmartMatchModal(false)}
-                className="p-1.5 text-slate-500 hover:text-slate-700 rounded-lg"
-              >
-                <X className="w-5 h-5" />
+        <Modal
+          onClose={() => setShowSmartMatchModal(false)}
+          title={`바꿀 이름 추천 ${smartCandidates.length}개`}
+          description="이미 있는 이름과 비슷한 상품을 찾아 바꿀 이름을 골라 두었어요. 맞는 것만 체크하세요."
+          icon={<Lightbulb className="w-4 h-4" />}
+          iconTone="warn"
+          size="lg"
+          closeOnEsc={false}
+          footerStart={
+            <span className="inline-flex items-center gap-2">
+              <button type="button" onClick={() => setSmartCandidates(prev => prev.map(c => ({ ...c, selected: true })))} className="font-semibold text-brand-700 hover:underline cursor-pointer">모두 체크</button>
+              <span className="text-slate-300">|</span>
+              <button type="button" onClick={() => setSmartCandidates(prev => prev.map(c => ({ ...c, selected: false })))} className="font-semibold text-slate-600 hover:underline cursor-pointer">모두 해제</button>
+            </span>
+          }
+          footer={
+            <>
+              <button type="button" onClick={() => setShowSmartMatchModal(false)} className={btn.secondary}>취소</button>
+              <button type="button" onClick={applySmartCandidates} className={btn.primary}>
+                체크한 것 넣기 ({smartCandidates.filter(c => c.selected).length}개)
               </button>
-            </div>
-
-            <div className="flex items-center justify-between text-xs text-slate-600 bg-amber-50/70 border border-amber-200/80 p-3 rounded-xl">
-              <div className="flex items-center gap-2">
-                <Info className="w-4 h-4 text-amber-600 shrink-0" />
-                <span>체크한 상품에 바꿀 이름이 들어가요.</span>
-              </div>
-              <div className="flex gap-2 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setSmartCandidates(prev => prev.map(c => ({ ...c, selected: true })))}
-                  className="text-xs font-semibold text-brand-600 hover:underline"
-                >
-                  전체 선택
-                </button>
-                <span className="text-slate-300">|</span>
-                <button
-                  type="button"
-                  onClick={() => setSmartCandidates(prev => prev.map(c => ({ ...c, selected: false })))}
-                  className="text-xs font-semibold text-slate-500 hover:underline"
-                >
-                  전체 해제
-                </button>
-              </div>
-            </div>
-
-            <div className="overflow-y-auto flex-1 divide-y divide-slate-100 border border-slate-200 rounded-xl">
-              {smartCandidates.map((cand, idx) => (
-                <div
-                  key={idx}
-                  className={`p-3 text-xs flex items-center justify-between gap-3 hover:bg-slate-50 transition ${
-                    cand.selected ? 'bg-brand-50/10' : 'opacity-60'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <input
-                      type="checkbox"
-                      checked={cand.selected}
-                      onChange={(e) => {
-                        const checked = e.target.checked;
-                        setSmartCandidates(prev => {
-                          const copy = [...prev];
-                          copy[idx] = { ...copy[idx], selected: checked };
-                          return copy;
-                        });
-                      }}
-                      className="w-4 h-4 text-brand-600 rounded border-slate-300 focus:ring-brand-600 cursor-pointer shrink-0"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <div className="font-semibold text-slate-800 truncate" title={cand.rawName}>
-                        {cand.rawName}
-                      </div>
-                      <div className="text-xs text-slate-400 mt-0.5 flex items-center gap-1.5">
-                        <span>현재: {cand.currentMapped}</span>
-                        <span>•</span>
-                        <span className="text-brand-600">{cand.reason}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-xs font-bold text-brand-600 bg-brand-50 px-2.5 py-1 rounded-lg border border-[#E0EFE8]">
-                      → {cand.suggestedMapped}
-                    </span>
-                    <span className="text-xs font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
-                      {cand.confidence}% 일치
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="pt-2 flex justify-end gap-3 border-t border-slate-100 shrink-0">
-              <button
-                type="button"
-                onClick={() => setShowSmartMatchModal(false)}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition"
-              >
-                취소
-              </button>
-              <button
-                type="button"
-                onClick={applySmartCandidates}
-                className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition shadow-md flex items-center gap-1.5"
-              >
-                <Lightbulb className="w-4 h-4 text-amber-300" />
-                체크한 것 넣기 ({smartCandidates.filter(c => c.selected).length}건)
-              </button>
-            </div>
-          </div>
-        </div>
+            </>
+          }
+        >
+          <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200">
+            {smartCandidates.map((cand, idx) => (
+              <li key={idx}>
+                <label className={`flex cursor-pointer items-start gap-3 px-4 py-3 text-[13px] transition hover:bg-slate-50 ${cand.selected ? '' : 'opacity-60'}`}>
+                  <input
+                    type="checkbox"
+                    checked={cand.selected}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      setSmartCandidates(prev => {
+                        const copy = [...prev];
+                        copy[idx] = { ...copy[idx], selected: checked };
+                        return copy;
+                      });
+                    }}
+                    className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border-slate-300 accent-brand-600"
+                  />
+                  <span className="min-w-0 flex-1">
+                    <span className="block break-words text-sm font-medium text-slate-900">{cand.rawName}</span>
+                    <span className="mt-0.5 block text-slate-500">지금: {cand.currentMapped || '없음'} · {cand.reason}</span>
+                  </span>
+                  <span className="flex shrink-0 flex-col items-end gap-1">
+                    <span className="rounded-md bg-brand-50 px-2 py-0.5 text-[13px] font-semibold text-brand-800">→ {cand.suggestedMapped}</span>
+                    <span className="text-[12px] text-slate-500">{cand.confidence}% 비슷함</span>
+                  </span>
+                </label>
+              </li>
+            ))}
+          </ul>
+        </Modal>
       )}
 
       {/* 페이지 상단 헤더 & 모드 전환 */}

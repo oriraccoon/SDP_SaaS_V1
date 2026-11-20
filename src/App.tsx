@@ -2579,6 +2579,7 @@ export default function App() {
                       e.preventDefault();
                       const droppedFiles = Array.from(e.dataTransfer.files as FileList).filter((f: File) => f.name.match(/\.xlsx?$/i));
                       if (droppedFiles.length === 0) return;
+                      if (!(await checkUploadAllowed(droppedFiles.length))) return;
                       const existingNames = new Set(orderFiles.map((f: File) => f.name));
                       const uniqueNewFiles = droppedFiles.filter((f: File) => !existingNames.has(f.name));
 
@@ -2886,6 +2887,7 @@ export default function App() {
                       e.preventDefault();
                       const droppedFiles = Array.from(e.dataTransfer.files as FileList).filter((f: File) => f.name.match(/\.xlsx?$/i));
                       if (droppedFiles.length === 0) return;
+                      if (!(await checkUploadAllowed(droppedFiles.length))) return;
 
                       const existingNames = new Set(trackingFiles.map((f: File) => f.name));
                       const uniqueNewFiles = droppedFiles.filter((f: File) => !existingNames.has(f.name));

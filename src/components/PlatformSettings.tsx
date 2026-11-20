@@ -7,6 +7,7 @@ import {
   Search, Filter, CheckCircle2, RefreshCw, Zap, Table, Layers, ArrowRight, Upload, 
   ChevronDown, Check, Lightbulb, FileText, Eye, Info, Grid, X
 } from 'lucide-react';
+import Modal, { btn, ConfirmDialog } from './ui/Modal';
 
 // Excel Column Letter to 1-based Number (e.g. "A" -> 1, "AA" -> 27)
 function letterToColNum(letter: string): number {
@@ -1834,147 +1835,108 @@ export default function PlatformSettings({
       {/* 톱니바퀴 모달 팝업: 쇼핑몰 양식 & 택배사 송장 상세 관리     */}
       {/* ======================================================== */}
       {showSettingsModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-slate-200 my-auto">
-            
-            {/* 팝업 헤더 */}
-            <div className="p-5 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
-              <div className="flex items-center gap-2.5">
-                <span className="p-2 bg-brand-600/20 rounded-xl text-amber-300">
-                  <Settings className="w-5 h-5 animate-spin-slow" />
-                </span>
-                <div>
-                  <h3 className="font-bold text-base text-white">등록된 쇼핑몰·택배사</h3>
-                  <p className="text-xs text-brand-200/80 mt-0.5">
-                    양식마다 어느 칸을 읽을지 정해 두는 곳이에요. 올린 파일을 보면서 고치려면 창을 닫고 칸 확인하기 표를 쓰세요.
-                  </p>
-                </div>
+        <Modal
+          onClose={() => setShowSettingsModal(false)}
+          title="등록된 쇼핑몰·택배사"
+          description="엑셀을 어떻게 읽을지 정해 둔 양식이에요. 정리 결과가 이상할 때만 고치면 돼요."
+          size="xl"
+          closeOnEsc={false}
+          footer={<button type="button" onClick={() => setShowSettingsModal(false)} className={btn.dark}>닫기</button>}
+        >
+            <div className="flex flex-wrap items-center justify-between gap-2 pb-4">
+              <div className="inline-flex rounded-xl bg-slate-100 p-1 text-sm" role="tablist" aria-label="양식 종류">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={modalTab === 'platform'}
+                  onClick={() => setModalTab('platform')}
+                  className={`inline-flex min-h-9 items-center gap-1.5 rounded-lg px-3 transition cursor-pointer ${modalTab === 'platform' ? 'bg-white font-semibold text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                >
+                  <ShoppingBag className="w-4 h-4" />쇼핑몰 <span className="font-normal text-slate-500">{platforms.length}</span>
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={modalTab === 'courier'}
+                  onClick={() => setModalTab('courier')}
+                  className={`inline-flex min-h-9 items-center gap-1.5 rounded-lg px-3 transition cursor-pointer ${modalTab === 'courier' ? 'bg-white font-semibold text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                >
+                  <Truck className="w-4 h-4" />택배사 <span className="font-normal text-slate-500">{couriers.length}</span>
+                </button>
               </div>
-
-              <button
-                onClick={() => setShowSettingsModal(false)}
-                className="p-1.5 text-slate-400 hover:text-white bg-slate-800/80 hover:bg-slate-700 rounded-lg transition cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              {modalTab === 'platform' ? (
+                <button type="button" onClick={() => setShowPresetModal(true)} className={`${btn.secondary} min-h-9 px-3 text-brand-700`}>
+                  <Plus className="w-4 h-4" />쇼핑몰 추가
+                </button>
+              ) : (
+                <button type="button" onClick={() => setShowCourierPresetModal(true)} className={`${btn.secondary} min-h-9 px-3 text-brand-700`}>
+                  <Plus className="w-4 h-4" />택배사 추가
+                </button>
+              )}
             </div>
 
-            {/* 팝업 서브탭 바 */}
-            <div className="flex border-b border-slate-200 bg-slate-50 px-5">
-              <button
-                onClick={() => setModalTab('platform')}
-                className={`flex items-center gap-2 py-3 px-4 font-bold text-xs border-b-2 transition cursor-pointer ${
-                  modalTab === 'platform'
-                    ? 'border-brand-600 text-brand-600 bg-white'
-                    : 'border-transparent text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                <ShoppingBag className="w-4 h-4" />
-                쇼핑몰 ({platforms.length}개)
-              </button>
-
-              <button
-                onClick={() => setModalTab('courier')}
-                className={`flex items-center gap-2 py-3 px-4 font-bold text-xs border-b-2 transition cursor-pointer ${
-                  modalTab === 'courier'
-                    ? 'border-brand-600 text-brand-600 bg-white'
-                    : 'border-transparent text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                <Truck className="w-4 h-4" />
-                택배사 ({couriers.length}개)
-              </button>
-            </div>
-
-            {/* 팝업 모달 메인 바디 */}
-            <div className="p-6 overflow-y-auto space-y-6 flex-1">
+            <div className="space-y-5">
               
               {/* TAB 1: 쇼핑몰 양식 설정 */}
               {modalTab === 'platform' && (
                 <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs text-slate-600">
-                      고칠 쇼핑몰을 고르거나 새로 추가하세요.
-                    </p>
-                    <button
-                      onClick={() => setShowPresetModal(true)}
-                      className="px-3.5 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      쇼핑몰 추가하기
-                    </button>
-                  </div>
-
-                  {/* 플랫폼 목록 카드 Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200">
                     {platforms.map(p => {
                       const isEditing = editingPlatform?.id === p.id;
+                      const isBase = p.id === 'default_platform';
+                      const keyword = p.filepath_pattern || p.identifier;
                       return (
-                        <div 
-                          key={p.id}
-                          className={`p-4 rounded-xl border transition space-y-2 ${
-                            isEditing 
-                              ? 'bg-brand-50/50 border-brand-600 ring-1 ring-brand-600' 
-                              : 'bg-white border-slate-200 hover:border-slate-300'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="font-bold text-sm text-slate-800">{p.name}</div>
-                            <div className="flex items-center gap-1">
-                              <button
-                                onClick={() => setEditingPlatform(p)}
-                                className="px-2 py-1 text-xs bg-slate-100 hover:bg-brand-100 text-slate-700 hover:text-brand-700 rounded font-medium transition cursor-pointer"
-                              >
-                                수정
-                              </button>
-                              <button
-                                onClick={() => setDeletingPlatform(p)}
-                                className="px-2 py-1 text-xs bg-slate-100 hover:bg-rose-100 text-slate-700 hover:text-rose-700 rounded font-medium transition cursor-pointer"
-                              >
-                                삭제
-                              </button>
+                        <li key={p.id} className={`flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 ${isEditing ? 'bg-brand-50' : isBase ? 'bg-slate-50' : 'bg-white'}`}>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                              {p.name}
+                              {isBase && <span className="rounded bg-slate-200 px-1.5 py-0.5 text-[11px] font-semibold text-slate-600">기본</span>}
+                            </div>
+                            <div className="text-[13px] text-slate-600">
+                              {keyword ? <>파일 이름에 <b className="font-semibold text-slate-800">{keyword}</b>가 있으면 이 양식</> : '어느 쇼핑몰인지 모를 때 칸 이름을 보고 읽어요'}
+                              {' · '}주문은 {p.start_row + 1}번째 줄부터 · 송장 번호는 {colNumToLetter(p.tracking_col + 1)}열
                             </div>
                           </div>
-
-                          <div className="text-xs text-slate-500 flex items-center justify-between border-t border-slate-100 pt-2 font-mono flex-wrap gap-1">
-                            <span>파일 이름에 있는 말: <strong className="text-brand-700">{p.filepath_pattern || p.identifier || '전체'}</strong></span>
-                            <span>주문 시작: {p.start_row + 1}번째 줄</span>
-                            <span>송장 번호 칸: {colNumToLetter(p.tracking_col + 1)}열</span>
+                          <div className="flex shrink-0 gap-1 self-end sm:self-auto">
+                            <button type="button" onClick={() => { setEditingPlatform(p); requestAnimationFrame(() => document.getElementById('edit-platform-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' })); }} className={`${btn.ghost} min-h-9 px-3 text-[13px]`}>고치기</button>
+                            <button type="button" onClick={() => setDeletingPlatform(p)} className={`${btn.ghost} min-h-9 px-3 text-[13px] text-rose-700 hover:bg-rose-50`}>지우기</button>
                           </div>
-                        </div>
+                        </li>
                       );
                     })}
-                  </div>
+                  </ul>
 
                   {/* 쇼핑몰 상세 편집 Form */}
                   {editingPlatform && (
-                    <div className="bg-slate-50 border border-brand-200 rounded-xl p-5 space-y-4 animate-fade-in">
-                      <div className="flex items-center justify-between border-b border-brand-100 pb-3">
-                        <h4 className="font-bold text-[#0F3A2F] text-sm flex items-center gap-1.5">
+                    <div id="edit-platform-form" className="scroll-mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-4 sm:p-5">
+                      <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+                        <h4 className="font-semibold text-slate-900 text-sm flex items-center gap-1.5">
                           <Edit3 className="w-4 h-4 text-brand-600" />
                           '{editingPlatform.name}' 고치기
                         </h4>
                         <button
+                          type="button"
                           onClick={() => setEditingPlatform(null)}
-                          className="text-xs text-slate-500 hover:text-slate-700 font-bold cursor-pointer"
+                          aria-label="고치기 닫기"
+                          className="grid h-9 w-9 place-items-center rounded-lg text-slate-500 hover:bg-slate-200 cursor-pointer"
                         >
-                          닫기
+                          <X className="w-4 h-4" />
                         </button>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div>
-                          <label className="block text-xs font-bold text-slate-700 mb-1">쇼핑몰 이름</label>
+                          <label className="block text-[13px] font-semibold text-slate-800 mb-1">쇼핑몰 이름</label>
                           <input
                             type="text"
                             value={editingPlatform.name}
                             onChange={(e) => setEditingPlatform({ ...editingPlatform, name: e.target.value })}
-                            className="w-full text-xs p-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand-600"
+                            className="w-full text-sm h-10 px-3 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600/30 focus:border-brand-600"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-xs font-bold text-slate-700 mb-1">파일 이름에 들어 있는 말 (이 말이 있으면 이 쇼핑몰로 읽어요)</label>
+                          <label className="block text-[13px] font-semibold text-slate-800 mb-1">파일 이름에 들어 있는 말 (이 말이 있으면 이 쇼핑몰로 읽어요)</label>
                           <input
                             type="text"
                             value={editingPlatform.filepath_pattern || editingPlatform.identifier || ''}
@@ -1984,18 +1946,18 @@ export default function PlatformSettings({
                               identifier: e.target.value 
                             })}
                             placeholder="예: 쿠팡, coupang, smartstore..."
-                            className="w-full text-xs p-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand-600 font-mono"
+                            className="w-full text-sm h-10 px-3 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600/30 focus:border-brand-600 font-mono"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-xs font-bold text-slate-700 mb-1">주문이 시작되는 줄 (칸 이름 바로 다음 줄)</label>
+                          <label className="block text-[13px] font-semibold text-slate-800 mb-1">주문이 시작되는 줄 (칸 이름 바로 다음 줄)</label>
                           <input
                             type="number"
                             min="1"
                             value={startRowInput}
                             onChange={(e) => handleStartRowChange(e.target.value)}
-                            className="w-full text-xs p-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand-600 font-mono"
+                            className="w-full text-sm h-10 px-3 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600/30 focus:border-brand-600 font-mono"
                           />
                         </div>
                       </div>
@@ -2063,16 +2025,10 @@ export default function PlatformSettings({
                       </div>
 
                       <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
-                        <button
-                          onClick={() => setEditingPlatform(null)}
-                          className="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-900 border border-slate-200 rounded-lg cursor-pointer"
-                        >
+                        <button type="button" onClick={() => setEditingPlatform(null)} className={btn.secondary}>
                           취소
                         </button>
-                        <button
-                          onClick={() => savePlatform(editingPlatform)}
-                          className="px-4 py-1.5 text-xs font-bold bg-brand-600 hover:bg-brand-700 text-white rounded-lg transition cursor-pointer"
-                        >
+                        <button type="button" onClick={() => savePlatform(editingPlatform)} className={btn.primary}>
                           저장하기
                         </button>
                       </div>
@@ -2084,94 +2040,62 @@ export default function PlatformSettings({
               {/* TAB 2: 택배사 송장 컬럼 설정 */}
               {modalTab === 'courier' && (
                 <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs text-slate-600">
-                      택배사 송장 엑셀에서 어느 칸을 읽을지 정해 두는 곳이에요.
-                    </p>
-                    <button
-                      onClick={() => setShowCourierPresetModal(true)}
-                      className="px-3.5 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      택배사 추가하기
-                    </button>
-                  </div>
-
-                  {/* 택배사 목록 Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <p className="text-[13px] text-slate-600">택배사에서 받은 송장 엑셀에서 어느 칸을 읽을지 정해 둔 양식이에요.</p>
+                  <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200">
                     {couriers.map(c => {
                       const isEditing = editingCourier?.id === c.id;
                       return (
-                        <div 
-                          key={c.id}
-                          className={`p-4 rounded-xl border transition space-y-2 ${
-                            isEditing 
-                              ? 'bg-brand-50/50 border-brand-600 ring-1 ring-brand-600' 
-                              : 'bg-white border-slate-200 hover:border-slate-300'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="font-bold text-sm text-slate-800">{c.name}</div>
-                            <div className="flex items-center gap-1">
-                              <button
-                                onClick={() => setEditingCourier(c)}
-                                className="px-2 py-1 text-xs bg-slate-100 hover:bg-brand-100 text-slate-700 hover:text-brand-700 rounded font-medium transition cursor-pointer"
-                              >
-                                수정
-                              </button>
-                              <button
-                                onClick={() => setDeletingCourier(c)}
-                                className="px-2 py-1 text-xs bg-slate-100 hover:bg-rose-100 text-slate-700 hover:text-rose-700 rounded font-medium transition cursor-pointer"
-                              >
-                                삭제
-                              </button>
-                            </div>
+                        <li key={c.id} className={`flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 ${isEditing ? 'bg-brand-50' : 'bg-white'}`}>
+                          <div className="min-w-0">
+                            <div className="text-sm font-semibold text-slate-900">{c.name}</div>
+                            <div className="text-[13px] text-slate-600">송장은 {c.start_row + 1}번째 줄부터 · 송장 번호는 {colNumToLetter(c.tracking_col + 1)}열</div>
                           </div>
-
-                          <div className="text-xs text-slate-500 flex items-center justify-between border-t border-slate-100 pt-2 font-mono">
-                            <span>송장 시작: {c.start_row + 1}번째 줄</span>
-                            <span>송장 번호 칸: {colNumToLetter(c.tracking_col + 1)}열</span>
+                          <div className="flex shrink-0 gap-1 self-end sm:self-auto">
+                            <button type="button" onClick={() => { setEditingCourier(c); requestAnimationFrame(() => document.getElementById('edit-courier-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' })); }} className={`${btn.ghost} min-h-9 px-3 text-[13px]`}>고치기</button>
+                            <button type="button" onClick={() => setDeletingCourier(c)} className={`${btn.ghost} min-h-9 px-3 text-[13px] text-rose-700 hover:bg-rose-50`}>지우기</button>
                           </div>
-                        </div>
+                        </li>
                       );
                     })}
-                  </div>
+                  </ul>
 
                   {/* 택배사 상세 편집 Form */}
                   {editingCourier && (
-                    <div className="bg-slate-50 border border-brand-200 rounded-xl p-5 space-y-4 animate-fade-in">
-                      <div className="flex items-center justify-between border-b border-brand-100 pb-3">
-                        <h4 className="font-bold text-[#0F3A2F] text-sm flex items-center gap-1.5">
+                    <div id="edit-courier-form" className="scroll-mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-4 sm:p-5">
+                      <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+                        <h4 className="font-semibold text-slate-900 text-sm flex items-center gap-1.5">
                           <Edit3 className="w-4 h-4 text-brand-600" />
                           '{editingCourier.name}' 고치기
                         </h4>
                         <button
+                          type="button"
                           onClick={() => setEditingCourier(null)}
-                          className="text-xs text-slate-500 hover:text-slate-700 font-bold cursor-pointer"
+                          aria-label="고치기 닫기"
+                          className="grid h-9 w-9 place-items-center rounded-lg text-slate-500 hover:bg-slate-200 cursor-pointer"
                         >
-                          닫기
+                          <X className="w-4 h-4" />
                         </button>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-xs font-bold text-slate-700 mb-1">택배사 이름</label>
+                          <label className="block text-[13px] font-semibold text-slate-800 mb-1">택배사 이름</label>
                           <input
                             type="text"
                             value={editingCourier.name}
                             onChange={(e) => setEditingCourier({ ...editingCourier, name: e.target.value })}
-                            className="w-full text-xs p-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand-600 font-bold text-slate-800"
+                            className="w-full text-sm h-10 px-3 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600/30 focus:border-brand-600 font-bold text-slate-800"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-xs font-bold text-slate-700 mb-1">송장이 시작되는 줄 (칸 이름 바로 다음 줄)</label>
+                          <label className="block text-[13px] font-semibold text-slate-800 mb-1">송장이 시작되는 줄 (칸 이름 바로 다음 줄)</label>
                           <input
                             type="number"
                             min="1"
                             value={courierStartRowInput}
                             onChange={(e) => handleCourierStartRowChange(e.target.value)}
-                            className="w-full text-xs p-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand-600 font-mono font-bold"
+                            className="w-full text-sm h-10 px-3 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600/30 focus:border-brand-600 font-mono font-bold"
                           />
                         </div>
                       </div>
@@ -2325,16 +2249,10 @@ export default function PlatformSettings({
                       </div>
 
                       <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
-                        <button
-                          onClick={() => setEditingCourier(null)}
-                          className="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-900 border border-slate-200 rounded-lg cursor-pointer"
-                        >
+                        <button type="button" onClick={() => setEditingCourier(null)} className={btn.secondary}>
                           취소
                         </button>
-                        <button
-                          onClick={() => saveCourier(editingCourier)}
-                          className="px-4 py-1.5 text-xs font-bold bg-brand-600 hover:bg-brand-700 text-white rounded-lg transition cursor-pointer"
-                        >
+                        <button type="button" onClick={() => saveCourier(editingCourier)} className={btn.primary}>
                           저장하기
                         </button>
                       </div>
@@ -2344,323 +2262,195 @@ export default function PlatformSettings({
               )}
 
             </div>
-
-            {/* 팝업 하단 푸터 */}
-            <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end">
-              <button
-                onClick={() => setShowSettingsModal(false)}
-                className="px-5 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold transition shadow-sm cursor-pointer"
-              >
-                닫기
-              </button>
-            </div>
-
-          </div>
-        </div>
+        </Modal>
       )}
 
       {/* 프리셋 모달 (쇼핑몰 추가 마법사) */}
       {showPresetModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full overflow-hidden border border-slate-200">
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="font-bold text-slate-800 text-sm">자주 쓰는 쇼핑몰에서 고르기</h3>
-              <button 
-                onClick={() => setShowPresetModal(false)}
-                className="text-slate-500 hover:text-slate-700 font-bold cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="p-5 space-y-4">
-              <p className="text-xs text-slate-500">
-                목록에 있는 쇼핑몰이면 골라서 바로 시작하세요.
-              </p>
-              
-              <div className="grid grid-cols-1 gap-2 max-h-[280px] overflow-y-auto">
-                {PLATFORM_PRESETS.map((preset) => (
-                  <button
-                    key={preset.id}
-                    onClick={() => applyPreset(preset)}
-                    className="flex items-center justify-between p-3.5 border border-slate-200 hover:border-brand-600 hover:bg-brand-50/40 rounded-xl text-left transition cursor-pointer"
-                  >
-                    <div className="font-semibold text-slate-800 text-xs">{preset.name}</div>
-                    <span className="text-xs text-brand-600 bg-brand-50 px-2 py-1 rounded font-bold">고르기</span>
-                  </button>
-                ))}
-              </div>
-
-              <div className="border-t border-slate-100 pt-3 flex justify-between items-center text-xs">
+        <Modal
+          onClose={() => setShowPresetModal(false)}
+          title="쇼핑몰 추가"
+          description="목록에 있는 쇼핑몰이면 골라서 바로 시작하세요. 없으면 빈 양식으로 만들어요."
+          size="sm"
+          zIndex={60}
+          closeOnEsc={false}
+          footerStart={<button type="button" onClick={createEmptyPlatform} className="text-[13px] font-semibold text-brand-700 underline underline-offset-2 cursor-pointer">빈 양식으로 만들기</button>}
+          footer={<button type="button" onClick={() => setShowPresetModal(false)} className={btn.secondary}>취소</button>}
+        >
+          <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200">
+            {PLATFORM_PRESETS.map((preset) => (
+              <li key={preset.id}>
                 <button
-                  onClick={createEmptyPlatform}
-                  className="text-slate-600 hover:text-slate-900 border border-slate-200 px-3 py-1.5 rounded-lg cursor-pointer"
+                  type="button"
+                  onClick={() => applyPreset(preset)}
+                  className="flex w-full min-h-11 items-center justify-between gap-3 px-4 py-2.5 text-left text-sm text-slate-800 transition hover:bg-brand-50 cursor-pointer"
                 >
-                  빈 양식으로 만들기
+                  <span className="font-medium">{preset.name}</span>
+                  <span className="text-[13px] font-semibold text-brand-700">고르기</span>
                 </button>
-                <button
-                  onClick={() => setShowPresetModal(false)}
-                  className="text-slate-500 hover:text-slate-700 cursor-pointer"
-                >
-                  취소
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+              </li>
+            ))}
+          </ul>
+        </Modal>
       )}
 
       {/* 택배사 프리셋 모달 */}
       {showCourierPresetModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full overflow-hidden border border-slate-200">
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="font-bold text-slate-800 text-sm">자주 쓰는 택배사에서 고르기</h3>
-              <button 
-                onClick={() => setShowCourierPresetModal(false)}
-                className="text-slate-500 hover:text-slate-700 font-bold cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="p-5 space-y-4">
-              <p className="text-xs text-slate-500">
-                목록에 있는 택배사면 골라서 바로 시작하세요.
-              </p>
-              
-              <div className="grid grid-cols-1 gap-2 max-h-[280px] overflow-y-auto">
-                {COURIER_PRESETS.map((preset) => (
-                  <button
-                    key={preset.id}
-                    onClick={() => applyCourierPreset(preset)}
-                    className="flex items-center justify-between p-3.5 border border-slate-200 hover:border-brand-600 hover:bg-brand-50/40 rounded-xl text-left transition cursor-pointer"
-                  >
-                    <div className="font-semibold text-slate-800 text-xs">{preset.name.replace(/\s*표준 템플릿$/, '')}</div>
-                    <span className="text-xs text-brand-600 bg-brand-50 px-2 py-1 rounded font-bold">고르기</span>
-                  </button>
-                ))}
-              </div>
-
-              <div className="border-t border-slate-100 pt-3 flex justify-between items-center text-xs">
+        <Modal
+          onClose={() => setShowCourierPresetModal(false)}
+          title="택배사 추가"
+          description="목록에 있는 택배사면 골라서 바로 시작하세요. 없으면 빈 양식으로 만들어요."
+          size="sm"
+          zIndex={60}
+          closeOnEsc={false}
+          footerStart={<button type="button" onClick={createEmptyCourier} className="text-[13px] font-semibold text-brand-700 underline underline-offset-2 cursor-pointer">빈 양식으로 만들기</button>}
+          footer={<button type="button" onClick={() => setShowCourierPresetModal(false)} className={btn.secondary}>취소</button>}
+        >
+          <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200">
+            {COURIER_PRESETS.map((preset) => (
+              <li key={preset.id}>
                 <button
-                  onClick={createEmptyCourier}
-                  className="text-slate-600 hover:text-slate-900 border border-slate-200 px-3 py-1.5 rounded-lg cursor-pointer"
+                  type="button"
+                  onClick={() => applyCourierPreset(preset)}
+                  className="flex w-full min-h-11 items-center justify-between gap-3 px-4 py-2.5 text-left text-sm text-slate-800 transition hover:bg-brand-50 cursor-pointer"
                 >
-                  빈 양식으로 만들기
+                  <span className="font-medium">{preset.name.replace(/\s*표준 템플릿$/, '')}</span>
+                  <span className="text-[13px] font-semibold text-brand-700">고르기</span>
                 </button>
-                <button
-                  onClick={() => setShowCourierPresetModal(false)}
-                  className="text-slate-500 hover:text-slate-700 cursor-pointer"
-                >
-                  취소
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+              </li>
+            ))}
+          </ul>
+        </Modal>
       )}
 
       {/* 플랫폼 삭제 확인 모달 */}
       {deletingPlatform && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4 border border-slate-100">
-            <h3 className="font-bold text-slate-800 text-base flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-rose-500 shrink-0" />
-              쇼핑몰 양식 지우기
-            </h3>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              <strong>"{deletingPlatform.name}"</strong> 양식을 지울까요?
-            </p>
-            <div className="flex justify-end gap-2 pt-2">
-              <button
-                onClick={() => setDeletingPlatform(null)}
-                className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition cursor-pointer"
-              >
-                취소
-              </button>
-              <button
-                onClick={() => executeDeletePlatform(deletingPlatform.id)}
-                className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold transition cursor-pointer"
-              >
-                지우기
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfirmDialog
+          title="이 쇼핑몰 양식을 지울까요?"
+          detail={deletingPlatform.name}
+          message="되돌릴 수 없어요."
+          tone="danger"
+          icon={<Trash2 className="w-4 h-4" />}
+          confirmLabel="지우기"
+          zIndex={60}
+          onCancel={() => setDeletingPlatform(null)}
+          onConfirm={() => executeDeletePlatform(deletingPlatform.id)}
+        />
       )}
 
       {/* 현재 스마트 감지된 헤더로 새 쇼핑몰 양식 추가 모달 */}
       {showSaveAsNewModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in">
-          <form 
+        <Modal
+          onClose={() => setShowSaveAsNewModal(false)}
+          title="새 쇼핑몰로 등록"
+          description={<>엑셀 파일 <b className="font-semibold text-slate-800">{activeFile?.fileName}</b>의 지금 칸 그대로 양식을 만들어요.</>}
+          size="md"
+          zIndex={60}
+          closeOnEsc={false}
+          footer={
+            <>
+              <button type="button" onClick={() => setShowSaveAsNewModal(false)} className={btn.secondary}>취소</button>
+              <button type="submit" form="form-new-platform" className={btn.primary}>등록하기</button>
+            </>
+          }
+        >
+          <form
+            id="form-new-platform"
             onSubmit={(e) => {
               e.preventDefault();
               handleSaveAsNewPlatformSubmit();
             }}
-            className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-100"
+            className="space-y-4"
           >
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
-                <Plus className="w-4 h-4 text-brand-600" />
-                새 쇼핑몰로 등록
-              </h3>
-              <button type="button" onClick={() => setShowSaveAsNewModal(false)} className="text-slate-500 hover:text-slate-700 font-bold cursor-pointer">✕</button>
-            </div>
-
-            <p className="text-xs text-slate-600 leading-relaxed">
-              엑셀 파일(<strong>{activeFile?.fileName}</strong>)의 지금 칸 그대로 새 쇼핑몰 양식을 만들어요.
-            </p>
-
-            <div className="space-y-3 pt-1">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  쇼핑몰 이름 <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={newPlatformNameInput}
-                  onChange={(e) => setNewPlatformNameInput(e.target.value)}
-                  placeholder="예: 11번가, 지마켓, 카페24, 자사몰"
-                  autoFocus
-                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-600/20 focus:border-brand-600 font-medium"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  파일 이름에 들어 있는 말 (적지 않아도 돼요)
-                </label>
-                <input
-                  type="text"
-                  value={newPlatformPatternInput}
-                  onChange={(e) => setNewPlatformPatternInput(e.target.value)}
-                  placeholder="예: 11st, order, coupang"
-                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-600/20 focus:border-brand-600 font-medium"
-                />
-                <p className="text-xs text-slate-400 mt-1">
-                  이 말이 이름에 들어간 엑셀을 올리면 이 양식으로 읽어요.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={() => setShowSaveAsNewModal(false)}
-                className="px-3.5 py-2 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl cursor-pointer"
-              >
-                취소
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-sm cursor-pointer"
-              >
-                등록하기
-              </button>
-            </div>
+            <label className="block">
+              <span className="block text-sm font-semibold text-slate-800">쇼핑몰 이름 <span className="text-rose-600">*</span></span>
+              <input
+                type="text"
+                value={newPlatformNameInput}
+                onChange={(e) => setNewPlatformNameInput(e.target.value)}
+                placeholder="예: 11번가, 지마켓, 카페24, 자사몰"
+                autoFocus
+                className="mt-1.5 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600/30 focus:border-brand-600"
+              />
+            </label>
+            <label className="block">
+              <span className="block text-sm font-semibold text-slate-800">파일 이름에 들어 있는 말 <span className="font-normal text-slate-500">(안 적어도 돼요)</span></span>
+              <input
+                type="text"
+                value={newPlatformPatternInput}
+                onChange={(e) => setNewPlatformPatternInput(e.target.value)}
+                placeholder="예: 11st, order, coupang"
+                className="mt-1.5 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600/30 focus:border-brand-600"
+              />
+              <span className="mt-1 block text-[13px] text-slate-500">이 말이 이름에 들어간 엑셀은 다음부터 이 양식으로 읽어요.</span>
+            </label>
           </form>
-        </div>
+        </Modal>
       )}
 
       {/* 현재 스마트 감지된 헤더로 새 택배사 양식 추가 모달 */}
       {showSaveAsNewCourierModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in">
-          <form 
+        <Modal
+          onClose={() => setShowSaveAsNewCourierModal(false)}
+          title="새 택배사로 등록"
+          description={<>송장 엑셀 <b className="font-semibold text-slate-800">{activeTrackingFile?.fileName || '송장 파일'}</b>의 지금 칸 그대로 양식을 만들어요.</>}
+          size="md"
+          zIndex={60}
+          closeOnEsc={false}
+          footer={
+            <>
+              <button type="button" onClick={() => setShowSaveAsNewCourierModal(false)} className={btn.secondary}>취소</button>
+              <button type="submit" form="form-new-courier" className={btn.primary}>등록하기</button>
+            </>
+          }
+        >
+          <form
+            id="form-new-courier"
             onSubmit={(e) => {
               e.preventDefault();
               handleSaveAsNewCourierSubmit();
             }}
-            className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-100"
+            className="space-y-4"
           >
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
-                <Plus className="w-4 h-4 text-amber-600" />
-                새 택배사로 등록
-              </h3>
-              <button type="button" onClick={() => setShowSaveAsNewCourierModal(false)} className="text-slate-500 hover:text-slate-700 font-bold cursor-pointer">✕</button>
-            </div>
-
-            <p className="text-xs text-slate-600 leading-relaxed">
-              송장 엑셀 파일(<strong>{activeTrackingFile?.fileName || '운송장 파일'}</strong>)의 지금 칸 그대로 새 택배사 양식을 만들어요.
-            </p>
-
-            <div className="space-y-3 pt-1">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  택배사 이름 <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={newCourierNameInput}
-                  onChange={(e) => setNewCourierNameInput(e.target.value)}
-                  placeholder="예: CJ대한통운 (B형)"
-                  autoFocus
-                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-medium"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  파일 이름에 들어 있는 말 (적지 않아도 돼요)
-                </label>
-                <input
-                  type="text"
-                  value={newCourierPatternInput}
-                  onChange={(e) => setNewCourierPatternInput(e.target.value)}
-                  placeholder="예: hanjin, lotte, cj"
-                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-medium"
-                />
-                <p className="text-xs text-slate-400 mt-1">
-                  이 말이 이름에 들어간 송장 엑셀을 올리면 이 택배사로 읽어요.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={() => setShowSaveAsNewCourierModal(false)}
-                className="px-3.5 py-2 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl cursor-pointer"
-              >
-                취소
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 text-xs font-bold text-slate-950 bg-amber-500 hover:bg-amber-400 rounded-xl shadow-sm cursor-pointer"
-              >
-                등록하기
-              </button>
-            </div>
+            <label className="block">
+              <span className="block text-sm font-semibold text-slate-800">택배사 이름 <span className="text-rose-600">*</span></span>
+              <input
+                type="text"
+                value={newCourierNameInput}
+                onChange={(e) => setNewCourierNameInput(e.target.value)}
+                placeholder="예: CJ대한통운 (B형)"
+                autoFocus
+                className="mt-1.5 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600/30 focus:border-brand-600"
+              />
+            </label>
+            <label className="block">
+              <span className="block text-sm font-semibold text-slate-800">파일 이름에 들어 있는 말 <span className="font-normal text-slate-500">(안 적어도 돼요)</span></span>
+              <input
+                type="text"
+                value={newCourierPatternInput}
+                onChange={(e) => setNewCourierPatternInput(e.target.value)}
+                placeholder="예: hanjin, lotte, cj"
+                className="mt-1.5 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600/30 focus:border-brand-600"
+              />
+              <span className="mt-1 block text-[13px] text-slate-500">이 말이 이름에 들어간 송장 엑셀은 다음부터 이 택배사로 읽어요.</span>
+            </label>
           </form>
-        </div>
+        </Modal>
       )}
 
       {/* 택배사 삭제 확인 모달 */}
       {deletingCourier && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4 border border-slate-100">
-            <h3 className="font-bold text-slate-800 text-base flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-rose-500 shrink-0" />
-              택배사 양식 지우기
-            </h3>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              <strong>"{deletingCourier.name}"</strong> 양식을 지울까요?
-            </p>
-            <div className="flex justify-end gap-2 pt-2">
-              <button
-                onClick={() => setDeletingCourier(null)}
-                className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition cursor-pointer"
-              >
-                취소
-              </button>
-              <button
-                onClick={() => executeDeleteCourier(deletingCourier.id)}
-                className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold transition cursor-pointer"
-              >
-                지우기
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfirmDialog
+          title="이 택배사 양식을 지울까요?"
+          detail={deletingCourier.name}
+          message="되돌릴 수 없어요."
+          tone="danger"
+          icon={<Trash2 className="w-4 h-4" />}
+          confirmLabel="지우기"
+          zIndex={60}
+          onCancel={() => setDeletingCourier(null)}
+          onConfirm={() => executeDeleteCourier(deletingCourier.id)}
+        />
       )}
 
     </div>

@@ -10,7 +10,7 @@
       // 랜딩("/")만 taste 디자인 시스템을 씁니다. 앱(/app, /admin)은 이 블록을 건너뜁니다.
       // 스타일을 그리기 전에 넣어야 화면이 깜빡이지 않아서, 여기서 바로 씁니다.
       (function () {
-        if (location.pathname.replace(/\/+$/, '') !== '') {
+        if (location.pathname.replace(/\/(index\.html)?$/, '') !== '') {
           document.write('<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">');
           return;
         }

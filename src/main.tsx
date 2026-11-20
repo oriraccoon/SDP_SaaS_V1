@@ -1,5 +1,5 @@
 // 경로 기준 분기: "/" 랜딩, "/app" 로그인 후 앱(회원 확인 포함), "/admin" 관리자 화면
-const path = window.location.pathname.replace(/\/+$/, '');
+const path = window.location.pathname.replace(/\/(index\.html)?$/, '').replace(/\/+$/, '');
 const isLanding = path === '';
 const isAdmin = path === '/admin';
 

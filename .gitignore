@@ -25,3 +25,6 @@ package-lock.json
 !.impeccable/critique/ignore.md
 **/.impeccable/hook.cache.json
 **/.impeccable/hook.pending.json
+
+# tasteskill gate working files
+.taste-skill/

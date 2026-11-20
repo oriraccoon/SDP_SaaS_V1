@@ -54,6 +54,7 @@ import {
 import { runComprehensiveValidation, ValidationInputStep1, ValidationInputStep2, OutputFileInfo } from './utils/validationEngine';
 
 import PlatformSettings from './components/PlatformSettings';
+import AiAssistant from './components/AiAssistant';
 import ProductMappingList from './components/ProductMappingList';
 import WaybillReportDashboard from './components/WaybillReportDashboard';
 import ExcelValidationDashboard from './components/ExcelValidationDashboard';
@@ -2052,6 +2053,9 @@ export default function App() {
       )}
 
       {/* 엑셀 비밀번호 입력 모달 */}
+      {/* AI 도우미 (준비 중) */}
+      <AiAssistant />
+
       {isFeedbackOpen && (
         <FeedbackModal
           onClose={() => setIsFeedbackOpen(false)}
@@ -2251,7 +2255,7 @@ export default function App() {
         </aside>
 
         {/* 메인 본문 콘텐츠 */}
-        <main className="flex-1 min-w-0 max-w-7xl w-full mx-auto p-3 sm:p-6">
+        <main className="flex-1 min-w-0 max-w-7xl w-full mx-auto p-3 pb-24 sm:p-6 sm:pb-6">
         <AnimatePresence mode="wait">
           
           {/* 탭 1: 가공 및 매칭 */}

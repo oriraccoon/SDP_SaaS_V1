@@ -3,7 +3,7 @@ import { ProductMapping } from '../types';
 import { 
   Search, Plus, Trash2, Edit2, Check, X, FileText, ClipboardList, Database,
   Filter, AlertTriangle, Download, Upload, FileSpreadsheet, 
-  FileCode, ArrowLeft, CheckCircle2, Copy, Layers, List, Sparkles, Zap, Info
+  FileCode, ArrowLeft, CheckCircle2, Copy, Layers, List, Lightbulb, Zap, Info
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { findBestIntelligentMatch, calculateSmartSimilarity, extractCleanProductRecommendation } from '../utils/excelProcessor';
@@ -66,7 +66,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
   // 내보내기 드롭다운
   const [showExportMenu, setShowExportMenu] = useState(false);
 
-  // 지능형 매칭 모달 상태
+  // 자동 맞춤 모달 상태
   const [showSmartMatchModal, setShowSmartMatchModal] = useState(false);
   const [smartCandidates, setSmartCandidates] = useState<SmartMatchCandidate[]>([]);
 
@@ -75,7 +75,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
     setTimeout(() => setToastMsg(null), 3500);
   };
 
-  // 지능형 추천 산출 유틸리티
+  // 추천 산출 유틸리티
   const getSmartSuggestion = (rawInput: string) => {
     if (!rawInput || rawInput.trim().length < 2) return null;
     const match = findBestIntelligentMatch(rawInput, mappings);
@@ -88,12 +88,12 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
     return null;
   };
 
-  // 지능형 일괄 매칭 실행
+  // 자동 맞춤 실행
   const handleRunSmartMatching = () => {
     const existingMappedNames = Array.from(new Set(mappings.map(m => m.mappedName).filter(Boolean)));
     
     if (existingMappedNames.length === 0) {
-      showNotification('error', "지능형 매칭을 실행하려면 최소 1개 이상의 정제 분류명이 필요합니다.");
+      showNotification('error', "자동 맞춤을 실행하려면 최소 1개 이상의 정제 분류명이 필요합니다.");
       return;
     }
 
@@ -127,7 +127,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
               currentMapped: '(신규 주문 품목)',
               suggestedMapped: result.bestMapping.mappedName,
               confidence: Math.round(result.score * 100),
-              reason: '지능형 자동 탐색',
+              reason: '자동 추천',
               selected: true
             });
           }
@@ -136,7 +136,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
     }
 
     if (candidates.length === 0) {
-      showNotification('success', "지능형 매칭 가능한 신규 품목이 없습니다. 모든 데이터가 정제되어 있습니다!");
+      showNotification('success', "자동 맞춤 가능한 신규 품목이 없습니다. 모든 데이터가 정제되어 있습니다.");
       return;
     }
 
@@ -165,7 +165,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
 
     onChange(nextMappings);
     setShowSmartMatchModal(false);
-    showNotification('success', ` 총 ${selectedToApply.length}개 품목에 지능형 매칭 결과가 적용되었습니다!`);
+    showNotification('success', ` 총 ${selectedToApply.length}개 품목에 자동 맞춤 결과가 적용되었습니다.`);
   };
 
   // 대치 목록 필터링
@@ -347,7 +347,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
 
     const parsed = parseRawText(bulkText);
     if (parsed.length === 0) {
-      showNotification('error', "파싱 가능한 대치 규칙을 찾지 못했습니다. 형식을 확인해주세요.");
+      showNotification('error', "넣을 수 있는 규칙을 찾지 못했어요. 형식을 확인해 주세요.");
       return;
     }
 
@@ -572,11 +572,11 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
         <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-100">
             <h3 className="font-bold text-slate-800 text-base flex items-center gap-2">
-              <Layers className="w-5 h-5 text-[#1E5B4A]" />
+              <Layers className="w-5 h-5 text-brand-600" />
               품목 대치 사전 대량 등록 확인
             </h3>
             <p className="text-xs text-slate-600 leading-relaxed">
-              분석 결과 <strong className="text-[#1E5B4A] font-bold">{bulkImportConfirm.parsed.length}개</strong>의 대치 규칙을 읽었습니다. 
+              분석 결과 <strong className="text-brand-600 font-bold">{bulkImportConfirm.parsed.length}개</strong>의 대치 규칙을 읽었습니다. 
               기존 목록에 어떻게 반영하시겠습니까?
             </p>
             <div className="grid grid-cols-2 gap-3 pt-2">
@@ -588,7 +588,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
               </button>
               <button
                 onClick={() => handleBulkConfirmDecision(true)}
-                className="px-4 py-2.5 bg-[#1E5B4A] hover:bg-[#184A3C] text-white rounded-xl text-xs font-semibold transition shadow-md"
+                className="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-semibold transition shadow-md"
               >
                 전체 덮어쓰기
               </button>
@@ -644,7 +644,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
             </h3>
             <p className="text-xs text-slate-600 leading-relaxed">
               {showDeleteModal.type === 'all' 
-                ? `주의! 현재 등록된 전체 ${mappings.length}개의 대치 규칙을 삭제하시겠습니까?`
+                ? `주의. 현재 등록된 전체 ${mappings.length}개의 대치 규칙을 삭제하시겠습니까?`
                 : `선택한 ${showDeleteModal.count}개의 대치 규칙을 삭제하시겠습니까?`
               }
             </p>
@@ -666,15 +666,15 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
         </div>
       )}
 
-      {/* 지능형 자동 매칭 결과 및 승인 모달 */}
+      {/* 자동 맞춤 결과 및 승인 모달 */}
       {showSmartMatchModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in">
           <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 space-y-4 border border-slate-100 max-h-[85vh] flex flex-col">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
                 <h3 className="font-bold text-slate-800 text-base flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-amber-500 animate-pulse" />
-                  지능형 자동 매칭 추천 ({smartCandidates.length}건)
+                  <Lightbulb className="w-5 h-5 text-amber-500" />
+                  자동 맞춤 추천 ({smartCandidates.length}건)
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
                   기존 정제 분류명 및 문자열 유사도를 분석하여 탐색된 추천 대치 목록입니다.
@@ -697,7 +697,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
                 <button
                   type="button"
                   onClick={() => setSmartCandidates(prev => prev.map(c => ({ ...c, selected: true })))}
-                  className="text-xs font-semibold text-[#1E5B4A] hover:underline"
+                  className="text-xs font-semibold text-brand-600 hover:underline"
                 >
                   전체 선택
                 </button>
@@ -717,7 +717,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
                 <div
                   key={idx}
                   className={`p-3 text-xs flex items-center justify-between gap-3 hover:bg-slate-50 transition ${
-                    cand.selected ? 'bg-[#F1F7F4]/10' : 'opacity-60'
+                    cand.selected ? 'bg-brand-50/10' : 'opacity-60'
                   }`}
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -732,25 +732,25 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
                           return copy;
                         });
                       }}
-                      className="w-4 h-4 text-[#1E5B4A] rounded border-slate-300 focus:ring-[#1E5B4A] cursor-pointer shrink-0"
+                      className="w-4 h-4 text-brand-600 rounded border-slate-300 focus:ring-brand-600 cursor-pointer shrink-0"
                     />
                     <div className="min-w-0 flex-1">
                       <div className="font-semibold text-slate-800 truncate" title={cand.rawName}>
                         {cand.rawName}
                       </div>
-                      <div className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1.5">
+                      <div className="text-xs text-slate-400 mt-0.5 flex items-center gap-1.5">
                         <span>현재: {cand.currentMapped}</span>
                         <span>•</span>
-                        <span className="text-[#1E5B4A]">{cand.reason}</span>
+                        <span className="text-brand-600">{cand.reason}</span>
                       </div>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-xs font-bold text-[#1E5B4A] bg-[#F1F7F4] px-2.5 py-1 rounded-lg border border-[#E0EFE8]">
+                    <span className="text-xs font-bold text-brand-600 bg-brand-50 px-2.5 py-1 rounded-lg border border-[#E0EFE8]">
                       → {cand.suggestedMapped}
                     </span>
-                    <span className="text-[11px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                    <span className="text-xs font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
                       {cand.confidence}% 일치
                     </span>
                   </div>
@@ -769,9 +769,9 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
               <button
                 type="button"
                 onClick={applySmartCandidates}
-                className="px-5 py-2 bg-[#1E5B4A] hover:bg-[#184A3C] text-white rounded-xl text-xs font-bold transition shadow-md flex items-center gap-1.5"
+                className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition shadow-md flex items-center gap-1.5"
               >
-                <Sparkles className="w-4 h-4 text-amber-300" />
+                <Lightbulb className="w-4 h-4 text-amber-300" />
                 선택 항목 일괄 적용 ({smartCandidates.filter(c => c.selected).length}건)
               </button>
             </div>
@@ -780,11 +780,11 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
       )}
 
       {/* 페이지 상단 헤더 & 모드 전환 */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
+      <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-              <ClipboardList className="w-5 h-5 text-[#1E5B4A]" />
+              <ClipboardList className="w-5 h-5 text-brand-600" />
               품목 대치 사전 관리
             </h2>
             <p className="text-xs text-slate-500 mt-1">
@@ -801,7 +801,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
             onClick={() => setViewMode('list')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
               viewMode === 'list'
-                ? 'bg-[#1E5B4A] text-white shadow-sm'
+                ? 'bg-brand-600 text-white shadow-sm'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
           >
@@ -813,7 +813,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
             onClick={() => setViewMode('single_add')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
               viewMode === 'single_add'
-                ? 'bg-[#1E5B4A] text-white shadow-sm'
+                ? 'bg-brand-600 text-white shadow-sm'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
           >
@@ -825,7 +825,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
             onClick={() => setViewMode('bulk_add')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
               viewMode === 'bulk_add'
-                ? 'bg-[#1E5B4A] text-white shadow-sm'
+                ? 'bg-brand-600 text-white shadow-sm'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
           >
@@ -839,11 +839,11 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
       {/* 1. 개별 추가 모드 (viewMode === 'single_add') - 기존 목록 안보임 */}
       {/* ========================================================= */}
       {viewMode === 'single_add' && (
-        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm max-w-2xl mx-auto space-y-6 animate-fade-in">
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 max-w-2xl mx-auto space-y-6 animate-fade-in">
           <div className="flex items-center justify-between border-b border-slate-100 pb-4">
             <div>
               <h3 className="font-bold text-slate-800 text-base flex items-center gap-2">
-                <Plus className="w-5 h-5 text-[#1E5B4A]" />
+                <Plus className="w-5 h-5 text-brand-600" />
                 개별 대치 규칙 추가
               </h3>
               <p className="text-xs text-slate-500 mt-0.5">단일 상품명 키워드를 등록합니다.</p>
@@ -868,10 +868,10 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
                 placeholder="예: 국내제조 비린맛 없는 절단 돌산 간장 꽃게장"
                 value={newRawName}
                 onChange={(e) => setNewRawName(e.target.value)}
-                className="w-full text-xs border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#1E5B4A]/20 focus:border-[#1E5B4A]"
+                className="w-full text-xs border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-brand-600/20 focus:border-brand-600"
               />
               
-              {/* 지능형 추천 스마트 실시간 태그 */}
+              {/* 추천 스마트 실시간 태그 */}
               {getSmartSuggestion(newRawName) && (
                 <button
                   type="button"
@@ -879,15 +879,15 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
                     const sugg = getSmartSuggestion(newRawName);
                     if (sugg) setNewMappedName(sugg.suggestedName);
                   }}
-                  className="mt-2 flex items-center gap-1.5 px-3 py-1.5 bg-[#F1F7F4] border border-[#CFE3DA] hover:border-[#4F8A75] text-[#0F3A2F] rounded-xl text-xs font-semibold shadow-2xs transition group cursor-pointer"
+                  className="mt-2 flex items-center gap-1.5 px-3 py-1.5 bg-brand-50 border border-brand-200 hover:border-brand-400 text-[#0F3A2F] rounded-xl text-xs font-semibold transition group cursor-pointer"
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-amber-500 animate-pulse shrink-0" />
-                  <span> 지능형 추천: <strong className="text-[#184A3C]">'{getSmartSuggestion(newRawName)?.suggestedName}'</strong> (유사도 {getSmartSuggestion(newRawName)?.confidence}%)</span>
-                  <span className="ml-1 text-[10px] text-[#1E5B4A] underline font-normal group-hover:font-bold">[클릭하여 표준명 입력]</span>
+                  <Lightbulb className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                  <span> 추천: <strong className="text-brand-700">'{getSmartSuggestion(newRawName)?.suggestedName}'</strong> (유사도 {getSmartSuggestion(newRawName)?.confidence}%)</span>
+                  <span className="ml-1 text-xs text-brand-600 underline font-normal group-hover:font-bold">[클릭하여 표준명 입력]</span>
                 </button>
               )}
 
-              <p className="text-[11px] text-slate-400 mt-1">※ 엑셀 업로드 시 이 단어가 포함된 상품명을 감지합니다.</p>
+              <p className="text-xs text-slate-400 mt-1">※ 엑셀 업로드 시 이 단어가 포함된 상품명을 감지합니다.</p>
             </div>
 
             <div>
@@ -899,15 +899,15 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
                 placeholder={newRawName ? `추천: "${extractCleanProductRecommendation(newRawName)}"` : "예: 게장"}
                 value={newMappedName}
                 onChange={(e) => setNewMappedName(e.target.value)}
-                className="w-full text-xs border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#1E5B4A]/20 focus:border-[#1E5B4A] placeholder:text-slate-400/80 placeholder:italic font-medium"
+                className="w-full text-xs border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-brand-600/20 focus:border-brand-600 placeholder:text-slate-400/80 placeholder:italic font-medium"
               />
               {newRawName && extractCleanProductRecommendation(newRawName) && (
                 <button
                   type="button"
                   onClick={() => setNewMappedName(extractCleanProductRecommendation(newRawName))}
-                  className="mt-1 text-[11px] font-semibold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg px-2.5 py-1 flex items-center gap-1 transition"
+                  className="mt-1 text-xs font-semibold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg px-2.5 py-1 flex items-center gap-1 transition"
                 >
-                  <Sparkles className="w-3 h-3 text-amber-500" />
+                  <Lightbulb className="w-3 h-3 text-amber-500" />
                   자동 정제 추천 단어 적용: <strong>'{extractCleanProductRecommendation(newRawName)}'</strong>
                 </button>
               )}
@@ -916,7 +916,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
             <div className="pt-2 flex gap-3">
               <button
                 type="submit"
-                className="flex-1 py-3 bg-[#1E5B4A] hover:bg-[#184A3C] text-white rounded-xl text-xs font-bold transition shadow-md"
+                className="flex-1 py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition shadow-md"
               >
                 사전에 규칙 추가
               </button>
@@ -938,7 +938,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
                 {recentlyAdded.map((item, idx) => (
                   <div key={idx} className="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl text-xs border border-slate-100">
                     <span className="font-semibold text-slate-800">{item.rawName}</span>
-                    <span className="text-[#1E5B4A] font-bold">→ {item.mappedName || '(동일)'}</span>
+                    <span className="text-brand-600 font-bold">→ {item.mappedName || '(동일)'}</span>
                   </div>
                 ))}
               </div>
@@ -951,11 +951,11 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
       {/* 2. 대량 추가 모드 (viewMode === 'bulk_add') - 기존 목록 안보임 */}
       {/* ========================================================= */}
       {viewMode === 'bulk_add' && (
-        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6 animate-fade-in">
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-6 animate-fade-in">
           <div className="flex items-center justify-between border-b border-slate-100 pb-4">
             <div>
               <h3 className="font-bold text-slate-800 text-base flex items-center gap-2">
-                <Layers className="w-5 h-5 text-[#1E5B4A]" />
+                <Layers className="w-5 h-5 text-brand-600" />
                 대량 추가 (텍스트 / 파일)
               </h3>
               <p className="text-xs text-slate-500 mt-0.5">
@@ -974,27 +974,27 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
           {/* 파일 드롭존 / 선택 영역 */}
           <div 
             onClick={() => fileInputRef.current?.click()}
-            className="border-2 border-dashed border-[#CFE3DA] hover:border-[#4F8A75] bg-[#F1F7F4]/30 hover:bg-[#F1F7F4]/60 rounded-2xl p-6 text-center cursor-pointer transition group"
+            className="border-2 border-dashed border-brand-200 hover:border-brand-400 bg-brand-50/30 hover:bg-brand-50/60 rounded-2xl p-6 text-center cursor-pointer transition group"
           >
-            <Upload className="w-8 h-8 text-[#1E5B4A] group-hover:scale-110 transition-transform mx-auto mb-2" />
+            <Upload className="w-8 h-8 text-brand-600 group-hover:scale-110 transition-transform mx-auto mb-2" />
             <p className="text-xs font-bold text-slate-700">
               이곳을 클릭하여 엑셀(.xlsx), CSV(.csv), JSON(.json), TXT 파일을 선택하세요.
             </p>
-            <p className="text-[11px] text-slate-400 mt-1">첫 번째 열: 원본 상품명 / 두 번째 열: 대치 후 표준 상품명</p>
+            <p className="text-xs text-slate-400 mt-1">첫 번째 열: 원본 상품명 / 두 번째 열: 대치 후 표준 상품명</p>
           </div>
 
           {/* 텍스트 직접 입력 라벨 */}
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs font-bold text-slate-700">텍스트 직접 붙여넣기</label>
-              <span className="text-[11px] text-slate-400">형식 예시: '원본상품명' : '대치상품명', 또는 원본,대치</span>
+              <span className="text-xs text-slate-400">형식 예시: '원본상품명' : '대치상품명', 또는 원본,대치</span>
             </div>
             <textarea
               value={bulkText}
               onChange={(e) => setBulkText(e.target.value)}
               placeholder={`'국내제조 비린맛 없는 절단 돌산 간장 꽃게장' : '게장',\n'명태품은 백명란' : '명란',`}
               rows={12}
-              className="w-full text-xs font-mono p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1E5B4A]/20 focus:border-[#1E5B4A]"
+              className="w-full text-xs font-mono p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-600/20 focus:border-brand-600"
             />
           </div>
 
@@ -1010,10 +1010,10 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
             </button>
             <button
               onClick={handleApplyBulkText}
-              className="px-5 py-2.5 bg-[#1E5B4A] hover:bg-[#184A3C] text-white rounded-xl text-xs font-bold transition shadow-md flex items-center gap-1.5"
+              className="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition shadow-md flex items-center gap-1.5"
             >
               <Check className="w-4 h-4" />
-              대량 파싱 및 목록에 적용
+              한꺼번에 읽어서 목록에 넣기
             </button>
           </div>
         </div>
@@ -1026,7 +1026,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
         <div className="space-y-4 animate-fade-in">
           
           {/* 검색 & 필터 & 선택 작업 바 */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white border border-slate-200 rounded-2xl p-3.5 shadow-sm">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white border border-slate-200 rounded-2xl p-3.5">
             
             {/* 검색창 */}
             <div className="flex items-center gap-2 flex-1 border border-slate-200 rounded-xl px-3 py-2 bg-slate-50/50">
@@ -1086,7 +1086,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
           </div>
 
           {/* 매핑 규칙 테이블 */}
-          <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+          <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left text-slate-600">
                 <thead className="bg-slate-50/80 text-slate-400 text-xs font-semibold uppercase border-b border-slate-150">
@@ -1096,7 +1096,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
                         type="checkbox"
                         checked={filteredMappings.length > 0 && filteredMappings.every(m => selectedRawNames.has(m.rawName))}
                         onChange={(e) => handleSelectAll(e.target.checked)}
-                        className="w-3.5 h-3.5 text-[#1E5B4A] border-slate-300 rounded focus:ring-[#1E5B4A] cursor-pointer"
+                        className="w-3.5 h-3.5 text-brand-600 border-slate-300 rounded focus:ring-brand-600 cursor-pointer"
                         title="전체 선택 / 해제"
                       />
                     </th>
@@ -1121,14 +1121,14 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
                       return (
                         <tr 
                           key={`${item.rawName}-${idx}`} 
-                          className={`hover:bg-slate-50/60 transition-colors ${isSelected ? 'bg-[#F1F7F4]/20' : ''}`}
+                          className={`hover:bg-slate-50/60 transition-colors ${isSelected ? 'bg-brand-50/20' : ''}`}
                         >
                           <td className="px-4 py-3.5 text-center">
                             <input
                               type="checkbox"
                               checked={isSelected}
                               onChange={(e) => handleSelectRow(item.rawName, e.target.checked)}
-                              className="w-3.5 h-3.5 text-[#1E5B4A] border-slate-300 rounded focus:ring-[#1E5B4A] cursor-pointer"
+                              className="w-3.5 h-3.5 text-brand-600 border-slate-300 rounded focus:ring-brand-600 cursor-pointer"
                             />
                           </td>
                           <td className="px-4 py-3.5 font-medium text-slate-800">
@@ -1142,7 +1142,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
                                   else if (e.key === 'Escape') setEditingIndex(null);
                                 }}
                                 autoFocus
-                                className="w-full text-xs border border-slate-200 rounded-lg p-1.5 focus:outline-none focus:ring-2 focus:ring-[#1E5B4A]/20"
+                                className="w-full text-xs border border-slate-200 rounded-lg p-1.5 focus:outline-none focus:ring-2 focus:ring-brand-600/20"
                               />
                             ) : (
                               item.rawName
@@ -1158,11 +1158,11 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
                                   if (e.key === 'Enter') saveEdit(globalIdx);
                                   else if (e.key === 'Escape') setEditingIndex(null);
                                 }}
-                                className="w-full text-xs border border-slate-200 rounded-lg p-1.5 focus:outline-none focus:ring-2 focus:ring-[#1E5B4A]/20"
+                                className="w-full text-xs border border-slate-200 rounded-lg p-1.5 focus:outline-none focus:ring-2 focus:ring-brand-600/20"
                               />
                             ) : (
                               item.mappedName ? (
-                                <span className="font-semibold text-[#1E5B4A]">{item.mappedName}</span>
+                                <span className="font-semibold text-brand-600">{item.mappedName}</span>
                               ) : (
                                 <span className="text-slate-400 italic text-xs">동일 (입력 안 됨)</span>
                               )
@@ -1190,7 +1190,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
                               <div className="flex items-center justify-end gap-1">
                                 <button
                                   onClick={() => startEdit(globalIdx, item)}
-                                  className="p-1.5 text-slate-400 hover:text-[#1E5B4A] hover:bg-slate-50 rounded-lg transition"
+                                  className="p-1.5 text-slate-400 hover:text-brand-600 hover:bg-slate-50 rounded-lg transition"
                                   title="수정"
                                 >
                                   <Edit2 className="w-3.5 h-3.5" />

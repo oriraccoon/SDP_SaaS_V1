@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { MatchingError, ProcessedOrder } from '../types';
 import { compareOrdersByCleanName } from '../utils/excelProcessor';
-import { AlertCircle, CheckCircle, HelpCircle, Layers, Package, Sparkles, FileText } from 'lucide-react';
+import { AlertCircle, CheckCircle, HelpCircle, Layers, Package, Lightbulb, FileText } from 'lucide-react';
 
 interface WaybillReportDashboardProps {
   matchCount: number;
@@ -92,34 +92,34 @@ export default function WaybillReportDashboard({
             <div className={`text-lg font-bold ${activeTab === 'all' ? 'text-white' : 'text-slate-800'}`}>
               {totalInputRows}건
             </div>
-            <div className={`text-[10px] mt-0.5 ${activeTab === 'all' ? 'text-emerald-400 font-medium' : 'text-emerald-600 font-semibold'}`}>
+            <div className={`text-xs mt-0.5 ${activeTab === 'all' ? 'text-emerald-400 font-medium' : 'text-emerald-600 font-semibold'}`}>
               성공률 {successRate}% ({totalSuccess}건)
             </div>
           </div>
         </button>
 
-        {/* 2. 일반 완전 매칭 (100%) */}
+        {/* 2. 일반 완전 일치 */}
         <button
           onClick={() => setActiveTab('exact')}
           className={`p-3.5 rounded-xl border text-left transition flex flex-col justify-between cursor-pointer ${
             activeTab === 'exact'
-              ? 'bg-[#F1F7F4]/90 border-[#9CC7B5] shadow-sm ring-2 ring-[#1E5B4A]/20'
-              : 'bg-white border-slate-200 shadow-sm hover:border-[#CFE3DA]'
+              ? 'bg-brand-50/90 border-[#9CC7B5] shadow-sm ring-2 ring-brand-600/20'
+              : 'bg-white border-slate-200 shadow-sm hover:border-brand-200'
           }`}
         >
           <div className="flex items-center justify-between w-full">
             <span className="text-xs font-semibold text-slate-500">완전 매칭</span>
-            <div className="p-1.5 bg-[#E9F3EE] text-[#1E5B4A] rounded-md">
+            <div className="p-1.5 bg-brand-100 text-brand-600 rounded-md">
               <Package className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-2">
             <div className="text-lg font-bold text-slate-800">{displayExactCount}건</div>
-            <div className="text-[10px] text-[#1E5B4A] font-medium mt-0.5">100% 일치 매칭 (합포장 포함)</div>
+            <div className="text-xs text-brand-600 font-medium mt-0.5">완전 일치 (합포장 포함)</div>
           </div>
         </button>
 
-        {/* 3. 지능형 부분 매칭 */}
+        {/* 3. 비슷한 주문 맞춤 */}
         <button
           onClick={() => setActiveTab('soft')}
           className={`p-3.5 rounded-xl border text-left transition flex flex-col justify-between cursor-pointer ${
@@ -129,14 +129,14 @@ export default function WaybillReportDashboard({
           }`}
         >
           <div className="flex items-center justify-between w-full">
-            <span className="text-xs font-semibold text-slate-500">지능형 부분매칭</span>
+            <span className="text-xs font-semibold text-slate-500">비슷한 주문 맞춤</span>
             <div className="p-1.5 bg-amber-100 text-amber-600 rounded-md">
-              <Sparkles className="w-4 h-4" />
+              <Lightbulb className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-2">
             <div className="text-lg font-bold text-slate-800">{displaySoftCount}건</div>
-            <div className="text-[10px] text-amber-600 font-medium mt-0.5">유사 성명/대치 매칭 (합포장 포함)</div>
+            <div className="text-xs text-amber-600 font-medium mt-0.5">유사 성명/대치 매칭 (합포장 포함)</div>
           </div>
         </button>
 
@@ -157,7 +157,7 @@ export default function WaybillReportDashboard({
           </div>
           <div className="mt-2">
             <div className="text-lg font-bold text-sky-900">{displayBundledGroupCount}묶음</div>
-            <div className="text-[10px] text-sky-600 font-medium mt-0.5">총 {displayBundledCount}개 품목 통합</div>
+            <div className="text-xs text-sky-600 font-medium mt-0.5">총 {displayBundledCount}개 품목 통합</div>
           </div>
         </button>
 
@@ -178,7 +178,7 @@ export default function WaybillReportDashboard({
           </div>
           <div className="mt-2">
             <div className="text-lg font-bold text-slate-800">{unfilledErrors.length}건</div>
-            <div className="text-[10px] text-rose-600 font-medium mt-0.5">송장 누락/조건 불일치</div>
+            <div className="text-xs text-rose-600 font-medium mt-0.5">송장 누락/조건 불일치</div>
           </div>
         </button>
 
@@ -199,14 +199,14 @@ export default function WaybillReportDashboard({
           </div>
           <div className="mt-2">
             <div className="text-lg font-bold text-slate-800">{unusedErrors.length}건</div>
-            <div className="text-[10px] text-purple-600 font-medium mt-0.5">미사용 잔여 송장</div>
+            <div className="text-xs text-purple-600 font-medium mt-0.5">미사용 잔여 송장</div>
           </div>
         </button>
 
       </div>
 
       {/* 매칭 상세 리포트 메인 컨테이너 */}
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
         
         {/* 6가지 탭 메뉴 */}
         <div className="flex flex-wrap border-b border-slate-150 bg-slate-50/60">
@@ -224,7 +224,7 @@ export default function WaybillReportDashboard({
             onClick={() => setActiveTab('exact')}
             className={`py-3 px-4 text-xs font-semibold text-center border-b-2 transition ${
               activeTab === 'exact'
-                ? 'border-[#1E5B4A] text-[#184A3C] bg-[#F1F7F4]/40'
+                ? 'border-brand-600 text-brand-700 bg-brand-50/40'
                 : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
@@ -238,7 +238,7 @@ export default function WaybillReportDashboard({
                 : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
-            [3] 지능형 부분 매칭 ({softMatchOrders.length}건)
+            [3] 비슷한 주문 맞춤 ({softMatchOrders.length}건)
           </button>
           <button
             onClick={() => setActiveTab('bundled')}
@@ -285,9 +285,9 @@ export default function WaybillReportDashboard({
                 </span>
               </p>
 
-              <div className="max-h-[520px] overflow-auto border border-slate-200 rounded-lg shadow-2xs bg-white">
+              <div className="max-h-[520px] overflow-auto border border-slate-200 rounded-lg bg-white">
                 <table className="w-full text-xs text-left text-slate-600 min-w-[980px]">
-                  <thead className="sticky top-0 z-10 bg-slate-100 text-slate-700 font-bold uppercase border-b border-slate-200 shadow-2xs">
+                  <thead className="sticky top-0 z-10 bg-slate-100 text-slate-700 font-bold uppercase border-b border-slate-200">
                     <tr>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[100px]">플랫폼</th>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[120px]">수령인</th>
@@ -308,7 +308,7 @@ export default function WaybillReportDashboard({
                       return (
                         <tr key={i} className="hover:bg-slate-50 transition">
                           <td className="px-3 py-2.5 whitespace-nowrap">
-                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-800 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200" title={ord.sourceFileName || ord.platformName}>
+                            <span className="inline-flex items-center gap-1 text-xs font-semibold text-slate-800 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200" title={ord.sourceFileName || ord.platformName}>
                               <FileText className="w-3 h-3 text-slate-500 shrink-0" />
                               {platformLabel}
                             </span>
@@ -331,12 +331,12 @@ export default function WaybillReportDashboard({
                           <td className="px-3 py-2.5 whitespace-nowrap">
                             {isExact && (
                               <span className="inline-flex items-center gap-1 text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
-                                <CheckCircle className="w-3 h-3" /> 완전 매칭 (100%)
+                                <CheckCircle className="w-3 h-3" /> 완전 일치
                               </span>
                             )}
                             {isSoft && (
                               <span className="inline-flex items-center gap-1 text-amber-800 font-medium bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                                <Sparkles className="w-3 h-3 text-amber-600" /> {ord.softMatchReason || "지능형 부분 매칭"}
+                                <Lightbulb className="w-3 h-3 text-amber-600" /> {ord.softMatchReason || "비슷한 주문 맞춤"}
                               </span>
                             )}
                             {isBundled && (
@@ -362,16 +362,16 @@ export default function WaybillReportDashboard({
           {/* 2. 일반 완전 매칭 탭 */}
           {activeTab === 'exact' && (
             <div className="space-y-4">
-              <p className="text-xs text-slate-600 flex items-center gap-1.5 bg-[#F1F7F4]/80 p-3 rounded-lg border border-[#E0EFE8]">
-                <Package className="w-4 h-4 text-[#1E5B4A] shrink-0" />
+              <p className="text-xs text-slate-600 flex items-center gap-1.5 bg-brand-50/80 p-3 rounded-lg border border-[#E0EFE8]">
+                <Package className="w-4 h-4 text-brand-600 shrink-0" />
                 <span>
                   <strong>일반 완전 매칭</strong>은 성명, 우편번호, 연락처, 품목명이 100% 교차 대조되어 완벽하게 송장이 매칭된 주문 목록입니다.
                 </span>
               </p>
 
-              <div className="max-h-[520px] overflow-auto border border-slate-200 rounded-lg shadow-2xs bg-white">
+              <div className="max-h-[520px] overflow-auto border border-slate-200 rounded-lg bg-white">
                 <table className="w-full text-xs text-left text-slate-600 min-w-[980px]">
-                  <thead className="sticky top-0 z-10 bg-[#F1F7F4] text-[#0F3A2F] font-bold uppercase border-b border-[#CFE3DA] shadow-2xs">
+                  <thead className="sticky top-0 z-10 bg-brand-50 text-[#0F3A2F] font-bold uppercase border-b border-brand-200">
                     <tr>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[100px]">플랫폼</th>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[120px]">수령인</th>
@@ -384,9 +384,9 @@ export default function WaybillReportDashboard({
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {exactMatchOrders.map((ord, i) => (
-                      <tr key={i} className="hover:bg-[#F1F7F4]/30 transition">
+                      <tr key={i} className="hover:bg-brand-50/30 transition">
                         <td className="px-3 py-2.5 whitespace-nowrap">
-                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-800 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200" title={ord.sourceFileName || ord.platformName}>
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold text-slate-800 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200" title={ord.sourceFileName || ord.platformName}>
                             <FileText className="w-3 h-3 text-slate-500 shrink-0" />
                             {getDisplayPlatform(ord.platformName, ord.sourceFileName)}
                           </span>
@@ -397,12 +397,12 @@ export default function WaybillReportDashboard({
                         <td className="px-3 py-2.5 min-w-[280px] max-w-md truncate" title={ord.originalProductName || ord.상품명}>
                           {ord.originalProductName || ord.상품명}
                         </td>
-                        <td className="px-3 py-2.5 whitespace-nowrap font-mono font-bold text-[#123A30] bg-[#F1F7F4]/50 rounded">
+                        <td className="px-3 py-2.5 whitespace-nowrap font-mono font-bold text-brand-800 bg-brand-50/50 rounded">
                           {ord.trackingNumber || "-"}
                         </td>
                         <td className="px-3 py-2.5 whitespace-nowrap text-emerald-600 font-semibold flex items-center gap-1">
                           <CheckCircle className="w-3.5 h-3.5" />
-                          100% 완전 일치
+                          완전 일치
                         </td>
                       </tr>
                     ))}
@@ -419,19 +419,19 @@ export default function WaybillReportDashboard({
             </div>
           )}
 
-          {/* 3. 지능형 부분 매칭 탭 */}
+          {/* 3. 비슷한 주문 맞춤 탭 */}
           {activeTab === 'soft' && (
             <div className="space-y-4">
               <p className="text-xs text-slate-600 flex items-center gap-1.5 bg-amber-50/80 p-3 rounded-lg border border-amber-150">
-                <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
+                <Lightbulb className="w-4 h-4 text-amber-600 shrink-0" />
                 <span>
-                  <strong>지능형 부분 매칭</strong>은 수령인 성명 공백/짤림(80% 이상 유사), 품목 대치어 교차 대조 등을 통해 100% 문자가 일치하지 않더라도 정확한 대상을 안전하게 추론해 송장번호를 연결한 내역입니다.
+                  <strong>비슷한 주문 맞춤</strong>은 수령인 성명 공백/짤림(80% 이상 유사), 품목 대치어 교차 대조 등을 통해 100% 문자가 일치하지 않더라도 정확한 대상을 안전하게 추론해 송장번호를 연결한 내역입니다.
                 </span>
               </p>
 
-              <div className="max-h-[520px] overflow-auto border border-slate-200 rounded-lg shadow-2xs bg-white">
+              <div className="max-h-[520px] overflow-auto border border-slate-200 rounded-lg bg-white">
                 <table className="w-full text-xs text-left text-slate-600 min-w-[980px]">
-                  <thead className="sticky top-0 z-10 bg-amber-100/80 text-amber-950 font-bold uppercase border-b border-amber-200 shadow-2xs">
+                  <thead className="sticky top-0 z-10 bg-amber-100/80 text-amber-950 font-bold uppercase border-b border-amber-200">
                     <tr>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[100px]">플랫폼</th>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[120px]">수령인</th>
@@ -439,14 +439,14 @@ export default function WaybillReportDashboard({
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[70px] text-center">수량</th>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[280px]">주문 품목명</th>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[160px]">부여된 운송장번호</th>
-                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[220px]">지능형 매칭 유추 근거</th>
+                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[220px]">맞춘 근거</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {softMatchOrders.map((ord, i) => (
                       <tr key={i} className="hover:bg-amber-50/30 transition">
                         <td className="px-3 py-2.5 whitespace-nowrap">
-                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-800 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200" title={ord.sourceFileName || ord.platformName}>
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold text-slate-800 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200" title={ord.sourceFileName || ord.platformName}>
                             <FileText className="w-3 h-3 text-slate-500 shrink-0" />
                             {getDisplayPlatform(ord.platformName, ord.sourceFileName)}
                           </span>
@@ -468,7 +468,7 @@ export default function WaybillReportDashboard({
                     {softMatchOrders.length === 0 && (
                       <tr>
                         <td colSpan={7} className="px-3 py-8 text-center text-slate-400">
-                          지능형 부분 매칭된 주문이 없습니다.
+                          비슷한 주문 맞춤된 주문이 없습니다.
                         </td>
                       </tr>
                     )}
@@ -489,9 +489,9 @@ export default function WaybillReportDashboard({
                 </span>
               </p>
 
-              <div className="max-h-[520px] overflow-auto border border-sky-200 rounded-lg shadow-2xs bg-white">
+              <div className="max-h-[520px] overflow-auto border border-sky-200 rounded-lg bg-white">
                 <table className="w-full text-xs text-left text-slate-600 min-w-[980px]">
-                  <thead className="sticky top-0 z-10 bg-sky-100 text-sky-950 font-bold uppercase border-b border-sky-200 shadow-2xs">
+                  <thead className="sticky top-0 z-10 bg-sky-100 text-sky-950 font-bold uppercase border-b border-sky-200">
                     <tr>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[100px]">플랫폼</th>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[120px]">수령인</th>
@@ -506,7 +506,7 @@ export default function WaybillReportDashboard({
                     {bundledOrders.map((ord, i) => (
                       <tr key={i} className="hover:bg-sky-50/50 transition">
                         <td className="px-3 py-2.5 whitespace-nowrap">
-                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-800 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200" title={ord.sourceFileName || ord.platformName}>
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold text-slate-800 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200" title={ord.sourceFileName || ord.platformName}>
                             <FileText className="w-3 h-3 text-slate-500 shrink-0" />
                             {getDisplayPlatform(ord.platformName, ord.sourceFileName)}
                           </span>
@@ -548,9 +548,9 @@ export default function WaybillReportDashboard({
                 </span>
               </p>
 
-              <div className="max-h-[520px] overflow-auto border border-slate-200 rounded-lg shadow-2xs bg-white">
+              <div className="max-h-[520px] overflow-auto border border-slate-200 rounded-lg bg-white">
                 <table className="w-full text-xs text-left text-slate-600 min-w-[980px]">
-                  <thead className="sticky top-0 z-10 bg-rose-100/80 text-rose-950 font-bold uppercase border-b border-rose-200 shadow-2xs">
+                  <thead className="sticky top-0 z-10 bg-rose-100/80 text-rose-950 font-bold uppercase border-b border-rose-200">
                     <tr>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[100px]">플랫폼</th>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[120px]">수령인</th>
@@ -564,7 +564,7 @@ export default function WaybillReportDashboard({
                     {unfilledErrors.map((err, i) => (
                       <tr key={i} className="hover:bg-rose-50/30">
                         <td className="px-3 py-2.5 whitespace-nowrap">
-                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-800 bg-rose-50 px-2.5 py-1 rounded-md border border-rose-200" title={err.sourceFileName || err.platformName}>
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold text-rose-800 bg-rose-50 px-2.5 py-1 rounded-md border border-rose-200" title={err.sourceFileName || err.platformName}>
                             <FileText className="w-3 h-3 text-rose-500 shrink-0" />
                             {getDisplayPlatform(err.platformName, err.sourceFileName)}
                           </span>
@@ -576,7 +576,7 @@ export default function WaybillReportDashboard({
                         <td className="px-3 py-2.5 min-w-[280px]">
                           <div className="text-rose-600 font-semibold">{err.reason}</div>
                           {err.debugDetail && (
-                            <div className="mt-1 text-[11px] p-2 rounded border border-rose-100 bg-rose-50/70 text-slate-700 whitespace-pre-wrap font-mono leading-normal">
+                            <div className="mt-1 text-xs p-2 rounded border border-rose-100 bg-rose-50/70 text-slate-700 whitespace-pre-wrap font-mono leading-normal">
                               {err.debugDetail}
                             </div>
                           )}
@@ -586,7 +586,7 @@ export default function WaybillReportDashboard({
                     {unfilledErrors.length === 0 && (
                       <tr>
                         <td colSpan={6} className="px-3 py-8 text-center text-slate-400">
-                          누락된 주문이 없습니다. 모든 주문에 운송장 연결 완료!
+                          누락된 주문이 없습니다. 모든 주문에 운송장 연결 완료.
                         </td>
                       </tr>
                     )}
@@ -606,9 +606,9 @@ export default function WaybillReportDashboard({
                 </span>
               </p>
 
-              <div className="max-h-[520px] overflow-auto border border-purple-200 rounded-lg shadow-2xs bg-white">
+              <div className="max-h-[520px] overflow-auto border border-purple-200 rounded-lg bg-white">
                 <table className="w-full text-xs text-left text-slate-600 min-w-[980px]">
-                  <thead className="sticky top-0 z-10 bg-purple-100 text-purple-950 font-bold uppercase border-b border-purple-200 shadow-2xs">
+                  <thead className="sticky top-0 z-10 bg-purple-100 text-purple-950 font-bold uppercase border-b border-purple-200">
                     <tr>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[100px]">송장 플랫폼</th>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[120px]">송장 수령인</th>
@@ -622,7 +622,7 @@ export default function WaybillReportDashboard({
                     {unusedErrors.map((err, i) => (
                       <tr key={i} className="hover:bg-purple-50/40">
                         <td className="px-3 py-2.5 whitespace-nowrap">
-                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-purple-800 bg-purple-50 px-2.5 py-1 rounded-md border border-purple-200" title={err.sourceFileName}>
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold text-purple-800 bg-purple-50 px-2.5 py-1 rounded-md border border-purple-200" title={err.sourceFileName}>
                             <FileText className="w-3 h-3 text-purple-500 shrink-0" />
                             {getDisplayPlatform(err.platformName, err.sourceFileName)}
                           </span>
@@ -637,7 +637,7 @@ export default function WaybillReportDashboard({
                     {unusedErrors.length === 0 && (
                       <tr>
                         <td colSpan={6} className="px-3 py-8 text-center text-slate-400">
-                          미사용 송장이 존재하지 않습니다. 모든 송장이 주문과 정확히 매칭되었습니다!
+                          미사용 송장이 존재하지 않습니다. 모든 송장이 주문과 정확히 매칭되었습니다.
                         </td>
                       </tr>
                     )}

@@ -143,7 +143,7 @@ export default function AnomalousOrdersModal({
               <div className="text-sm font-bold text-slate-700">해당 필터에 속한 이상 주문이 없습니다</div>
             </div>
           ) : (
-            <div className="border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
+            <div className="border border-slate-200 rounded-xl overflow-hidden">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
@@ -182,7 +182,7 @@ export default function AnomalousOrdersModal({
                             {issue.reasons.map((r, rIdx) => (
                               <span
                                 key={rIdx}
-                                className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-200 flex items-center gap-1"
+                                className="px-2 py-0.5 rounded text-xs font-bold bg-rose-100 text-rose-800 border border-rose-200 flex items-center gap-1"
                               >
                                 <AlertCircle className="w-3 h-3 text-rose-600" />
                                 {r}

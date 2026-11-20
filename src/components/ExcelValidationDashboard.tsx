@@ -12,7 +12,7 @@ import {
   X,
   ListFilter,
   ChevronRight,
-  Sparkles,
+  Lightbulb,
   Edit2,
   Check,
   ArrowRight,
@@ -41,7 +41,7 @@ export default function ExcelValidationDashboard({
   const [isFullListModalOpen, setIsFullListModalOpen] = useState(false);
   const [selectedDetailCheck, setSelectedDetailCheck] = useState<InspectionCheckItem | null>(null);
 
-  // 지능형 매칭 개별 수정 상태 (rawName -> inputVal)
+  // 자동 맞춤 개별 수정 상태 (rawName -> inputVal)
   const [editingRawName, setEditingRawName] = useState<string | null>(null);
   const [editingVal, setEditingVal] = useState<string>('');
   const [editSuccessMsg, setEditSuccessMsg] = useState<string | null>(null);
@@ -136,7 +136,7 @@ export default function ExcelValidationDashboard({
   // 이슈(ERROR, WARNING) 항목들만 필터링
   const issueChecks = currentStepChecks.filter((c) => c.status !== 'PASS');
 
-  // 지능형 매칭 상세 스트링 파서
+  // 자동 맞춤 상세 스트링 파서
   const parseSmartMatchDetail = (detailStr: string) => {
     // 예: "[수령인: 홍길동] 원본 상품명: '여우마을 양념깻잎 1kg' ➔ 매칭 정제명: '양념깻잎' (유사도 92% 일치)"
     const regex = /\[수령인:\s*(.*?)\]\s*원본 상품명:\s*'(.*?)'\s*➔\s*매칭 정제명:\s*'(.*?)'\s*\(유사도\s*(\d+)%\s*일치\)/;
@@ -173,7 +173,7 @@ export default function ExcelValidationDashboard({
     setSavedCustomEditedMap(prev => ({ ...prev, [rawName]: targetMappedName }));
     setAddedToDictSet(prev => new Set(prev).add(rawName));
 
-    setEditSuccessMsg(`'${rawName}' ➔ '${targetMappedName}' 규칙이 대치 사전에 추가되어 성공적으로 반영되었습니다!`);
+    setEditSuccessMsg(`'${rawName}' ➔ '${targetMappedName}' 규칙이 대치 사전에 추가되어 성공적으로 반영되었습니다.`);
     setTimeout(() => setEditSuccessMsg(null), 3500);
   };
 
@@ -204,7 +204,7 @@ export default function ExcelValidationDashboard({
 
     setSavedCustomEditedMap(newMap);
     setAddedToDictSet(newSet);
-    setEditSuccessMsg(`Warning 매칭 ${validItems.length}건 전체가 대치 사전에 추가되어 적용되었습니다!`);
+    setEditSuccessMsg(`Warning 매칭 ${validItems.length}건 전체가 대치 사전에 추가되어 적용되었습니다.`);
     setTimeout(() => setEditSuccessMsg(null), 3500);
   };
 
@@ -244,7 +244,7 @@ export default function ExcelValidationDashboard({
   const stepIcon = stepFilter === 2 ? <Truck className="w-5 h-5" /> : <Layers className="w-5 h-5" />;
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-6">
+    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden mb-6">
       {/* 1. 상단 요약 바 */}
       <div
         className={`px-4 py-3 flex flex-wrap items-center justify-between transition-colors ${
@@ -290,7 +290,7 @@ export default function ExcelValidationDashboard({
                 </span>
               )}
             </div>
-            <p className="text-[11px] text-slate-500 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               {currentStepChecks.length}개 항목 검사 완료 (진단 결과: {currentStepStatus})
             </p>
           </div>
@@ -299,9 +299,9 @@ export default function ExcelValidationDashboard({
         {/* 전체 검사 리스트 팝업 버튼 */}
         <button
           onClick={() => setIsFullListModalOpen(true)}
-          className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-[#184A3C] bg-[#F1F7F4] hover:bg-[#E9F3EE] border border-[#CFE3DA] rounded-lg transition-colors mt-2 sm:mt-0"
+          className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-brand-700 bg-brand-50 hover:bg-brand-100 border border-brand-200 rounded-lg transition-colors mt-2 sm:mt-0"
         >
-          <ListFilter className="w-3.5 h-3.5 text-[#1E5B4A]" />
+          <ListFilter className="w-3.5 h-3.5 text-brand-600" />
           <span>전체 검사 항목 ({currentStepChecks.length})</span>
         </button>
       </div>
@@ -310,11 +310,11 @@ export default function ExcelValidationDashboard({
       <div className="p-3">
         {issueChecks.length > 0 ? (
           <div className="space-y-1.5">
-            <div className="text-[11px] font-bold text-slate-500 px-1 mb-1">
+            <div className="text-xs font-bold text-slate-500 px-1 mb-1">
               ※ 클릭하면 상세 오류 내역을 확인할 수 있습니다.
             </div>
 
-            <div className="divide-y divide-slate-100 border border-slate-200 rounded-lg overflow-hidden bg-white shadow-2xs">
+            <div className="divide-y divide-slate-100 border border-slate-200 rounded-lg overflow-hidden bg-white">
               {issueChecks.map((item) => (
                 <div
                   key={item.id}
@@ -325,7 +325,7 @@ export default function ExcelValidationDashboard({
                 >
                   <div className="flex items-center gap-2 min-w-0 flex-1">
                     <span
-                      className={`px-1.5 py-0.5 text-[10px] font-mono font-extrabold rounded flex-shrink-0 ${
+                      className={`px-1.5 py-0.5 text-xs font-mono font-extrabold rounded flex-shrink-0 ${
                         item.category === 'ERROR' ? 'bg-rose-600 text-white' : 'bg-amber-500 text-white'
                       }`}
                     >
@@ -355,7 +355,7 @@ export default function ExcelValidationDashboard({
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
               <span className="text-xs font-bold text-emerald-900">
-                모든 검사를 완벽히 통과했습니다. (오류/경고 없음)
+                모든 검사를 통과했어요. (오류/경고 없음)
               </span>
             </div>
             <button
@@ -381,7 +381,7 @@ export default function ExcelValidationDashboard({
               {/* 모달 헤더 */}
               <div className="px-5 py-3.5 border-b border-slate-200 flex items-center justify-between bg-slate-50">
                 <div className="flex items-center gap-2">
-                  <ListFilter className="w-4 h-4 text-[#1E5B4A]" />
+                  <ListFilter className="w-4 h-4 text-brand-600" />
                   <h3 className="text-sm font-bold text-slate-800">
                     {stepTitle} 전체 항목 ({currentStepChecks.length}개)
                   </h3>
@@ -397,7 +397,7 @@ export default function ExcelValidationDashboard({
 
               {/* 모달 검사 리스트 테이블 */}
               <div className="p-4 overflow-y-auto flex-1">
-                <div className="text-[11px] font-bold text-slate-500 mb-2">
+                <div className="text-xs font-bold text-slate-500 mb-2">
                   ※ 각 검사 항목을 클릭하면 세부 규격 및 진단 기록을 확인할 수 있습니다.
                 </div>
                 <div className="overflow-x-auto border border-slate-200 rounded-lg">
@@ -416,7 +416,7 @@ export default function ExcelValidationDashboard({
                         <tr
                           key={item.id}
                           onClick={() => setSelectedDetailCheck(item)}
-                          className={`hover:bg-[#F1F7F4]/50 cursor-pointer transition-colors ${
+                          className={`hover:bg-brand-50/50 cursor-pointer transition-colors ${
                             item.status === 'FAIL'
                               ? 'bg-rose-50/30'
                               : item.status === 'WARNING'
@@ -426,11 +426,11 @@ export default function ExcelValidationDashboard({
                         >
                           <td className="px-3 py-2.5 text-center font-bold">
                             {item.category === 'ERROR' ? (
-                              <span className="px-1.5 py-0.5 text-[10px] font-extrabold bg-rose-100 text-rose-700 rounded border border-rose-200">
+                              <span className="px-1.5 py-0.5 text-xs font-extrabold bg-rose-100 text-rose-700 rounded border border-rose-200">
                                 ERROR
                               </span>
                             ) : (
-                              <span className="px-1.5 py-0.5 text-[10px] font-extrabold bg-amber-100 text-amber-800 rounded border border-amber-200">
+                              <span className="px-1.5 py-0.5 text-xs font-extrabold bg-amber-100 text-amber-800 rounded border border-amber-200">
                                 WARN
                               </span>
                             )}
@@ -485,7 +485,7 @@ export default function ExcelValidationDashboard({
               {/* 모달 헤더 */}
               <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
                 <div className="flex items-center gap-2">
-                  <Info className="w-5 h-5 text-[#1E5B4A]" />
+                  <Info className="w-5 h-5 text-brand-600" />
                   <h4 className="text-sm font-bold text-slate-800">
                     검사 항목 세부 진단 결과 [{selectedDetailCheck.code}]
                   </h4>
@@ -504,7 +504,7 @@ export default function ExcelValidationDashboard({
                   <div className="text-xs font-semibold text-slate-500">검사 항목명</div>
                   <div className="text-base font-bold text-slate-800 mt-0.5 flex items-center gap-2">
                     {selectedDetailCheck.code === 'STEP1_W2' && (
-                      <Sparkles className="w-5 h-5 text-amber-500 shrink-0" />
+                      <Lightbulb className="w-5 h-5 text-amber-500 shrink-0" />
                     )}
                     <span>[{selectedDetailCheck.step}단계] {selectedDetailCheck.title}</span>
                   </div>
@@ -530,18 +530,18 @@ export default function ExcelValidationDashboard({
                   </div>
                 )}
 
-                {/* 지능형 매칭 (STEP1_W2) 시각적 카드 / 대조 리스트 */}
+                {/* 자동 맞춤 (STEP1_W2) 시각적 카드 / 대조 리스트 */}
                 {selectedDetailCheck.code === 'STEP1_W2' ? (
                   <div className="space-y-3">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                        <Sparkles className="w-4 h-4 text-amber-500" />
+                        <Lightbulb className="w-4 h-4 text-amber-500" />
                         자동 매칭 결과 전후 비교 ({selectedDetailCheck.details.length}건)
                       </span>
                       <button
                         type="button"
                         onClick={() => handleAddAllToDict(selectedDetailCheck.details)}
-                        className="px-3 py-1.5 bg-[#1E5B4A] hover:bg-[#184A3C] text-white rounded-xl text-xs font-bold transition shadow-xs flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
+                        className="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition shadow-xs flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
                       >
                         <PlusCircle className="w-3.5 h-3.5" />
                         Warning 매칭 전체 대치 리스트에 일괄 추가
@@ -572,25 +572,25 @@ export default function ExcelValidationDashboard({
                               isAdded
                                 ? 'bg-emerald-50/60 border-emerald-200'
                                 : hasCustomText
-                                ? 'bg-[#F1F7F4]/40 border-[#CFE3DA] hover:border-[#9CC7B5]'
+                                ? 'bg-brand-50/40 border-brand-200 hover:border-[#9CC7B5]'
                                 : 'bg-white border-slate-200 hover:border-[#9CC7B5]'
                             }`}
                           >
-                            <div className="flex items-center justify-between text-[11px] text-slate-500 border-b border-slate-100 pb-2">
+                            <div className="flex items-center justify-between text-xs text-slate-500 border-b border-slate-100 pb-2">
                               <span className="font-semibold text-slate-600">
                                 수령인: <strong className="text-slate-800">{parsed.recipient}</strong>
                               </span>
                               {isAdded ? (
-                                <span className="px-2.5 py-0.5 font-extrabold bg-emerald-600 text-white rounded-md text-[10px] flex items-center gap-1 shadow-2xs">
+                                <span className="px-2.5 py-0.5 font-extrabold bg-emerald-600 text-white rounded-md text-xs flex items-center gap-1 shadow-2xs">
                                   <Check className="w-3 h-3 text-white" />
                                   대치 리스트 반영 완료
                                 </span>
                               ) : hasCustomText ? (
-                                <span className="px-2.5 py-0.5 font-extrabold bg-[#1E5B4A] text-white rounded-md text-[10px] flex items-center gap-1 shadow-2xs">
+                                <span className="px-2.5 py-0.5 font-extrabold bg-brand-600 text-white rounded-md text-xs flex items-center gap-1 shadow-2xs">
                                   글자 수정됨 (미반영)
                                 </span>
                               ) : (
-                                <span className="px-2 py-0.5 font-bold bg-amber-100 text-amber-800 rounded-md text-[10px]">
+                                <span className="px-2 py-0.5 font-bold bg-amber-100 text-amber-800 rounded-md text-xs">
                                   유사도 {parsed.score}% 일치
                                 </span>
                               )}
@@ -599,7 +599,7 @@ export default function ExcelValidationDashboard({
                             {/* 전후 비교 바 */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-0.5">
                               <div className="bg-white/80 p-2.5 rounded-xl border border-slate-200">
-                                <div className="text-[10px] font-bold text-slate-400 mb-0.5"> 원본 상품명</div>
+                                <div className="text-xs font-bold text-slate-400 mb-0.5"> 원본 상품명</div>
                                 <div className="font-semibold text-slate-800 break-words whitespace-normal leading-snug">
                                   {parsed.rawName}
                                 </div>
@@ -609,15 +609,15 @@ export default function ExcelValidationDashboard({
                                 isAdded
                                   ? 'bg-emerald-100/60 border-emerald-300 text-emerald-950'
                                   : hasCustomText
-                                  ? 'bg-[#E9F3EE]/80 border-[#9CC7B5] text-[#0A2A22] font-semibold'
-                                  : 'bg-[#F1F7F4]/50 border-[#E0EFE8] text-[#0F3A2F]'
+                                  ? 'bg-brand-100/80 border-[#9CC7B5] text-[#0A2A22] font-semibold'
+                                  : 'bg-brand-50/50 border-[#E0EFE8] text-[#0F3A2F]'
                               }`}>
-                                <div className={`text-[10px] font-bold mb-0.5 flex items-center gap-1 ${
+                                <div className={`text-xs font-bold mb-0.5 flex items-center gap-1 ${
                                   isAdded
                                     ? 'text-emerald-700 font-extrabold'
                                     : hasCustomText
-                                    ? 'text-[#184A3C] font-extrabold'
-                                    : 'text-[#1E5B4A]'
+                                    ? 'text-brand-700 font-extrabold'
+                                    : 'text-brand-600'
                                 }`}>
                                   <span>{isAdded ? ' 반영된 대치 정제명' : hasCustomText ? ' 수정한 정제명' : ' 매칭된 정제명'}</span>
                                 </div>
@@ -646,13 +646,13 @@ export default function ExcelValidationDashboard({
                                     }
                                   }}
                                   placeholder="새로운 올바른 정제명 입력... (Enter: 저장, ESC: 취소)"
-                                  className="flex-1 text-xs border border-[#9CC7B5] rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#1E5B4A]/20 bg-white font-medium"
+                                  className="flex-1 text-xs border border-[#9CC7B5] rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-600/20 bg-white font-medium"
                                   autoFocus
                                 />
                                 <button
                                   type="button"
                                   onClick={() => handleSaveEdit(parsed.rawName)}
-                                  className="px-3 py-1.5 bg-[#1E5B4A] hover:bg-[#184A3C] text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shrink-0 cursor-pointer shadow-2xs"
+                                  className="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shrink-0 cursor-pointer shadow-2xs"
                                 >
                                   <Check className="w-3.5 h-3.5" />
                                   저장
@@ -692,7 +692,7 @@ export default function ExcelValidationDashboard({
                                       onClick={() => handleAddToDict(parsed.rawName, currentMappedName)}
                                       className={`px-2.5 py-1 border rounded-lg text-xs font-bold transition shadow-2xs flex items-center gap-1 cursor-pointer ${
                                         hasCustomText
-                                          ? 'bg-[#1E5B4A] hover:bg-[#184A3C] text-white border-[#1E5B4A]'
+                                          ? 'bg-brand-600 hover:bg-brand-700 text-white border-brand-600'
                                           : 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-300 hover:border-amber-400'
                                       }`}
                                       title="이 매칭 결과를 대치 사전에 추가하여 반영합니다."
@@ -706,7 +706,7 @@ export default function ExcelValidationDashboard({
                                         setEditingRawName(parsed.rawName);
                                         setEditingVal(currentMappedName);
                                       }}
-                                      className="px-2.5 py-1 bg-white hover:bg-[#F1F7F4] text-[#1E5B4A] border border-[#CFE3DA] hover:border-[#4F8A75] rounded-lg text-xs font-bold transition shadow-2xs flex items-center gap-1 cursor-pointer"
+                                      className="px-2.5 py-1 bg-white hover:bg-brand-50 text-brand-600 border border-brand-200 hover:border-brand-400 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer"
                                     >
                                       <Edit2 className="w-3 h-3" />
                                       직접 고치기
@@ -725,15 +725,15 @@ export default function ExcelValidationDashboard({
                   <div>
                     <div className="text-xs font-bold text-slate-700 mb-2 flex items-center justify-between">
                       <span>진단 및 세부 로깅 메시지</span>
-                      <span className="text-[11px] text-slate-500 font-normal">
+                      <span className="text-xs text-slate-500 font-normal">
                         총 {selectedDetailCheck.details.length}건
                       </span>
                     </div>
 
                     <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs leading-relaxed space-y-2 max-h-52 overflow-y-auto">
                       {selectedDetailCheck.details.map((dt, idx) => (
-                        <div key={idx} className="flex items-start gap-2 p-2 bg-white rounded-lg border border-slate-150 shadow-2xs">
-                          <span className="text-slate-400 font-mono text-[11px] select-none shrink-0 mt-0.5">[{idx + 1}]</span>
+                        <div key={idx} className="flex items-start gap-2 p-2 bg-white rounded-lg border border-slate-150">
+                          <span className="text-slate-400 font-mono text-xs select-none shrink-0 mt-0.5">[{idx + 1}]</span>
                           <span
                             className={`font-medium ${
                               selectedDetailCheck.status === 'FAIL'

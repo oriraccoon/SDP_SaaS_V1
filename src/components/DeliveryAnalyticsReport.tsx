@@ -505,11 +505,11 @@ export default function DeliveryAnalyticsReport({
     <div className="space-y-6">
       
       {/* 타이틀 및 통합 기간 필터 컨트롤바 */}
-      <div className="bg-white text-slate-900 border border-slate-200 p-5 rounded-2xl shadow-2xs space-y-4">
+      <div className="bg-white text-slate-900 border border-slate-200 p-5 rounded-2xl space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="p-1.5 bg-[#F1F7F4] text-[#1E5B4A] rounded-lg border border-[#CFE3DA]">
+              <span className="p-1.5 bg-brand-50 text-brand-600 rounded-lg border border-brand-200">
                 <TrendingUp className="w-5 h-5" />
               </span>
               <h2 className="text-lg font-bold text-slate-900">통합 출고 시각화 리포트</h2>
@@ -530,7 +530,7 @@ export default function DeliveryAnalyticsReport({
           {/* 왼쪽: 필터 프리셋 버튼 모음 */}
           <div className="flex flex-wrap items-center gap-1.5">
             <span className="text-xs font-bold text-slate-500 mr-1 flex items-center gap-1 shrink-0">
-              <Filter className="w-3.5 h-3.5 text-[#1E5B4A]" />
+              <Filter className="w-3.5 h-3.5 text-brand-600" />
               조회 기간:
             </span>
 
@@ -538,7 +538,7 @@ export default function DeliveryAnalyticsReport({
               onClick={() => setDateFilterType('all')}
               className={`px-3 py-1.5 text-xs font-bold rounded-xl transition cursor-pointer ${
                 dateFilterType === 'all'
-                  ? 'bg-[#1E5B4A] text-white shadow-xs ring-1 ring-[#4F8A75]'
+                  ? 'bg-brand-600 text-white shadow-xs ring-1 ring-brand-400'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
               }`}
             >
@@ -549,7 +549,7 @@ export default function DeliveryAnalyticsReport({
               onClick={() => setDateFilterType('1d')}
               className={`px-3 py-1.5 text-xs font-bold rounded-xl transition cursor-pointer ${
                 dateFilterType === '1d'
-                  ? 'bg-[#1E5B4A] text-white shadow-xs ring-1 ring-[#4F8A75]'
+                  ? 'bg-brand-600 text-white shadow-xs ring-1 ring-brand-400'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
               }`}
             >
@@ -560,7 +560,7 @@ export default function DeliveryAnalyticsReport({
               onClick={() => setDateFilterType('1w')}
               className={`px-3 py-1.5 text-xs font-bold rounded-xl transition cursor-pointer ${
                 dateFilterType === '1w'
-                  ? 'bg-[#1E5B4A] text-white shadow-xs ring-1 ring-[#4F8A75]'
+                  ? 'bg-brand-600 text-white shadow-xs ring-1 ring-brand-400'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
               }`}
             >
@@ -571,7 +571,7 @@ export default function DeliveryAnalyticsReport({
               onClick={() => setDateFilterType('1m')}
               className={`px-3 py-1.5 text-xs font-bold rounded-xl transition cursor-pointer ${
                 dateFilterType === '1m'
-                  ? 'bg-[#1E5B4A] text-white shadow-xs ring-1 ring-[#4F8A75]'
+                  ? 'bg-brand-600 text-white shadow-xs ring-1 ring-brand-400'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
               }`}
             >
@@ -616,7 +616,7 @@ export default function DeliveryAnalyticsReport({
                   className="relative bg-white text-amber-700 font-mono font-bold px-2.5 py-1 rounded-lg border border-slate-200 outline-none cursor-pointer text-xs [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer hover:border-amber-400/70 transition"
                 />
                 {(dateFilterType === '1w' || dateFilterType === '1m') && (
-                  <span className="text-[#9CC7B5] font-mono font-extrabold text-[11px] bg-[#0A2A22]/90 px-2 py-1 rounded-lg border border-[#123A30]/80 shrink-0">
+                  <span className="text-[#9CC7B5] font-mono font-extrabold text-xs bg-[#0A2A22]/90 px-2 py-1 rounded-lg border border-brand-800/80 shrink-0">
                     적용 기간: {activeRangeText.label}
                   </span>
                 )}
@@ -654,14 +654,14 @@ export default function DeliveryAnalyticsReport({
             ) : null}
 
             {/* 표시 건수 배지 */}
-            <div className="text-[#9CC7B5] font-extrabold bg-[#0A2A22]/90 px-2.5 py-1.5 rounded-xl border border-[#123A30]/80 shrink-0">
+            <div className="text-[#9CC7B5] font-extrabold bg-[#0A2A22]/90 px-2.5 py-1.5 rounded-xl border border-brand-800/80 shrink-0">
               {totalOrdersCount}건
             </div>
 
             {/* 캘린더 보기 우측 보조 버튼 */}
             <button
               onClick={() => setIsCalendarModalOpen(true)}
-              className="px-2.5 py-1.5 bg-white hover:bg-slate-50 text-amber-700 hover:text-amber-800 font-extrabold rounded-xl text-xs transition cursor-pointer flex items-center gap-1.5 border border-slate-200 shrink-0 shadow-xs"
+              className="px-2.5 py-1.5 bg-white hover:bg-slate-50 text-amber-700 hover:text-amber-800 font-extrabold rounded-xl text-xs transition cursor-pointer flex items-center gap-1.5 border border-slate-200 shrink-0"
               title="캘린더 달력 보기"
             >
               <CalendarDays className="w-3.5 h-3.5 text-amber-700" />
@@ -674,20 +674,20 @@ export default function DeliveryAnalyticsReport({
       {/* KPI 주요 요약 카드 4종 (필터링 데이터 반영) */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs space-y-2">
+        <div className="bg-white p-4 rounded-xl border border-slate-200 space-y-2">
           <div className="flex items-center justify-between text-slate-500 text-xs font-medium">
             <span>필터링 출고 건수</span>
-            <div className="p-1.5 bg-[#F1F7F4] text-[#1E5B4A] rounded-md">
+            <div className="p-1.5 bg-brand-50 text-brand-600 rounded-md">
               <Layers className="w-4 h-4" />
             </div>
           </div>
           <div>
             <div className="text-2xl font-black text-slate-900">{totalOrdersCount.toLocaleString()}건</div>
-            <div className="text-[11px] text-[#1E5B4A] font-semibold mt-0.5">총 {totalItemQty.toLocaleString()}개 수량</div>
+            <div className="text-xs text-brand-600 font-semibold mt-0.5">총 {totalItemQty.toLocaleString()}개 수량</div>
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs space-y-2">
+        <div className="bg-white p-4 rounded-xl border border-slate-200 space-y-2">
           <div className="flex items-center justify-between text-slate-500 text-xs font-medium">
             <span>1위 최다 출고 쇼핑몰</span>
             <div className="p-1.5 bg-sky-50 text-sky-600 rounded-md">
@@ -696,13 +696,13 @@ export default function DeliveryAnalyticsReport({
           </div>
           <div>
             <div className="text-xl font-bold text-slate-900 truncate" title={topPlatform}>{topPlatform}</div>
-            <div className="text-[11px] text-sky-600 font-semibold mt-0.5">
+            <div className="text-xs text-sky-600 font-semibold mt-0.5">
               {platformData[0]?.count || 0}건 ({totalOrdersCount > 0 ? Math.round(((platformData[0]?.count || 0) / totalOrdersCount) * 100) : 0}%)
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs space-y-2">
+        <div className="bg-white p-4 rounded-xl border border-slate-200 space-y-2">
           <div className="flex items-center justify-between text-slate-500 text-xs font-medium">
             <span>1위 최다 판매 상품</span>
             <div className="p-1.5 bg-purple-50 text-purple-600 rounded-md">
@@ -711,13 +711,13 @@ export default function DeliveryAnalyticsReport({
           </div>
           <div>
             <div className="text-xl font-bold text-slate-900 truncate" title={topProduct}>{topProduct}</div>
-            <div className="text-[11px] text-purple-600 font-semibold mt-0.5">
+            <div className="text-xs text-purple-600 font-semibold mt-0.5">
               총 {productData[0]?.totalQty || 0}개 출고
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs space-y-2">
+        <div className="bg-white p-4 rounded-xl border border-slate-200 space-y-2">
           <div className="flex items-center justify-between text-slate-500 text-xs font-medium">
             <span>1위 배송 집중 지역</span>
             <div className="p-1.5 bg-emerald-50 text-emerald-600 rounded-md">
@@ -726,7 +726,7 @@ export default function DeliveryAnalyticsReport({
           </div>
           <div>
             <div className="text-xl font-bold text-slate-900">{topRegion}</div>
-            <div className="text-[11px] text-emerald-600 font-semibold mt-0.5">
+            <div className="text-xs text-emerald-600 font-semibold mt-0.5">
               {regionData[0]?.value || 0}건 ({totalOrdersCount > 0 ? Math.round(((regionData[0]?.value || 0) / totalOrdersCount) * 100) : 0}%)
             </div>
           </div>
@@ -738,13 +738,13 @@ export default function DeliveryAnalyticsReport({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         {/* Chart 1: 쇼핑몰별 출고 건수 (Bar Chart) */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-2xs space-y-4">
+        <div className="bg-white p-5 rounded-xl border border-slate-200 space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div className="flex items-center gap-2">
-              <ShoppingBag className="w-4 h-4 text-[#1E5B4A]" />
+              <ShoppingBag className="w-4 h-4 text-brand-600" />
               <h3 className="text-sm font-bold text-slate-800">쇼핑몰별 출고 물량 비교</h3>
             </div>
-            <span className="text-[11px] text-slate-500">단위: 건</span>
+            <span className="text-xs text-slate-500">단위: 건</span>
           </div>
 
           <div className="h-64 w-full">
@@ -770,13 +770,13 @@ export default function DeliveryAnalyticsReport({
                             <span className="text-slate-400">출고 물량:</span>
                             <span className="font-extrabold text-sky-300 text-sm">{count.toLocaleString()}건</span>
                           </div>
-                          <div className="text-slate-300 flex items-center justify-between text-[11px]">
+                          <div className="text-slate-300 flex items-center justify-between text-xs">
                             <span className="text-slate-400">전체 점유율:</span>
                             <span className="font-semibold text-emerald-300">{pct}%</span>
                           </div>
-                          <div className="text-slate-300 flex items-center justify-between text-[11px]">
+                          <div className="text-slate-300 flex items-center justify-between text-xs">
                             <span className="text-slate-400">총 상품 수량:</span>
-                            <span className="font-semibold text-[#CFE3DA]">{totalQty.toLocaleString()}개</span>
+                            <span className="font-semibold text-brand-200">{totalQty.toLocaleString()}개</span>
                           </div>
                         </div>
                       );
@@ -807,13 +807,13 @@ export default function DeliveryAnalyticsReport({
         </div>
 
         {/* Chart 2: 정제 후 단어(정제 상품명) 기준 품목별 판매 물량 시각화 */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-2xs space-y-4">
+        <div className="bg-white p-5 rounded-xl border border-slate-200 space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div className="flex items-center gap-2">
               <Package className="w-4 h-4 text-purple-600" />
               <h3 className="text-sm font-bold text-slate-800">품목별 판매 물량 (정제 단어 기준)</h3>
             </div>
-            <span className="text-[11px] text-purple-600 font-semibold bg-purple-50 px-2 py-0.5 rounded border border-purple-100">
+            <span className="text-xs text-purple-600 font-semibold bg-purple-50 px-2 py-0.5 rounded border border-purple-100">
               상위 {Math.min(10, productData.length)}개 품목
             </span>
           </div>
@@ -848,7 +848,7 @@ export default function DeliveryAnalyticsReport({
                             <span className="text-slate-300">총 판매 수량:</span>
                             <span className="font-extrabold text-amber-300 text-sm">{data.totalQty}개</span>
                           </div>
-                          <div className="text-slate-300 flex items-center justify-between text-[11px]">
+                          <div className="text-slate-300 flex items-center justify-between text-xs">
                             <span>주문 건수:</span>
                             <span className="font-semibold text-purple-200">{data.orderCount}건</span>
                           </div>
@@ -869,7 +869,7 @@ export default function DeliveryAnalyticsReport({
 
           <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 max-h-28 overflow-y-auto">
             {productData.map((prod, idx) => (
-              <div key={idx} className="flex items-center justify-between text-[11px] p-1.5 rounded bg-purple-50/40 border border-purple-100/50">
+              <div key={idx} className="flex items-center justify-between text-xs p-1.5 rounded bg-purple-50/40 border border-purple-100/50">
                 <span className="text-slate-700 font-medium truncate" title={prod.name}>
                   {prod.name}
                 </span>
@@ -882,13 +882,13 @@ export default function DeliveryAnalyticsReport({
         </div>
 
         {/* Chart 3: 주요 배송 지역 물량 분포 */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-2xs space-y-4">
+        <div className="bg-white p-5 rounded-xl border border-slate-200 space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-emerald-600" />
               <h3 className="text-sm font-bold text-slate-800">전국 주요 배송 지역별 물량</h3>
             </div>
-            <span className="text-[11px] text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
+            <span className="text-xs text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
               상위 {Math.min(8, regionData.length)}개 지역
             </span>
           </div>
@@ -943,7 +943,7 @@ export default function DeliveryAnalyticsReport({
             {regionData.map((r, idx) => {
               const pct = totalOrdersCount > 0 ? Math.round((r.value / totalOrdersCount) * 100) : 0;
               return (
-                <div key={idx} className="flex items-center justify-between text-[11px] p-1.5 rounded bg-emerald-50/40 border border-emerald-100/50">
+                <div key={idx} className="flex items-center justify-between text-xs p-1.5 rounded bg-emerald-50/40 border border-emerald-100/50">
                   <span className="text-slate-700 font-medium truncate">{r.name}</span>
                   <span className="font-bold text-emerald-900 shrink-0 ml-1">
                     {r.value}건 <span className="text-slate-400 font-normal">({pct}%)</span>
@@ -955,7 +955,7 @@ export default function DeliveryAnalyticsReport({
         </div>
 
         {/* Chart 4: 추이 차트 뷰 (하단 캘린더 구역은 전면 제거) */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-2xs space-y-4 lg:col-span-2">
+        <div className="bg-white p-5 rounded-xl border border-slate-200 space-y-4 lg:col-span-2">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-2">
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-sky-600" />
@@ -975,7 +975,7 @@ export default function DeliveryAnalyticsReport({
                 <SlidersHorizontal className="w-3.5 h-3.5" />
                 <span>출고일자 보정/지정</span>
                 {unassignedDateCount > 0 && (
-                  <span className="ml-1 bg-rose-500 text-white text-[10px] px-1.5 py-0.2 rounded-full font-mono">
+                  <span className="ml-1 bg-rose-500 text-white text-xs px-1.5 py-0.2 rounded-full font-mono">
                     {unassignedDateCount}
                   </span>
                 )}
@@ -991,7 +991,7 @@ export default function DeliveryAnalyticsReport({
                   <Edit3 className="w-4 h-4 text-amber-700" />
                   <span>수집 주문 일괄 출고 날짜 보정</span>
                 </div>
-                <span className="text-amber-700 text-[11px]">
+                <span className="text-amber-700 text-xs">
                   날짜 누락 건수: <strong>{unassignedDateCount}건</strong> / 전체 {orders.length}건
                 </span>
               </div>
@@ -1040,19 +1040,19 @@ export default function DeliveryAnalyticsReport({
             {/* 요약 칩 모음 (총일수, 일평균, 최고출고일, 0건 일수) */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
               <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex flex-col justify-between">
-                <span className="text-slate-500 text-[11px]">총 조회 기간</span>
+                <span className="text-slate-500 text-xs">총 조회 기간</span>
                 <span className="font-extrabold text-slate-800 text-sm mt-0.5">
                   {timeSeriesData.length}일간
                 </span>
               </div>
               <div className="bg-sky-50/60 p-2.5 rounded-xl border border-sky-100 flex flex-col justify-between">
-                <span className="text-sky-700 text-[11px]">일평균 출고량</span>
+                <span className="text-sky-700 text-xs">일평균 출고량</span>
                 <span className="font-extrabold text-sky-800 text-sm mt-0.5">
                   약 {Math.round(totalOrdersCount / Math.max(1, timeSeriesData.length))}건 / 일
                 </span>
               </div>
               <div className="bg-emerald-50/60 p-2.5 rounded-xl border border-emerald-100 flex flex-col justify-between">
-                <span className="text-emerald-700 text-[11px]">최고 출고일</span>
+                <span className="text-emerald-700 text-xs">최고 출고일</span>
                 <span className="font-extrabold text-emerald-800 text-sm mt-0.5 truncate">
                   {(() => {
                     if (timeSeriesData.length === 0) return '-';
@@ -1062,7 +1062,7 @@ export default function DeliveryAnalyticsReport({
                 </span>
               </div>
               <div className="bg-rose-50/60 p-2.5 rounded-xl border border-rose-100 flex flex-col justify-between">
-                <span className="text-rose-700 text-[11px]">출고 0건인 날</span>
+                <span className="text-rose-700 text-xs">출고 0건인 날</span>
                 <span className="font-extrabold text-rose-800 text-sm mt-0.5">
                   {timeSeriesData.filter(d => d.count === 0).length}일
                 </span>
@@ -1133,7 +1133,7 @@ export default function DeliveryAnalyticsReport({
               </div>
             </div>
             
-            <div className="text-[11px] text-slate-400 text-right flex items-center justify-end gap-1">
+            <div className="text-xs text-slate-400 text-right flex items-center justify-end gap-1">
               <span> 가로 스크롤로 일별 출고 흐름을 자세히 확인하세요</span>
             </div>
           </div>
@@ -1150,7 +1150,7 @@ export default function DeliveryAnalyticsReport({
             {/* 모달 헤더 */}
             <div className="bg-slate-900 text-white p-4 px-6 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2.5">
-                <span className="p-2 bg-[#1E5B4A]/30 text-[#9CC7B5] rounded-xl border border-[#4F8A75]/30">
+                <span className="p-2 bg-brand-600/30 text-[#9CC7B5] rounded-xl border border-brand-400/30">
                   <CalendarDays className="w-5 h-5" />
                 </span>
                 <div>
@@ -1178,7 +1178,7 @@ export default function DeliveryAnalyticsReport({
                   <h4 className="text-lg font-extrabold text-slate-900 tracking-tight">
                     {currentYearMonth.year}년 {currentYearMonth.month}월
                   </h4>
-                  <div className="flex items-center gap-1 bg-white rounded-lg p-0.5 border border-slate-200 shadow-2xs">
+                  <div className="flex items-center gap-1 bg-white rounded-lg p-0.5 border border-slate-200">
                     <button
                       onClick={handlePrevMonth}
                       className="p-1 hover:bg-slate-100 rounded-md transition text-slate-600 cursor-pointer"
@@ -1244,7 +1244,7 @@ export default function DeliveryAnalyticsReport({
               </div>
 
               {/* 7열 캘린더 달력 그리드 */}
-              <div className="grid grid-cols-7 border border-slate-200 rounded-xl overflow-hidden divide-x divide-y divide-slate-100 bg-white shadow-2xs">
+              <div className="grid grid-cols-7 border border-slate-200 rounded-xl overflow-hidden divide-x divide-y divide-slate-100 bg-white">
                 {monthCalendarData.map((d, idx) => {
                   const isStart = d.dateStr === customStartDate;
                   const isEnd = d.dateStr === customEndDate;
@@ -1262,9 +1262,9 @@ export default function DeliveryAnalyticsReport({
                       onClick={() => handleCalendarDayClick(d.dateStr)}
                       className={`min-h-[68px] sm:min-h-[76px] p-2 flex flex-col justify-between text-left transition cursor-pointer relative ${
                         isSelected
-                          ? 'bg-[#1E5B4A] text-white font-extrabold ring-2 ring-[#1E5B4A] ring-inset shadow-md z-10'
+                          ? 'bg-brand-600 text-white font-extrabold ring-2 ring-brand-600 ring-inset shadow-md z-10'
                           : isRangeMid
-                          ? 'bg-[#E9F3EE]/90 text-[#0A2A22] font-bold border-y border-[#CFE3DA]'
+                          ? 'bg-brand-100/90 text-[#0A2A22] font-bold border-y border-brand-200'
                           : !d.isCurrentMonth
                           ? 'bg-slate-50/50 text-slate-300 hover:bg-slate-100/50'
                           : 'hover:bg-sky-50 text-slate-700'
@@ -1289,7 +1289,7 @@ export default function DeliveryAnalyticsReport({
                           {d.dayNumber}일
                         </span>
                         {d.isToday && (
-                          <span className={`text-[9px] px-1 py-0.2 rounded font-bold ${
+                          <span className={`text-xs px-1 py-0.2 rounded font-bold ${
                             isSelected ? 'bg-amber-300 text-slate-900' : 'bg-amber-400 text-slate-900'
                           }`}>
                             오늘
@@ -1303,13 +1303,13 @@ export default function DeliveryAnalyticsReport({
                             isSelected
                               ? 'bg-amber-300 text-slate-900 shadow-2xs font-black'
                               : isRangeMid
-                              ? 'bg-[#CFE3DA] text-[#0F3A2F] font-bold'
+                              ? 'bg-brand-200 text-[#0F3A2F] font-bold'
                               : 'bg-sky-50 text-sky-700 border border-sky-200'
                           }`}>
                             {d.count}건
                           </div>
                         ) : (
-                          <span className={`text-[10px] font-normal ${isSelected ? 'text-[#CFE3DA]' : 'text-slate-300'}`}>
+                          <span className={`text-xs font-normal ${isSelected ? 'text-brand-200' : 'text-slate-300'}`}>
                             0건
                           </span>
                         )}
@@ -1320,14 +1320,14 @@ export default function DeliveryAnalyticsReport({
               </div>
 
               {/* 현재 선택 상태 안내 */}
-              <div className="p-3 bg-[#F1F7F4] border border-[#E9F3EE] rounded-xl flex items-center justify-between text-xs text-[#0F3A2F]">
+              <div className="p-3 bg-brand-50 border border-brand-100 rounded-xl flex items-center justify-between text-xs text-[#0F3A2F]">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-[#184A3C]">현재 선택된 범위:</span>
-                  <span className="font-mono font-bold text-[#0A2A22] text-sm bg-white px-2 py-0.5 rounded border border-[#CFE3DA]">
+                  <span className="font-bold text-brand-700">현재 선택된 범위:</span>
+                  <span className="font-mono font-bold text-[#0A2A22] text-sm bg-white px-2 py-0.5 rounded border border-brand-200">
                     {customStartDate || '미지정'} ~ {customEndDate || '미지정'}
                   </span>
                 </div>
-                <span className="text-slate-500 text-[11px]">
+                <span className="text-slate-500 text-xs">
                   날짜를 선택하면 범위(시작일~종료일)로 지정할 수 있습니다.
                 </span>
               </div>
@@ -1356,7 +1356,7 @@ export default function DeliveryAnalyticsReport({
                   }
                   setIsCalendarModalOpen(false);
                 }}
-                className="px-6 py-2.5 bg-[#1E5B4A] hover:bg-[#184A3C] text-white font-bold rounded-xl text-xs transition cursor-pointer shadow-md flex items-center gap-1.5"
+                className="px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl text-xs transition cursor-pointer shadow-md flex items-center gap-1.5"
               >
                 <Check className="w-4 h-4" />
                 <span>선택 기간으로 조회 적용하기</span>

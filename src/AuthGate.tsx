@@ -47,12 +47,12 @@ export default function AuthGate({ children }: { children: ReactNode }) {
     return (
       <div className="flex min-h-screen flex-col bg-white px-6 text-[#191F28]" style={FONT_STYLE}>
         <header className="flex w-full items-center justify-between py-6">
-          <span className="text-lg font-bold text-[#1E5B4A]">{APP_NAME}</span>
+          <span className="text-lg font-bold text-brand-600">{APP_NAME}</span>
         </header>
 
         <main className="flex flex-1 items-center justify-center pb-16">
           <div className="w-full max-w-sm">
-            <p className="text-sm font-semibold text-[#1E5B4A]">주문 정리는 {APP_NAME}에 맡기세요</p>
+            <p className="text-sm font-semibold text-brand-600">주문 정리는 {APP_NAME}에 맡기세요</p>
             <h1 className="mt-3 text-3xl font-bold leading-tight sm:text-4xl">로그인하고 시작해요</h1>
             <p className="mt-3 text-base leading-relaxed text-[#6B7684]">
               이메일로 가입하거나 Google 계정으로 로그인하세요.
@@ -117,7 +117,7 @@ function EmailAuthForm() {
   }
 
   const inputClass =
-    'w-full rounded-xl border border-[#D1D6DB] bg-white px-4 py-4 text-base text-[#191F28] outline-none placeholder:text-[#B0B8C1] focus:border-[#1E5B4A]';
+    'w-full rounded-xl border border-[#D1D6DB] bg-white px-4 py-4 text-base text-[#191F28] outline-none placeholder:text-[#B0B8C1] focus:border-brand-600';
 
   return (
     <form onSubmit={submit} className="mt-8 space-y-3">
@@ -142,7 +142,7 @@ function EmailAuthForm() {
       <button
         type="submit"
         disabled={busy}
-        className="mt-2 w-full rounded-xl bg-[#1E5B4A] px-4 py-4 text-base font-semibold text-white transition-colors hover:bg-[#184A3C] disabled:opacity-60"
+        className="mt-2 w-full rounded-xl bg-brand-600 px-4 py-4 text-base font-semibold text-white transition-colors hover:bg-brand-700 disabled:opacity-60"
       >
         {busy ? '처리 중...' : isSignup ? '회원가입' : '이메일로 로그인'}
       </button>
@@ -155,7 +155,7 @@ function EmailAuthForm() {
             setError(null);
             setMode(isSignup ? 'login' : 'signup');
           }}
-          className="font-semibold text-[#1E5B4A] underline underline-offset-4"
+          className="font-semibold text-brand-600 underline underline-offset-4"
         >
           {isSignup ? '로그인하기' : '회원가입하기'}
         </button>
@@ -202,11 +202,11 @@ function VerifyEmailScreen({ email, onVerified }: { email: string; onVerified: (
   return (
     <div className="flex min-h-screen flex-col bg-white px-6 text-[#191F28]" style={FONT_STYLE}>
       <header className="flex w-full items-center justify-between py-6">
-        <span className="text-lg font-bold text-[#1E5B4A]">{APP_NAME}</span>
+        <span className="text-lg font-bold text-brand-600">{APP_NAME}</span>
       </header>
       <main className="flex flex-1 items-center justify-center pb-16">
         <div className="w-full max-w-sm">
-          <p className="text-sm font-semibold text-[#1E5B4A]">이메일 인증이 필요해요</p>
+          <p className="text-sm font-semibold text-brand-600">이메일 인증이 필요해요</p>
           <h1 className="mt-3 text-3xl font-bold leading-tight sm:text-4xl">메일함을 확인해 주세요</h1>
           <p className="mt-3 text-base leading-relaxed text-[#6B7684]">
             <span className="font-semibold text-[#191F28]">{email}</span>로 인증 메일을 보냈어요. 메일의 링크를 누른 뒤 아래 버튼을 눌러 주세요.
@@ -216,7 +216,7 @@ function VerifyEmailScreen({ email, onVerified }: { email: string; onVerified: (
             <button
               onClick={check}
               disabled={busy}
-              className="w-full rounded-xl bg-[#1E5B4A] px-4 py-4 text-base font-semibold text-white transition-colors hover:bg-[#184A3C] disabled:opacity-60"
+              className="w-full rounded-xl bg-brand-600 px-4 py-4 text-base font-semibold text-white transition-colors hover:bg-brand-700 disabled:opacity-60"
             >
               {busy ? '확인 중...' : '인증했어요'}
             </button>
@@ -229,7 +229,7 @@ function VerifyEmailScreen({ email, onVerified }: { email: string; onVerified: (
             </button>
           </div>
 
-          {message && <p className="mt-4 text-sm text-[#1E5B4A]">{message}</p>}
+          {message && <p className="mt-4 text-sm text-brand-600">{message}</p>}
           {error && <p className="mt-4 text-sm text-[#D9434E]">{error}</p>}
 
           <p className="mt-8 text-center text-base text-[#6B7684]">
@@ -237,7 +237,7 @@ function VerifyEmailScreen({ email, onVerified }: { email: string; onVerified: (
             <button
               type="button"
               onClick={() => logout()}
-              className="font-semibold text-[#1E5B4A] underline underline-offset-4"
+              className="font-semibold text-brand-600 underline underline-offset-4"
             >
               로그아웃
             </button>

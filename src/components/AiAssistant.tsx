@@ -16,11 +16,11 @@ export default function AiAssistant() {
         <div
           role="dialog"
           aria-label="AI 도우미"
-          className="fixed bottom-20 left-16 right-3 z-30 flex h-[min(520px,70vh)] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl sm:bottom-6 sm:left-auto sm:right-6 sm:w-[360px]"
+          className="ai-panel fixed bottom-4 left-4 right-4 z-30 flex h-[min(520px,70vh)] origin-bottom-right flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl sm:left-auto sm:w-[360px]"
         >
           <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
             <div className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#1E5B4A] text-white">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-600 text-white">
                 <MessageCircle className="h-4 w-4" />
               </span>
               <span className="text-sm font-bold text-slate-900">{APP_NAME} 도우미</span>
@@ -69,7 +69,7 @@ export default function AiAssistant() {
                 <Send className="h-4 w-4" />
               </button>
             </div>
-            <p className="text-[11px] leading-relaxed text-slate-400">개인정보(이름, 연락처, 주소)는 입력하지 마세요.</p>
+            <p className="text-xs leading-relaxed text-slate-500">개인정보(이름, 연락처, 주소)는 입력하지 마세요.</p>
           </div>
         </div>
       )}
@@ -78,11 +78,11 @@ export default function AiAssistant() {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          aria-label="AI 도우미 열기"
-          className="fixed bottom-4 right-3 z-30 flex h-14 items-center gap-2 rounded-full bg-[#1E5B4A] px-5 text-sm font-bold text-white shadow-lg transition hover:bg-[#184A3C] sm:bottom-6 sm:right-6"
+          aria-label="AI 도우미 열기 (준비 중)"
+          title="AI 도우미 (준비 중)"
+          className="pressable fixed bottom-4 right-4 z-30 flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-brand-600 shadow-md hover:bg-brand-50"
         >
           <MessageCircle className="h-5 w-5" />
-          AI 도우미
         </button>
       )}
     </>

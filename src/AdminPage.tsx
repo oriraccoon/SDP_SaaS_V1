@@ -160,7 +160,7 @@ function MembersTab() {
       >
         <span>
           <span className="block text-sm font-bold text-slate-800">휴지통 ({trashAccounts.length}명)</span>
-          <span className="block text-[11px] text-slate-500">휴지통에 들어간 지 {TRASH_RETENTION_DAYS}일이 지나면 자동으로 삭제됩니다.</span>
+          <span className="block text-xs text-slate-500">휴지통에 들어간 지 {TRASH_RETENTION_DAYS}일이 지나면 자동으로 삭제됩니다.</span>
         </span>
         <span className="text-xs font-semibold text-slate-600">{trashOpen ? '접기 ▲' : '펼치기 ▼'}</span>
       </button>
@@ -174,7 +174,7 @@ function MembersTab() {
               <div key={acc.uid} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white p-3 border border-slate-200">
                 <div>
                   <p className="text-sm font-semibold text-slate-800">{acc.email || '(이메일 없음)'}</p>
-                  <p className="text-[11px] text-slate-500">자동 삭제까지 {left}일 남음</p>
+                  <p className="text-xs text-slate-500">자동 삭제까지 {left}일 남음</p>
                 </div>
                 <div className="flex gap-2">
                   <button
@@ -213,16 +213,16 @@ function MembersTab() {
         }[status];
 
         return (
-          <div key={acc.uid} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm space-y-3">
+          <div key={acc.uid} className="rounded-xl border border-slate-200 bg-white p-4 space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
                 <p className="text-sm font-bold">{acc.email || '(이메일 없음)'}</p>
-                <p className="text-[11px] text-slate-500">
+                <p className="text-xs text-slate-500">
                   마지막 접속: {acc.lastLoginAt ? new Date(acc.lastLoginAt).toLocaleString('ko-KR') : '-'}
                   {' · '}만료일: {acc.expiresAt ? new Date(acc.expiresAt).toLocaleDateString('ko-KR') : '-'}
                 </p>
               </div>
-              <span className={`rounded-md border px-2 py-0.5 text-[11px] font-bold ${statusColor}`}>{statusLabel}</span>
+              <span className={`rounded-md border px-2 py-0.5 text-xs font-bold ${statusColor}`}>{statusLabel}</span>
             </div>
 
             <div className="flex flex-wrap gap-2">
@@ -351,8 +351,8 @@ function ReportsTab() {
       {shown.length === 0 && <p className="text-sm text-slate-500">아직 {category} 내용이 없습니다.</p>}
 
       {shown.map((r) => (
-        <div key={r.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm space-y-2">
-          <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500">
+        <div key={r.id} className="rounded-xl border border-slate-200 bg-white p-4 space-y-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
             <span>
               <b className="text-slate-800">[{r.category}]</b> {r.email || '(이메일 없음)'}
               {' · '}
@@ -404,7 +404,7 @@ function NoticeTab() {
   };
 
   return (
-    <section className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+    <section className="space-y-3 rounded-xl border border-slate-200 bg-white p-4">
       <p className="text-sm text-slate-600">모든 회원 화면 위쪽에 띄우는 안내 문구입니다.</p>
       <textarea
         value={text}
@@ -468,10 +468,10 @@ function InviteSection({ onChanged }: { onChanged: () => void }) {
   };
 
   return (
-    <section className="space-y-3 rounded-xl border border-indigo-200 bg-white p-4 shadow-sm">
+    <section className="space-y-3 rounded-xl border border-indigo-200 bg-white p-4">
       <div>
         <p className="text-sm font-bold text-slate-900">회원 초대</p>
-        <p className="text-[11px] text-slate-500">
+        <p className="text-xs text-slate-500">
           초대할 사람의 Google 이메일을 적고 기간과 기능을 정하세요. 그 사람이 처음 로그인하면 자동으로 적용됩니다.
         </p>
       </div>
@@ -603,10 +603,10 @@ function FaqTab() {
   if (!loaded) return <p className="text-sm text-slate-500">불러오는 중...</p>;
 
   return (
-    <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+    <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-4">
       <div>
         <p className="text-sm font-bold text-slate-900">랜딩 페이지 질문 (FAQ)</p>
-        <p className="text-[11px] text-slate-500">랜딩 페이지의 "자주 묻는 질문" 목록입니다. 순서대로 보입니다.</p>
+        <p className="text-xs text-slate-500">랜딩 페이지의 "자주 묻는 질문" 목록입니다. 순서대로 보입니다.</p>
       </div>
 
       {items.map((item, i) => (

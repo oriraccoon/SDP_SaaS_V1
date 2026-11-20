@@ -16,7 +16,7 @@ import {
   Info,
   Trash2,
   RefreshCw,
-  Sparkles,
+  Lightbulb,
   Layers,
   Truck,
   Eye,
@@ -25,7 +25,8 @@ import {
   BarChart3,
   Grid,
   RotateCcw,
-  X
+  X,
+  CheckCircle2
 } from 'lucide-react';
 
 import { PlatformConfig, ProductMapping, ProcessedOrder, MatchingError, ValidationIssue, StepValidationResult, CourierConfig, SecondaryOptionColInfo } from './types';
@@ -69,10 +70,11 @@ import { getCurrentUid, logout } from './firebaseAuth';
 import { useAccount } from './AccountGate';
 import { consumeUploads, uploadsLeft } from './lib/account';
 import { APP_NAME } from './config/brand';
+import { uploadsUsedThisMonth } from './lib/account';
 import FeedbackModal from './components/FeedbackModal';
 import { LogOut, Menu, MessageSquare } from 'lucide-react';
 
-// 2단계 운송장 소스 엑셀 파일 택배사/양식 지능형 자동 감지 헬퍼
+// 2단계 운송장 소스 엑셀 파일 택배사/양식 자동 감지 헬퍼
 function detectCourierForFile(fileName: string, rawRows?: any[][]): string {
   const norm = fileName.normalize('NFC').toLowerCase();
   if (norm.includes('한진') || norm.includes('hanjin')) return '한진택배';
@@ -234,7 +236,7 @@ export default function App() {
 
   const [activeTab, setActiveTab] = useState<'process' | 'analytics'>('process');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => typeof window === 'undefined' || window.innerWidth >= 768);
   const [settingsSection, setSettingsSection] = useState<'platforms' | 'products' | 'backup' | 'account'>('platforms');
   const openSettings = (section: 'platforms' | 'products' | 'backup' | 'account') => {
     setSettingsSection(section);
@@ -286,7 +288,7 @@ export default function App() {
     showNotification('info', "모든 미매칭 항목에 AI 추천 정제어가 입력되었습니다.");
   };
 
-  // 2단계 (운송장 업데이트) 상태 - 1단계와 동일하게 다중 파일 및 자동 지능형 감지 지원
+  // 2단계 (운송장 업데이트) 상태 - 1단계와 동일하게 다중 파일 및 자동 감지 지원
   const [trackingFiles, setTrackingFiles] = useState<File[]>([]);
   const [customTrackingCouriers, setCustomTrackingCouriers] = useState<{ [fileName: string]: string }>({});
   const [parsedTrackingFiles, setParsedTrackingFiles] = useState<{
@@ -491,7 +493,7 @@ export default function App() {
     }));
 
     setProductMappings(updated);
-    showNotification('success', `Warning 매칭 ${mappingsToAdd.length}건이 대치 리스트에 성공적으로 일괄 등록되었습니다!`);
+    showNotification('success', `Warning 매칭 ${mappingsToAdd.length}건이 대치 리스트에 성공적으로 일괄 등록되었습니다.`);
 
     if (orderFiles.length > 0) {
       processMultipleOrderFiles(orderFiles, customFilePlatforms, decryptedFilesCache, updated);
@@ -834,7 +836,7 @@ export default function App() {
   ) => {
     const newRawItemsSet = new Set<string>();
 
-    // 1. 각 주문에 대해 캐시 기반 매핑 및 지능형 스마트 매칭 적용
+    // 1. 각 주문에 대해 캐시 기반 매핑 및 스마트 매칭 적용
     const mappedOrders = ordersList.map(order => {
       const rawProdName = (order.originalProductName || order.상품명 || '').trim();
       if (!rawProdName) {
@@ -965,7 +967,7 @@ export default function App() {
 
     const updatedMappings = [...newMappingsToAdd, ...productMappings];
     setProductMappings(updatedMappings);
-    showNotification('success', `신규 품목 ${newMappingsToAdd.length}개의 정제 규칙이 사전에 등록되었습니다!`);
+    showNotification('success', `신규 품목 ${newMappingsToAdd.length}개의 정제 규칙이 사전에 등록되었습니다.`);
 
     // 엑셀 수집 파일 및 API 수집 주문 포함 전체 재대치 실행
     if (orderParseResult && orderParseResult.orders && orderParseResult.orders.length > 0) {
@@ -1046,7 +1048,7 @@ export default function App() {
   // 1단계 가공된 주문 데이터 미리보기 (실제 생성되는 2개 파일 및 각각의 시트와 1:1 완벽 대조)
   const handlePreviewStep1Excel = () => {
     if (!orderParseResult || !orderParseResult.orders || orderParseResult.orders.length === 0) {
-      showNotification('info', "미리볼 주문 가공 데이터가 없습니다. 먼저 1단계 주문 파일을 불러와주세요.");
+      showNotification('info', "미리볼 주문 가공 데이터가 없습니다. 먼저 주문서를 올려 주세요.");
       return;
     }
 
@@ -1151,7 +1153,7 @@ export default function App() {
 
     setPreviewModal({
       isOpen: true,
-      title: "1단계 가공 엑셀 파일 미리보기 (총 2개 파일)",
+      title: "정리된 파일 미리 보기 (2개)",
       subtitle: "다운로드되는 실제 엑셀 파일 및 시트 구조와 100% 동일한 미리보기 화면입니다.",
       files: [summaryReportFile, productSortedFile],
       onDownloadAll: () => {
@@ -1162,7 +1164,7 @@ export default function App() {
     });
   };
 
-  // 2단계 최종 운송장반영 배송엑셀 미리보기 (각 인풋 쇼핑몰/플랫폼별로 실제 생성되는 출력 엑셀 다중 파일과 100% 동일)
+  // 송장 붙인 파일 미리 보기 (각 인풋 쇼핑몰/플랫폼별로 실제 생성되는 출력 엑셀 다중 파일과 100% 동일)
   const handlePreviewStep2Excel = () => {
     if (!trackingResult || !trackingResult.outputOrders || trackingResult.outputOrders.length === 0) {
       showNotification('info', "미리볼 운송장 매칭 결과가 없습니다. 먼저 운송장 매칭을 실행해주세요.");
@@ -1212,7 +1214,7 @@ export default function App() {
         }
 
         // 추가 디버그/확인 열 (매칭상태, 매칭 유추 근거)
-        columns.push("매칭상태", "지능형 매칭 유추 근거");
+        columns.push("매칭상태", "맞춘 근거");
 
         // rawRowIndex -> ProcessedOrder 매핑 생성
         const orderMapByRowIndex = new Map<number, ProcessedOrder>();
@@ -1322,7 +1324,7 @@ export default function App() {
     if (previewFiles.length === 0) {
       const outputOrders: ProcessedOrder[] = trackingResult.outputOrders;
       const sheetColumns = [
-        "순번", "수령인", "우편번호", "주소", "연락처", "주문 품목명", "용량/옵션", "수량", "택배사", "운송장번호", "매칭상태", "지능형 매칭 유추 근거"
+        "순번", "수령인", "우편번호", "주소", "연락처", "주문 품목명", "용량/옵션", "수량", "택배사", "운송장번호", "매칭상태", "맞춘 근거"
       ];
       const sheetRows = outputOrders.map((o, idx) => [
         idx + 1,
@@ -1354,7 +1356,7 @@ export default function App() {
 
     setPreviewModal({
       isOpen: true,
-      title: `2단계 최종 운송장반영 배송엑셀 미리보기`,
+      title: `송장 붙인 파일 미리 보기`,
       subtitle: "입력된 원본 쇼핑몰 양식의 행 순서와 구성을 100% 유지한 실제 출력 엑셀 파일 미리보기입니다.",
       files: previewFiles,
       onDownloadAll: () => {
@@ -1366,7 +1368,7 @@ export default function App() {
   };
 
   // ----------------------------------------------------
-  // 3. 2단계: 운송장 지능형 다중 업로드 및 자동 매칭 핸들러
+  // 3. 2단계: 운송장 다중 업로드 및 자동 매칭 핸들러
   // ----------------------------------------------------
   const processMultipleTrackingFiles = async (
     files: File[],
@@ -1423,7 +1425,7 @@ export default function App() {
 
       if (!ordersToUse || ordersToUse.length === 0) {
         setTrackingResult(null);
-        showNotification('info', `2단계 운송장 엑셀 파일 ${files.length}개가 등록되었습니다. 1단계 주문서를 업로드하시면 자동으로 연결 매칭됩니다.`);
+        showNotification('info', `송장 엑셀 ${files.length}개를 올렸어요. 주문서를 올리면 바로 맞춰 드려요.`);
         return;
       }
 
@@ -1453,7 +1455,7 @@ export default function App() {
       if (parsedTrackingList.length > 0) {
         setSourceFile(parsedTrackingList[0].file || null);
       }
-      showNotification('success', `${files.length}개 운송장 파일 자동 분석 완료! (매칭 성공: ${result.matchCount + result.softMatchCount}건)`);
+      showNotification('success', `${files.length}개 운송장 파일 자동 분석 완료. (매칭 성공: ${result.matchCount + result.softMatchCount}건)`);
     } catch (err: any) {
       if (err.message === "PASSWORD_PROTECTED" || String(err).toLowerCase().includes('password')) {
         const firstFile = files[0];
@@ -1478,7 +1480,7 @@ export default function App() {
     const uniqueNewFiles = newFiles.filter((f: File) => !existingNames.has(f.name));
 
     if (uniqueNewFiles.length === 0) {
-      showNotification('info', '이미 2단계 목록에 등록되어 있는 운송장 엑셀 파일입니다.');
+      showNotification('info', '이미 올린 송장 엑셀이에요.');
       e.target.value = '';
       return;
     }
@@ -1696,7 +1698,7 @@ export default function App() {
         }
       }
 
-      showNotification('success', `성공: 각 쇼핑몰 양식에 맞춰 최종 송장 파일 ${downloadedCount}개를 다운로드했습니다!`);
+      showNotification('success', `성공: 각 쇼핑몰 양식에 맞춰 최종 송장 파일 ${downloadedCount}개를 다운로드했습니다.`);
     } catch (err) {
       showNotification('error', "최종 송장 파일 저장 중 오류가 발생했습니다.");
     }
@@ -1947,14 +1949,14 @@ export default function App() {
               if (parsed.analyticsOrders && Array.isArray(parsed.analyticsOrders)) {
                 setAnalyticsOrders(parsed.analyticsOrders);
               }
-              showNotification('success', "백업 파일로부터 플랫폼, 품목 사전 및 시각화 리포트 데이터를 성공적으로 복원했습니다!");
+              showNotification('success', "백업 파일로부터 플랫폼, 품목 사전 및 시각화 리포트 데이터를 성공적으로 복원했습니다.");
             }
           );
         } else {
           showNotification('error', "잘못된 백업 파일 형식입니다.");
         }
       } catch (err) {
-        showNotification('error', "파일 읽기 또는 파싱 중 에러가 발생했습니다.");
+        showNotification('error', "파일을 읽지 못했어요.");
       }
     };
     reader.readAsText(file);
@@ -1963,7 +1965,7 @@ export default function App() {
   const handleResetToDefault = () => {
     openConfirm(
       "전체 기본 설정 초기화",
-      "주의! 사용자가 임의로 추가하거나 수정한 플랫폼/택배사 설정, 품목 대치 사전 규칙, 시각화 데이터가 모두 영구 삭제되고 초기 설치 상태로 복원됩니다. 정말 초기화할까요?",
+      "주의. 사용자가 임의로 추가하거나 수정한 플랫폼/택배사 설정, 품목 대치 사전 규칙, 시각화 데이터가 모두 영구 삭제되고 초기 설치 상태로 복원됩니다. 정말 초기화할까요?",
       () => {
         setPlatforms(DEFAULT_PLATFORMS);
         setCouriers(DEFAULT_COURIERS);
@@ -2007,8 +2009,8 @@ export default function App() {
   }, [confirmModal, passwordPrompt, mappingImportConfirm, anomalousModalOpen, previewModal]);
 
   return (
-    <div id="app-root-wrapper" className={`min-h-screen bg-slate-50 text-slate-800 font-sans flex flex-col w-full overflow-x-clip transition-[padding] duration-200 ${
-      isSidebarOpen ? 'pl-56' : 'pl-14'
+    <div id="app-root-wrapper" className={`min-h-screen bg-slate-50 text-slate-800 font-sans flex flex-col w-full overflow-x-clip ${
+      isSidebarOpen ? 'md:pl-56' : 'md:pl-14'
     }`}>
       
       {/* 커스텀 전역 확인 모달 */}
@@ -2028,7 +2030,7 @@ export default function App() {
         >
           <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4 border border-slate-100">
             <h3 className="font-bold text-slate-800 text-base flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-[#1E5B4A] shrink-0" />
+              <AlertCircle className="w-5 h-5 text-brand-600 shrink-0" />
               {confirmModal.title}
             </h3>
             <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-line">
@@ -2043,7 +2045,7 @@ export default function App() {
               </button>
               <button
                 onClick={confirmModal.onConfirm}
-                className="px-3.5 py-1.5 bg-[#1E5B4A] hover:bg-[#184A3C] text-white rounded-lg text-xs font-semibold transition shadow-md cursor-pointer"
+                className="px-3.5 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-xs font-semibold transition shadow-md cursor-pointer"
               >
                 확인 (Enter)
               </button>
@@ -2084,7 +2086,7 @@ export default function App() {
             className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4 border border-slate-100"
           >
             <h3 className="font-bold text-slate-800 text-base flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-[#1E5B4A] shrink-0" />
+              <AlertCircle className="w-5 h-5 text-brand-600 shrink-0" />
               엑셀 비밀번호 입력 필요
             </h3>
             <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-line">
@@ -2110,7 +2112,7 @@ export default function App() {
                 }}
                 disabled={isDecrypting}
                 autoFocus
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E5B4A] focus:border-[#1E5B4A] transition"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-brand-600 transition"
               />
             </div>
             <div className="flex justify-end gap-2 pt-1">
@@ -2125,7 +2127,7 @@ export default function App() {
               <button
                 type="submit"
                 disabled={isDecrypting || !promptPassword}
-                className="px-3.5 py-1.5 bg-[#1E5B4A] hover:bg-[#184A3C] disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition shadow-md flex items-center gap-1.5 cursor-pointer"
+                className="px-3.5 py-1.5 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition shadow-md flex items-center gap-1.5 cursor-pointer"
               >
                 {isDecrypting ? (
                   <>
@@ -2157,11 +2159,11 @@ export default function App() {
                 ? 'bg-emerald-50 border-emerald-200 text-emerald-800' 
                 : notification.type === 'error' 
                 ? 'bg-rose-50 border-rose-200 text-rose-800'
-                : 'bg-[#F1F7F4] border-[#CFE3DA] text-[#123A30]'
+                : 'bg-brand-50 border-brand-200 text-brand-800'
             }`}
           >
             {notification.type === 'success' ? (
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
             ) : (
               <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
             )}
@@ -2177,34 +2179,32 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* 대시보드 헤더 */}
-      <header id="main-header" className="bg-white text-slate-900 border-b border-slate-200 shrink-0 w-full">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 py-3.5 flex flex-wrap sm:flex-row items-center justify-between gap-3">
-          
-          {/* 타이틀 로고 */}
-          <div className="flex items-center gap-2.5">
-            <div>
-              <div className="flex items-center gap-2">
-                
-                <span className="text-[10px] bg-slate-100 text-slate-600 border border-slate-200 font-medium px-1.5 py-0.5 rounded-md shrink-0">v1.0.1 PRO</span>
-              </div>
-              <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 hidden xs:block">주문서와 송장을 맞춰 발송 엑셀을 만듭니다</p>
-            </div>
-          </div>
-
-
-        </div>
+      {/* 휴대폰 상단 바: 메뉴 버튼과 서비스 이름 (넓은 화면에서는 사이드바가 대신합니다) */}
+      <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-1 border-b border-slate-200 bg-white px-2 md:hidden">
+        <button
+          onClick={() => setIsSidebarOpen(true)}
+          className="pressable flex h-11 w-11 items-center justify-center rounded-lg text-slate-700 hover:bg-slate-100"
+          aria-label="메뉴 열기"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+        <span className="text-base font-bold text-brand-600">{APP_NAME}</span>
       </header>
+
+      {/* 휴대폰에서 메뉴가 열려 있을 때 뒤쪽을 어둡게 하고, 누르면 닫습니다 */}
+      {isSidebarOpen && (
+        <div className="fixed inset-0 z-30 bg-slate-900/40 md:hidden" onClick={() => setIsSidebarOpen(false)} aria-hidden="true" />
+      )}
 
       <div className="flex flex-1 min-h-0">
         <aside
-          className={`fixed inset-y-0 left-0 z-30 flex flex-col gap-1 overflow-y-auto border-r border-slate-200 bg-[#F7F8FA] py-4 transition-all duration-200 ${
-            isSidebarOpen ? 'w-56 px-3' : 'w-14 px-2'
+          className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col gap-1 overflow-y-auto border-r border-slate-200 bg-slate-50 px-3 py-4 transition-[transform,width] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] md:translate-x-0 ${
+            isSidebarOpen ? 'translate-x-0 md:w-56' : '-translate-x-full md:w-14 md:px-2'
           }`}
         >
           <button
             onClick={() => setIsSidebarOpen((v) => !v)}
-            className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100"
+            className="pressable mb-2 flex h-10 w-10 items-center justify-center rounded-lg text-slate-600 hover:bg-slate-200/60"
             aria-label={isSidebarOpen ? '메뉴 접기' : '메뉴 펼치기'}
             title={isSidebarOpen ? '메뉴 접기' : '메뉴 펼치기'}
           >
@@ -2212,7 +2212,7 @@ export default function App() {
           </button>
 
           {isSidebarOpen && (
-            <span className="px-3 pb-5 pt-1 text-lg font-bold text-[#1E5B4A]">{APP_NAME}</span>
+            <span className="px-3 pb-5 pt-1 text-lg font-bold text-brand-600">{APP_NAME}</span>
           )}
 
           {[
@@ -2224,20 +2224,27 @@ export default function App() {
           ]
             .filter((item) => item.show)
             .map((item) => (
-              <button
-                key={item.key}
-                onClick={item.action}
-                title={item.label}
-                className={`flex h-10 items-center gap-3 rounded-lg text-sm font-semibold transition ${
-                  isSidebarOpen ? 'w-full px-3' : 'w-10 justify-center'
-                } ${item.selected ? 'bg-white text-[#1E5B4A] shadow-[inset_3px_0_0_#1E5B4A]' : 'text-slate-600 hover:bg-slate-100'}`}
-              >
-                {item.icon}
-                {isSidebarOpen && <span className="whitespace-nowrap">{item.label}</span>}
-              </button>
+              <React.Fragment key={item.key}>
+                {/* 화면을 바꾸는 메뉴와 창을 여는 메뉴 사이 구분선 */}
+                {item.key === 'products' && <div className="my-2 border-t border-slate-200" aria-hidden="true" />}
+                <button
+                  onClick={() => {
+                    item.action();
+                    if (window.innerWidth < 768) setIsSidebarOpen(false);
+                  }}
+                  title={item.label}
+                  aria-current={item.selected ? 'page' : undefined}
+                  className={`pressable flex h-10 items-center gap-3 rounded-lg text-sm font-semibold ${
+                    isSidebarOpen ? 'w-full px-3' : 'w-10 justify-center'
+                  } ${item.selected ? 'bg-brand-100 text-brand-800' : 'text-slate-600 hover:bg-slate-200/60 hover:text-slate-900'}`}
+                >
+                  {item.icon}
+                  {isSidebarOpen && <span className="whitespace-nowrap">{item.label}</span>}
+                </button>
+              </React.Fragment>
             ))}
 
-          {/* 하단: 로그인한 계정과 로그아웃 */}
+          {/* 하단: 로그인한 계정, 이용 중인 플랜, 로그아웃 */}
           <div className="mt-auto flex flex-col gap-2 border-t border-slate-200 pt-3">
             {isSidebarOpen && (
               <div className="flex flex-col gap-0.5 px-3">
@@ -2247,12 +2254,17 @@ export default function App() {
                     {account.email}
                   </span>
                 )}
+                {account && typeof account.uploadLimit === 'number' && (
+                  <span className="mt-1 text-xs text-slate-500 tabular-nums">
+                    무료 플랜 · 이번 달 {uploadsUsedThisMonth(account)}/{account.uploadLimit}회 사용
+                  </span>
+                )}
               </div>
             )}
             <button
               onClick={() => openConfirm('로그아웃', '로그아웃 하시겠습니까? 저장되지 않은 작업은 사라집니다.', () => logout())}
               title="로그아웃"
-              className={`flex h-10 items-center gap-3 rounded-lg border border-slate-300 bg-white text-sm font-semibold text-slate-700 transition hover:bg-slate-50 ${
+              className={`pressable flex h-10 items-center gap-3 rounded-lg border border-slate-300 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-100 ${
                 isSidebarOpen ? 'w-full px-3' : 'w-10 justify-center'
               }`}
             >
@@ -2264,50 +2276,64 @@ export default function App() {
         </aside>
 
         {/* 메인 본문 콘텐츠 */}
-        <main className="flex-1 min-w-0 max-w-7xl w-full mx-auto p-3 pb-24 sm:p-6 sm:pb-6">
+        <main className="flex-1 min-w-0 max-w-6xl w-full mx-auto px-4 py-5 pb-24 sm:px-8 sm:py-8">
         <AnimatePresence mode="wait">
           
           {/* 탭 1: 가공 및 매칭 */}
           {activeTab === 'process' && (
             <motion.div
               key="process-tab"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
               className="space-y-6"
             >
 
-              {/* 한눈에 보는 작업 순서 */}
-              <div className="grid grid-cols-2 overflow-hidden rounded-xl border border-slate-200 bg-white md:grid-cols-4">
-                {[
-                  { no: '1', title: '주문서 올리기', desc: '쇼핑몰 주문 엑셀', outside: false },
-                  { no: '2', title: '택배사에서 송장 받기', desc: '택배사 사이트에서 진행', outside: true },
-                  { no: '3', title: '송장 맞추기', desc: '송장 엑셀과 주문서 올리기', outside: false },
-                  { no: '4', title: '쇼핑몰에 올리기', desc: '쇼핑몰별 파일 업로드', outside: true },
-                ].map((st) => (
-                  <div
-                    key={st.no}
-                    className={`flex flex-col gap-1.5 border-b border-r border-slate-200 p-4 last:border-r-0 md:border-b-0 ${
-                      st.outside ? '' : 'bg-[#F1F7F4]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-bold ${
-                          st.outside ? 'bg-slate-200 text-slate-600' : 'bg-[#1E5B4A] text-white'
-                        }`}
-                      >
-                        {st.no}
-                      </span>
-                      <span className="text-sm font-bold text-slate-900">{st.title}</span>
-                    </div>
-                    <p className="text-xs text-slate-500">
-                      {st.desc}
-                      {st.outside ? ' (이 화면 밖)' : ''}
-                    </p>
-                  </div>
-                ))}
-              </div>
+              {/* 작업 순서: 지금 어디까지 했는지 보여 줍니다. 2·4단계는 택배사·쇼핑몰 사이트에서 하는 일 */}
+              {(() => {
+                const done = [Boolean(orderParseResult), trackingFiles.length > 0, Boolean(trackingResult), false];
+                const current = done.findIndex((d) => !d);
+                const items = [
+                  { title: '주문서 올리기', desc: '쇼핑몰 주문 엑셀', outside: false },
+                  { title: '택배사에서 송장 받기', desc: '택배사 사이트에서 해요', outside: true },
+                  { title: '송장 맞추기', desc: '송장 엑셀 올리기', outside: false },
+                  { title: '쇼핑몰에 올리기', desc: '쇼핑몰 사이트에서 해요', outside: true },
+                ];
+                return (
+                  <ol aria-label="작업 순서" className="grid grid-cols-2 overflow-hidden rounded-xl border border-slate-200 bg-white md:grid-cols-4">
+                    {items.map((st, i) => {
+                      const isDone = done[i];
+                      const isCurrent = i === current;
+                      return (
+                        <li
+                          key={st.title}
+                          aria-current={isCurrent ? 'step' : undefined}
+                          className={`flex flex-col gap-1 border-slate-200 p-4 [&:nth-child(-n+2)]:border-b md:[&:nth-child(-n+2)]:border-b-0 [&:nth-child(odd)]:border-r md:border-r md:last:border-r-0 ${
+                            isCurrent ? 'bg-brand-50' : ''
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            {isDone ? (
+                              <CheckCircle2 className="h-6 w-6 shrink-0 text-brand-600" aria-label="완료" />
+                            ) : (
+                              <span
+                                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold tabular-nums ${
+                                  isCurrent ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-500'
+                                }`}
+                              >
+                                {i + 1}
+                              </span>
+                            )}
+                            <span className={`text-sm font-bold ${isDone || isCurrent ? 'text-slate-900' : 'text-slate-500'}`}>{st.title}</span>
+                          </div>
+                          <p className="pl-8 text-xs text-slate-500">{st.desc}</p>
+                        </li>
+                      );
+                    })}
+                  </ol>
+                );
+              })()}
 
               {/* 비밀번호 보호 해결 가이드 배너 */}
               {passwordErrorFile && (
@@ -2324,11 +2350,11 @@ export default function App() {
                         <AlertCircle className="w-5 h-5" />
                       </div>
                       <div>
-                        <h3 className="font-bold text-slate-800 text-sm">
-                          암호 보호 처리된 엑셀 파일이 감지되었습니다!
+                        <h3 className="font-bold text-slate-900 text-sm">
+                          비밀번호가 걸린 엑셀이에요
                         </h3>
-                        <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                          업로드하신 <strong>{passwordErrorFile === 'order' ? '쇼핑몰 주문 데이터' : '운송장 소스'}</strong> 파일에 비밀번호가 설정되어 있어 브라우저 보안 샌드박스 내에서 파일을 파싱할 수 없습니다. 
+                        <p className="text-sm text-slate-600 mt-1 leading-relaxed">
+                          올리신 <strong>{passwordErrorFile === 'order' ? '주문' : '송장'}</strong> 파일을 열려면 비밀번호가 필요해요. 파일을 다시 올리고 비밀번호를 넣으면 바로 열 수 있어요.
                         </p>
                       </div>
                     </div>
@@ -2340,24 +2366,19 @@ export default function App() {
                     </button>
                   </div>
 
-                  <div className="bg-white rounded-lg p-4 border border-rose-100 space-y-3">
-                    <div className="text-xs font-bold text-rose-700"> 왜 이 작업이 필요하며, 어떻게 해결하나요?</div>
-                    
-                    {/* 안내 문구 */}
-                    <div className="text-xs text-slate-600 space-y-2 leading-relaxed">
-                      <p>
-                        본 스마트 운송장 관리기는 <strong>고객님의 개인정보(수령인 이름, 주소, 연락처 등)를 외부 서버로 절대 전송하지 않고</strong>, 100% 사용자의 웹 브라우저 메모리 안에서만 가공/매칭합니다. 개인정보 보호를 최우선으로 하기 때문에, 암호를 강제로 해킹하거나 푸는 외부 서버용 복호화 엔진을 거치지 않습니다.
-                      </p>
-                      <p className="font-semibold text-slate-700">
-                        따라서, 아래의 간단한 방법으로 암호를 일시 해제한 후 파일을 다시 업로드해 주세요 (단 3초 소요):
-                      </p>
-                    </div>
-
+                  <details className="group bg-white rounded-lg border border-rose-100 p-4">
+                    <summary className="cursor-pointer list-none text-sm font-semibold text-slate-700 flex items-center justify-between">
+                      비밀번호를 직접 풀고 싶다면
+                      <span aria-hidden="true" className="text-slate-400 transition-transform duration-200 group-open:rotate-45">+</span>
+                    </summary>
+                    <p className="mt-3 text-sm text-slate-600 leading-relaxed">
+                      주문 파일은 서버로 보내지 않고 이 브라우저 안에서만 열어요. 아래 방법 중 하나로 비밀번호를 지운 뒤 다시 올려도 돼요.
+                    </p>
                     {/* 가이드 단계 */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-4">
                       <div className="bg-slate-50 p-3 rounded-lg border border-slate-150 space-y-1.5">
-                        <div className="text-xs font-bold text-[#1E5B4A]">방법 A. 엑셀(Excel)에서 해제</div>
-                        <ol className="text-[11px] text-slate-500 list-decimal list-inside space-y-1">
+                        <div className="text-xs font-bold text-brand-600">엑셀에서 풀기</div>
+                        <ol className="text-xs text-slate-500 list-decimal list-inside space-y-1">
                           <li>암호가 걸린 파일을 엑셀로 엽니다.</li>
                           <li>상단 메뉴 <strong className="text-slate-700">파일 &gt; 정보</strong>를 누릅니다.</li>
                           <li><strong className="text-slate-700">통합 문서 보호 &gt; 암호 설정</strong>을 클릭합니다.</li>
@@ -2367,8 +2388,8 @@ export default function App() {
                       </div>
 
                       <div className="bg-slate-50 p-3 rounded-lg border border-slate-150 space-y-1.5">
-                        <div className="text-xs font-bold text-[#1E5B4A]">방법 B. 구글 시트(Sheets)에서 해제</div>
-                        <ol className="text-[11px] text-slate-500 list-decimal list-inside space-y-1">
+                        <div className="text-xs font-bold text-brand-600">구글 시트에서 풀기</div>
+                        <ol className="text-xs text-slate-500 list-decimal list-inside space-y-1">
                           <li>구글 드라이브에 파일을 올리고 구글 스프레드시트로 엽니다.</li>
                           <li><strong className="text-slate-700">파일 &gt; 다운로드 &gt; Microsoft Excel(.xlsx)</strong>을 누릅니다.</li>
                           <li>새로 다운로드된 파일은 암호가 풀린 상태가 됩니다. 해당 파일을 업로드하세요.</li>
@@ -2376,8 +2397,8 @@ export default function App() {
                       </div>
 
                       <div className="bg-slate-50 p-3 rounded-lg border border-slate-150 space-y-1.5">
-                        <div className="text-xs font-bold text-[#1E5B4A]">방법 C. 다른 이름으로 저장</div>
-                        <ol className="text-[11px] text-slate-500 list-decimal list-inside space-y-1">
+                        <div className="text-xs font-bold text-brand-600">다른 이름으로 저장하며 풀기</div>
+                        <ol className="text-xs text-slate-500 list-decimal list-inside space-y-1">
                           <li>암호가 걸린 파일을 엑셀로 엽니다.</li>
                           <li><strong className="text-slate-700">다른 이름으로 저장</strong>을 선택합니다.</li>
                           <li>저장 창의 하단 <strong className="text-slate-700">도구 &gt; 일반 옵션</strong>을 클릭합니다.</li>
@@ -2385,39 +2406,27 @@ export default function App() {
                         </ol>
                       </div>
                     </div>
-                  </div>
+                  </details>
                 </motion.div>
               )}
 
-              {/* 원스톱 작업 패널 (1단계, 2단계 위에서 아래로 순차 배치) */}
+              {/* 작업 패널 (1단계, 2단계 위에서 아래로 순차 배치) */}
               <div className="flex flex-col gap-6">
 
                 {/* 데이터가 로드되어 있을 때 눈에 잘 띄는 작업 영역 리셋 컨트롤 바 */}
                 {(orderParseResult || trackingFiles.length > 0) && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-slate-900 border border-slate-800 text-white rounded-xl p-3.5 px-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md"
-                  >
-                    <div className="flex items-center gap-2.5 text-xs text-slate-200">
-                      <div className="p-1.5 bg-rose-500/20 text-rose-400 rounded-lg shrink-0">
-                        <RotateCcw className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <span className="font-bold text-white">작업 영역에 엑셀 데이터가 불러와져 있습니다</span>
-                        <p className="text-[11px] text-slate-400 mt-0.5">
-                          새로운 엑셀 파일들로 1단계 및 2단계를 처음부터 다시 작업하시려면 리셋 버튼을 누르세요.
-                        </p>
-                      </div>
-                    </div>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3">
+                    <p className="text-sm text-slate-600">
+                      올려 둔 파일로 작업 중이에요. 새 파일로 처음부터 하려면 작업을 비우세요.
+                    </p>
                     <button
-                      onClick={() => openConfirm("작업 영역 리셋", "현재 업로드 및 매칭 중인 주문 데이터, 1단계 가공 결과, 2단계 운송장 엑셀 파일이 모두 초기화됩니다. 정말 처음부터 다시 시작하시겠습니까?", handleResetProcess)}
-                      className="w-full sm:w-auto px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold transition shadow-md flex items-center justify-center gap-1.5 cursor-pointer shrink-0 border border-rose-500"
+                      onClick={() => openConfirm("작업 비우기", "올려 둔 주문 파일, 정리 결과, 송장 파일이 모두 지워져요. 처음부터 다시 할까요?", handleResetProcess)}
+                      className="pressable self-start sm:self-auto shrink-0 inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-50 cursor-pointer"
                     >
-                      <RotateCcw className="w-3.5 h-3.5" />
-                      작업 영역 리셋하고 처음부터 하기
+                      <RotateCcw className="w-4 h-4" />
+                      처음부터 다시
                     </button>
-                  </motion.div>
+                  </div>
                 )}
 
                 {/* 쇼핑몰 API 자동 연동 수집 센터 모듈 */}
@@ -2431,21 +2440,21 @@ export default function App() {
                 )}
                 
                 {/* 1단계 카드: 주문 데이터 가공 */}
-                <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
+                <div className="bg-white border border-slate-200 rounded-xl p-5 space-y-4">
                   <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                     <div className="flex items-center gap-2.5">
-                      <span className="w-6 h-6 rounded-full bg-[#F1F7F4] text-[#1E5B4A] text-xs font-extrabold flex items-center justify-center">1</span>
-                      <h2 className="font-bold text-slate-800 text-sm">쇼핑몰 주문 데이터 불러오기 및 가공</h2>
+                      <span className="w-6 h-6 rounded-full bg-brand-600 text-white text-xs font-bold tabular-nums flex items-center justify-center">1</span>
+                      <h2 className="font-bold text-slate-900 text-base">주문서 올리기</h2>
                     </div>
                     {orderParseResult && (
-                      <span className="text-[11px] bg-emerald-50 text-emerald-700 font-semibold px-2 py-0.5 rounded">
+                      <span className="text-xs bg-emerald-50 text-emerald-700 font-semibold px-2 py-0.5 rounded">
                         수령인 {orderParseResult.orders.length}건 정렬 완료
                       </span>
                     )}
                   </div>
 
-                  <p className="text-xs text-slate-500 leading-relaxed">
-                    네이버, 쿠팡 등에서 다운로드 받은 원본 주문 리스트(엑셀)를 업로드하세요. 업로드와 동시에 플랫폼을 지능형 자동 감지하고, 수량 고정 열 추가 및 다중 정렬(합포장 상단 우선 배치) 가공을 진행합니다.
+                  <p className="text-sm text-slate-600 leading-relaxed max-w-[68ch]">
+                    쇼핑몰에서 내려받은 주문 엑셀을 올려 주세요. 어느 쇼핑몰 파일인지 알아서 구분하고, 같은 사람에게 갈 주문은 위쪽에 모아 택배사에 넣을 파일로 정리해요.
                   </p>
 
                   {/* 드롭존 영역 */}
@@ -2469,7 +2478,7 @@ export default function App() {
                       setPasswordErrorFile(null);
                       await processMultipleOrderFiles(updatedFiles);
                     }}
-                    className="relative border-2 border-dashed border-slate-200 hover:border-[#1E5B4A] rounded-xl p-6 bg-slate-50 text-center transition cursor-pointer"
+                    className="relative border-2 border-dashed border-slate-200 hover:border-brand-600 rounded-xl p-6 bg-slate-50 text-center transition cursor-pointer"
                   >
                     <input
                       type="file"
@@ -2478,20 +2487,20 @@ export default function App() {
                       onChange={handleOrderFileUpload}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     />
-                    <Upload className="w-8 h-8 text-[#1E5B4A] mx-auto mb-2" />
+                    <Upload className="w-8 h-8 text-brand-600 mx-auto mb-2" />
                     {orderFiles.length > 0 ? (
                       <div className="space-y-1">
                         <div className="text-sm font-semibold text-slate-800">
-                          {orderFiles.length}개의 주문 파일 불러옴
+                          주문 파일 {orderFiles.length}개를 올렸어요
                         </div>
-                        <div className="text-xs text-[#1E5B4A] font-medium">
-                          파일을 추가로 올리려면 클릭하세요 (드래그 & 드롭 지원)
+                        <div className="text-xs text-brand-600 font-medium">
+                          더 올리려면 눌러서 고르거나 끌어다 놓으세요
                         </div>
                       </div>
                     ) : (
                       <div>
-                        <div className="text-xs font-semibold text-slate-700">여기를 클릭하거나 엑셀 파일을 끌어다 놓으세요</div>
-                        <div className="text-[10px] text-slate-400 mt-1">다중 파일 동시 분석 지원 (.xlsx, .xls)</div>
+                        <div className="text-sm font-semibold text-slate-800">주문 엑셀을 끌어다 놓거나 눌러서 고르세요</div>
+                        <div className="text-xs text-slate-500 mt-1">여러 파일을 한 번에 올려도 돼요 (.xlsx, .xls)</div>
                       </div>
                     )}
                   </div>
@@ -2508,9 +2517,9 @@ export default function App() {
                             setPlatformMatrixType('platform');
                             openSettings('platforms');
                           }}
-                          className="text-[11px] bg-[#F1F7F4] hover:bg-[#E9F3EE] text-[#184A3C] font-bold px-2.5 py-1 rounded-lg border border-[#CFE3DA] transition flex items-center gap-1.5 cursor-pointer shadow-2xs self-start sm:self-auto"
+                          className="text-xs bg-brand-50 hover:bg-brand-100 text-brand-700 font-bold px-2.5 py-1 rounded-lg border border-brand-200 transition flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
                         >
-                          <Grid className="w-3.5 h-3.5 text-[#1E5B4A]" />
+                          <Grid className="w-3.5 h-3.5 text-brand-600" />
                           <span> 플랫폼 설정에서 감지된 열 매핑 한눈에 보기 →</span>
                         </button>
                       </div>
@@ -2532,16 +2541,16 @@ export default function App() {
                                   <div className="font-semibold text-slate-700 truncate flex items-center gap-1.5" title={pf.fileName}>
                                     <span>{pf.fileName}</span>
                                     {isApiSynced && (
-                                      <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded">
+                                      <span className="text-xs bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded">
                                         API 연동 자동수집건
                                       </span>
                                     )}
                                   </div>
-                                  <div className="text-[10px] text-slate-400 flex items-center gap-2 mt-0.5">
+                                  <div className="text-xs text-slate-400 flex items-center gap-2 mt-0.5">
                                     {fileObj && <span>{(fileObj.size / 1024).toFixed(1)} KB</span>}
                                     <span className="text-slate-600 font-medium">수집 주문: {pf.orders?.length || 0}건</span>
                                     {detectedPlat && !isApiSynced && (
-                                      <span className="text-[#1E5B4A] bg-[#F1F7F4] px-1.5 py-0.5 rounded font-medium">
+                                      <span className="text-brand-600 bg-brand-50 px-1.5 py-0.5 rounded font-medium">
                                         감지됨: {detectedPlat.name}
                                       </span>
                                     )}
@@ -2552,11 +2561,11 @@ export default function App() {
                               <div className="flex items-center gap-2 shrink-0">
                                 {!isApiSynced && (
                                   <div className="flex items-center gap-1.5">
-                                    <span className="text-[10px] text-slate-400 shrink-0">양식 보정:</span>
+                                    <span className="text-xs text-slate-400 shrink-0">양식 보정:</span>
                                     <select
                                       value={detectedPlat?.id || ""}
                                       onChange={(e) => handleFilePlatformChange(pf.fileName, e.target.value)}
-                                      className="text-[11px] border border-slate-200 hover:border-slate-300 rounded px-1.5 py-0.5 bg-white font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#1E5B4A]"
+                                      className="text-xs border border-slate-200 hover:border-slate-300 rounded px-1.5 py-0.5 bg-white font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-brand-600"
                                     >
                                       <option value="" disabled>-- 플랫폼 선택 --</option>
                                       {platforms.map(p => (
@@ -2586,20 +2595,17 @@ export default function App() {
 
                       {/* 2번 요구사항: 이상 주문 데이터 자동 검증 (오류 선별 알림 패널) */}
                       {anomalousIssues.length > 0 && (
-                        <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+                        <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                           <div className="flex items-start gap-3">
                             <span className="p-2 bg-rose-100 text-rose-600 rounded-lg shrink-0 mt-0.5">
-                              <AlertCircle className="w-5 h-5 animate-pulse" />
+                              <AlertCircle className="w-5 h-5" />
                             </span>
                             <div>
                               <div className="text-xs font-bold text-rose-800 flex items-center gap-2">
-                                이상 주문 데이터 {anomalousIssues.length}건 자동 선별됨
-                                <span className="text-[10px] bg-rose-200 text-rose-900 font-extrabold px-2 py-0.5 rounded-full">
-                                  오배송 / 송장인쇄 오류 사전 예방
-                                </span>
+                                확인이 필요한 주문 {anomalousIssues.length}건
                               </div>
-                              <p className="text-[11px] text-rose-700/90 mt-1 leading-relaxed">
-                                수령인명 누락, 전화번호 자릿수 오류(10자리 미만), 주소 정보 미흡 등 배송 사고 원인이 되는 이상 데이터를 선별했습니다.
+                              <p className="text-xs text-rose-700/90 mt-1 leading-relaxed">
+                                받는 사람 이름이 비었거나, 전화번호가 10자리보다 짧거나, 주소가 불완전한 주문이에요. 송장을 뽑기 전에 확인하세요.
                               </p>
                             </div>
                           </div>
@@ -2608,7 +2614,7 @@ export default function App() {
                             className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold transition shadow-sm shrink-0 flex items-center justify-center gap-1.5 cursor-pointer"
                           >
                             <Eye className="w-4 h-4 text-white" />
-                            이상 주문 선별 필터 확인 ({anomalousIssues.length}건)
+                            주문 확인하기
                           </button>
                         </div>
                       )}
@@ -2618,20 +2624,18 @@ export default function App() {
                         <div className="bg-amber-50/60 border border-amber-200 rounded-xl p-4 space-y-3">
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-amber-200/60 pb-2.5">
                             <div className="flex items-center gap-2">
-                              <Sparkles className="w-4 h-4 text-amber-500 animate-bounce" />
-                              <div>
+                                                            <div>
                                 <h3 className="font-bold text-slate-800 text-xs">새로 발견된 미지정 품목 ({orderParseResult.newRawItems.length}건)</h3>
-                                <p className="text-[10px] text-slate-500 leading-relaxed">
-                                  AI가 수식어/이용안내/광고를 제거한 <strong>핵심 품목명</strong>을 자동 추천해 놓았습니다. 반투명 글씨를 클릭하거나 추천 버튼을 눌러 손쉽게 적용하세요!
+                                <p className="text-sm text-slate-600 leading-relaxed max-w-[68ch]">
+                                  상품명에서 광고 문구와 안내 문구를 뺀 이름을 추천해 두었어요. 추천 버튼을 누르거나 직접 고쳐 쓰세요.
                                 </p>
                               </div>
                             </div>
                             <button
                               onClick={handleApplyAllRecommendations}
-                              className="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 rounded text-[11px] font-bold transition shrink-0 flex items-center gap-1 cursor-pointer"
+                              className="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 rounded text-xs font-bold transition shrink-0 flex items-center gap-1 cursor-pointer"
                             >
-                              <Sparkles className="w-3 h-3 text-amber-600" />
-                              모두 AI 추천 정제어로 채우기
+                              추천 이름으로 모두 채우기
                             </button>
                           </div>
 
@@ -2639,9 +2643,9 @@ export default function App() {
                             {orderParseResult.newRawItems.map((item: string, idx: number) => {
                               const rec = extractCleanProductRecommendation(item);
                               return (
-                                <div key={`${item}-${idx}`} className="bg-white p-3 rounded-lg border border-amber-200/80 shadow-2xs space-y-2">
-                                  <div className="text-[11px] font-semibold text-slate-700 truncate flex items-center gap-1.5" title={item}>
-                                    <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-mono shrink-0">원본</span>
+                                <div key={`${item}-${idx}`} className="bg-white p-3 rounded-lg border border-amber-200/80 space-y-2">
+                                  <div className="text-xs font-semibold text-slate-700 truncate flex items-center gap-1.5" title={item}>
+                                    <span className="text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-mono shrink-0">원본</span>
                                     <span className="truncate">{item}</span>
                                   </div>
                                   <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
@@ -2660,8 +2664,8 @@ export default function App() {
                                     {rec && (
                                       <button
                                         onClick={() => setNewItemsMappingForm({ ...newItemsMappingForm, [item]: rec })}
-                                        className="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded text-[11px] font-semibold transition shrink-0 flex items-center justify-center gap-1 cursor-pointer"
-                                        title="AI 정제어 자동 입력"
+                                        className="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded text-xs font-semibold transition shrink-0 flex items-center justify-center gap-1 cursor-pointer"
+                                        title="추천 이름 넣기"
                                       >
                                         추천 적용: <span className="font-bold underline underline-offset-2">{rec}</span>
                                       </button>
@@ -2677,74 +2681,55 @@ export default function App() {
                               onClick={handleAddNewItemMappings}
                               className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold transition shadow-sm cursor-pointer"
                             >
-                              작성한 대치 규칙 저장 및 현재 주문에 즉시 반영
+                              품목사전에 저장하고 지금 주문에 반영
                             </button>
                           </div>
                         </div>
                       )}
 
                       <div className="bg-slate-50 rounded-xl p-4 border border-slate-150 space-y-3">
-                        <div className="text-slate-700 font-bold text-[11px] mb-1"> 가공 완료된 엑셀 파일 다운로드 (총 2종)</div>
+                        <div className="text-slate-900 font-bold text-sm mb-1">정리된 파일 받기</div>
                         <div className="space-y-2">
                           <button
                             onClick={handlePreviewStep1Excel}
-                            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-[#F1F7F4] hover:bg-[#E9F3EE] text-[#184A3C] border border-[#CFE3DA] rounded-lg text-xs font-bold transition shadow-2xs cursor-pointer"
+                            className="pressable w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 rounded-lg text-sm font-semibold cursor-pointer"
                           >
-                            <Eye className="w-4 h-4 text-[#1E5B4A]" />
-                            가공 엑셀 데이터 미리보기 (화면 확대 검수)
+                            <Eye className="w-4 h-4" />
+                            정리된 파일 미리 보기
                           </button>
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             <button
                               onClick={handleDownloadSummaryReport}
-                              className="flex items-center justify-center gap-2 px-3 py-2 bg-[#1E5B4A] hover:bg-[#184A3C] text-white rounded-lg text-xs font-semibold transition shadow-sm"
+                              className="pressable flex items-center justify-center gap-2 px-3 py-2.5 bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 rounded-lg text-sm font-semibold"
                             >
-                              <Download className="w-3.5 h-3.5" />
-                              1. 요약보고서 다운로드
+                              <Download className="w-4 h-4" />
+                              요약 보고서 받기
                             </button>
                             <button
                               onClick={handleDownloadProductSorted}
-                              className="flex items-center justify-center gap-2 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition shadow-sm"
+                              className="pressable flex items-center justify-center gap-2 px-3 py-2.5 bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 rounded-lg text-sm font-semibold"
                             >
-                              <Download className="w-3.5 h-3.5" />
-                              2. 품목별정렬 다운로드
+                              <Download className="w-4 h-4" />
+                              품목별 정렬 파일 받기
                             </button>
                           </div>
                           <button
                             onClick={handleDownloadAllProcessed}
-                            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-bold transition shadow-sm"
+                            className="pressable w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-bold"
                           >
-                            <Layers className="w-3.5 h-3.5 text-[#4F8A75]" />
-                            두 개 파일 한 번에 모두 다운로드하기
+                            <Download className="w-4 h-4" />
+                            두 파일 한 번에 받기
                           </button>
                         </div>
-                        {!hideTipStep1 && (
-                          <div id="iframe-download-tip-step1" className="bg-amber-50/70 border border-amber-150 rounded-lg p-3 flex items-start justify-between gap-2.5 text-[11px] text-amber-800 leading-relaxed">
-                            <div className="flex items-start gap-2.5">
-                              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                              <div>
-                                <strong className="font-semibold"> 다운로드 파일이 저장되지 않나요?</strong><br />
-                                보안 환경에 따라 브라우저가 파일 다운로드를 차단할 수 있습니다.<br />
-                                화면 오른쪽 위의 <strong className="text-amber-900">새 탭에서 열기 (정방향 화살표 모양 아이콘)</strong> 버튼을 눌러 새 창에서 실행하시면 차단 없이 파일이 즉시 저장됩니다!
-                              </div>
-                            </div>
-                            <button
-                              onClick={() => setHideTipStep1(true)}
-                              className="p-1 rounded-md hover:bg-amber-100 text-amber-600 transition shrink-0 cursor-pointer"
-                              title="닫기"
-                            >
-                              <X className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        )}
                       </div>
                     </div>
                   )}
 
                   {isProcessingOrders && (
-                    <div className="flex items-center justify-center gap-2 text-xs text-[#1E5B4A] py-2">
+                    <div className="flex items-center justify-center gap-2 text-xs text-brand-600 py-2">
                       <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                      주문 엑셀 데이터를 정밀 분석 및 다중 정렬 중...
+                      주문 엑셀을 정리하고 있어요…
                     </div>
                   )}
 
@@ -2763,22 +2748,22 @@ export default function App() {
                   )}
                 </div>
 
-                {/* 2단계 카드: 운송장 매칭 (1단계와 동일하게 다중 파일 & 지능형 자동 감지 지원) */}
-                <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
+                {/* 2단계 카드: 운송장 매칭 (1단계와 동일하게 다중 파일 & 자동 감지 지원) */}
+                <div className="bg-white border border-slate-200 rounded-xl p-5 space-y-4">
                   <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                     <div className="flex items-center gap-2.5">
-                      <span className="w-6 h-6 rounded-full bg-[#F1F7F4] text-[#1E5B4A] text-xs font-extrabold flex items-center justify-center">2</span>
-                      <h2 className="font-bold text-slate-800 text-sm">운송장 소스 매칭 및 최종 발송엑셀 완성</h2>
+                      <span className="w-6 h-6 rounded-full bg-brand-600 text-white text-xs font-bold tabular-nums flex items-center justify-center">3</span>
+                      <h2 className="font-bold text-slate-900 text-base">송장 맞추기</h2>
                     </div>
                     {trackingResult && (
-                      <span className="text-[11px] bg-emerald-50 text-emerald-700 font-semibold px-2 py-0.5 rounded">
+                      <span className="text-xs bg-emerald-50 text-emerald-700 font-semibold px-2 py-0.5 rounded">
                         완료: {trackingResult.matchCount + trackingResult.softMatchCount}건 매칭 성공
                       </span>
                     )}
                   </div>
 
-                  <p className="text-xs text-slate-500 leading-relaxed">
-                    CJ대한통운, 롯데, 한진 등 배송사 시스템으로부터 출력된 '송장정보 엑셀(재출력관리 등)'을 업로드하세요. 수령인, 상품명, 수량, 우편번호를 교차 대조하여 원래 주문서 엑셀에 운송장을 자동으로 기입합니다.
+                  <p className="text-sm text-slate-600 leading-relaxed max-w-[68ch]">
+                    택배사 사이트에서 받은 송장 엑셀을 올려 주세요. 받는 사람, 상품, 수량, 우편번호를 맞춰 보고 주문마다 송장 번호를 붙여요.
                   </p>
 
                   {/* 드롭존 영역 (다중 파일 drag & drop 및 즉시 자동 분석 지원) */}
@@ -2793,7 +2778,7 @@ export default function App() {
                       const uniqueNewFiles = droppedFiles.filter((f: File) => !existingNames.has(f.name));
 
                       if (uniqueNewFiles.length === 0) {
-                        showNotification('info', '이미 2단계 목록에 등록되어 있는 운송장 엑셀 파일입니다.');
+                        showNotification('info', '이미 올린 송장 엑셀이에요.');
                         return;
                       }
 
@@ -2801,7 +2786,7 @@ export default function App() {
                       setTrackingFiles(updatedFiles);
                       await processMultipleTrackingFiles(updatedFiles);
                     }}
-                    className="relative border-2 border-dashed border-slate-200 hover:border-[#1E5B4A] rounded-xl p-6 bg-slate-50 text-center transition cursor-pointer"
+                    className="relative border-2 border-dashed border-slate-200 hover:border-brand-600 rounded-xl p-6 bg-slate-50 text-center transition cursor-pointer"
                   >
                     <input
                       type="file"
@@ -2810,14 +2795,14 @@ export default function App() {
                       onChange={handleSourceFileUpload}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     />
-                    <Upload className="w-8 h-8 mx-auto mb-2 text-[#1E5B4A]" />
+                    <Upload className="w-8 h-8 mx-auto mb-2 text-brand-600" />
                     <div>
-                      <div className="text-xs font-semibold text-slate-700">
-                        {trackingFiles.length > 0 ? "추가 운송장 엑셀 파일 올리기 (다중 선택 가능)" : "여기를 클릭하거나 운송장 엑셀 파일들을 끌어다 놓으세요 (다중 선택 지원)"}
+                      <div className="text-sm font-semibold text-slate-800">
+                        {trackingFiles.length > 0 ? "송장 엑셀 더 올리기" : "송장 엑셀을 끌어다 놓거나 눌러서 고르세요"}
                       </div>
-                      <div className="text-[10px] text-slate-400 mt-1">
-                        파일명 및 엑셀 헤더를 기반으로 택배사/양식을 지능형 자동 파악합니다
-                        {!orderParseResult && " (1단계 주문 데이터 업로드 시 자동 연결 매칭)"}
+                      <div className="text-xs text-slate-500 mt-1">
+                        어느 택배사 파일인지 알아서 구분해요
+                        {!orderParseResult && ". 주문서를 먼저 올리면 바로 맞춰 드려요"}
                       </div>
                     </div>
                   </div>
@@ -2827,11 +2812,11 @@ export default function App() {
                     <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2.5">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200/80 pb-2">
                         <div className="flex items-center gap-2">
-                          <Truck className="w-4 h-4 text-[#1E5B4A]" />
+                          <Truck className="w-4 h-4 text-brand-600" />
                           <span className="text-xs font-bold text-slate-800">
                             불러온 운송장 소스 데이터 세트 (총 {parsedTrackingFiles.length}개)
                           </span>
-                          <span className="text-[10px] text-slate-400 font-medium">
+                          <span className="text-xs text-slate-400 font-medium">
                             (총 {parsedTrackingFiles.reduce((acc, curr) => acc + curr.count, 0)}건 운송장 데이터)
                           </span>
                         </div>
@@ -2840,7 +2825,7 @@ export default function App() {
                             setPlatformMatrixType('courier');
                             openSettings('platforms');
                           }}
-                          className="text-[11px] bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold px-2.5 py-1 rounded-lg border border-amber-200 transition flex items-center gap-1.5 cursor-pointer shadow-2xs self-start sm:self-auto"
+                          className="text-xs bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold px-2.5 py-1 rounded-lg border border-amber-200 transition flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
                         >
                           <Grid className="w-3.5 h-3.5 text-amber-600" />
                           <span> 택배사 설정에서 감지된 열 매핑 한눈에 보기 →</span>
@@ -2853,29 +2838,29 @@ export default function App() {
                           return (
                             <div
                               key={`${ptf.fileName}-${idx}`}
-                              className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 bg-white rounded-lg border border-slate-200/80 shadow-2xs text-xs"
+                              className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 bg-white rounded-lg border border-slate-200/80 text-xs"
                             >
                               <div className="flex items-center gap-2 min-w-0">
-                                <FileSpreadsheet className="w-4 h-4 text-[#1E5B4A] shrink-0" />
+                                <FileSpreadsheet className="w-4 h-4 text-brand-600 shrink-0" />
                                 <div className="min-w-0">
                                   <div className="font-semibold text-slate-800 truncate" title={ptf.fileName}>
                                     {ptf.fileName}
                                   </div>
-                                  <div className="text-[10px] text-slate-400 flex items-center gap-2">
+                                  <div className="text-xs text-slate-400 flex items-center gap-2">
                                     <span>{ptf.file ? (ptf.file.size / 1024).toFixed(1) + " KB" : "캐시된 데이터"}</span>
                                     <span>·</span>
-                                    <span className="text-[#1E5B4A] font-bold">{ptf.count}건 운송장</span>
+                                    <span className="text-brand-600 font-bold">{ptf.count}건 운송장</span>
                                   </div>
                                 </div>
                               </div>
 
                               <div className="flex items-center gap-2 shrink-0">
                                 <div className="flex items-center gap-1.5">
-                                  <span className="text-[10px] text-slate-400 shrink-0">택배사 보정:</span>
+                                  <span className="text-xs text-slate-400 shrink-0">택배사 보정:</span>
                                   <select
                                     value={currentCourier}
                                     onChange={(e) => handleTrackingFileCourierChange(ptf.fileName, e.target.value)}
-                                    className="text-[11px] border border-slate-200 hover:border-slate-300 rounded px-1.5 py-0.5 bg-white font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#1E5B4A]"
+                                    className="text-xs border border-slate-200 hover:border-slate-300 rounded px-1.5 py-0.5 bg-white font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-brand-600"
                                   >
                                     <option value="한진택배">한진택배</option>
                                     <option value="CJ대한통운">CJ대한통운</option>
@@ -2909,46 +2894,27 @@ export default function App() {
                         <div className="space-y-2 w-full">
                           <button
                             onClick={handlePreviewStep2Excel}
-                            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-[#F1F7F4] hover:bg-[#E9F3EE] text-[#184A3C] border border-[#CFE3DA] rounded-lg text-xs font-bold transition shadow-2xs cursor-pointer"
+                            className="pressable w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 rounded-lg text-sm font-semibold cursor-pointer"
                           >
-                            <Eye className="w-4 h-4 text-[#1E5B4A]" />
-                            최종 운송장반영 엑셀 미리보기 (화면 확대 검수)
+                            <Eye className="w-4 h-4" />
+                            송장 붙인 파일 미리 보기
                           </button>
                           <button
                             onClick={handleDownloadFinalTracking}
-                            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-medium transition"
+                            className="pressable w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-bold"
                           >
-                            <Download className="w-3.5 h-3.5" />
-                            최종 운송장반영 배송엑셀 다운로드
+                            <Download className="w-4 h-4" />
+                            송장 붙인 파일 받기
                           </button>
-                          {!hideTipStep2 && (
-                            <div id="iframe-download-tip-step2" className="bg-amber-50/70 border border-amber-150 rounded-lg p-3 flex items-start justify-between gap-2.5 text-[11px] text-amber-800 leading-relaxed">
-                              <div className="flex items-start gap-2.5">
-                                <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                                <div>
-                                  <strong className="font-semibold"> 다운로드 파일이 저장되지 않나요?</strong><br />
-                                  환경에서는 브라우저가 보안을 위해 파일 저장을 제한할 수 있습니다.<br />
-                                  화면 오른쪽 상단의 <strong className="text-amber-900">새 탭에서 열기 (정방향 화살표 모양 아이콘)</strong> 버튼을 눌러 새 창에서 사용하시면 지연 없이 바로 정상 저장됩니다!
-                                </div>
-                              </div>
-                              <button
-                                onClick={() => setHideTipStep2(true)}
-                                className="p-1 rounded-md hover:bg-amber-100 text-amber-600 transition shrink-0 cursor-pointer"
-                                title="닫기"
-                              >
-                                <X className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          )}
                         </div>
                       )}
                     </div>
                   )}
 
                   {isProcessingTracking && (
-                    <div className="flex items-center justify-center gap-2 text-xs text-[#1E5B4A] py-2">
+                    <div className="flex items-center justify-center gap-2 text-xs text-brand-600 py-2">
                       <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                      고객명/주소/우편번호 교차 검증 및 지능형 매칭 대조 중...
+                      송장을 주문에 맞춰 보고 있어요…
                     </div>
                   )}
 
@@ -2972,10 +2938,10 @@ export default function App() {
               {trackingResult && (
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">운송장 매칭 통계 및 결과 보고서</h3>
+                    <h3 className="text-base font-bold text-slate-900">송장 맞추기 결과</h3>
                     <button
-                      onClick={() => openConfirm("작업 영역 리셋", "현재 작업 중인 주문 데이터, 1단계 가공 결과, 2단계 운송장 엑셀 파일이 모두 초기화됩니다. 정말 처음부터 다시 시작하시겠습니까?", handleResetProcess)}
-                      className="px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                      onClick={() => openConfirm("작업 비우기", "올려 둔 주문 파일, 정리 결과, 송장 파일이 모두 지워져요. 처음부터 다시 할까요?", handleResetProcess)}
+                      className="px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
                     >
                       <RotateCcw className="w-3.5 h-3.5 text-rose-600" />
                       작업 영역 리셋하고 처음부터 하기
@@ -2993,37 +2959,6 @@ export default function App() {
                     outputOrders={trackingResult.outputOrders}
                   />
 
-                </div>
-              )}
-
-              {/* 친절한 사용법 가이드 팁 */}
-              {!orderParseResult && (
-                <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-                  <h3 className="font-bold text-slate-800 text-sm flex items-center gap-1.5 border-b border-slate-100 pb-3">
-                    <Info className="w-4 h-4 text-[#1E5B4A]" />
-                    운송장 관리 자동화 워크플로우 안내
-                  </h3>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
-                    <div className="space-y-1.5">
-                      <div className="text-xs font-bold text-[#1E5B4A]">Step 1. 주문 가공 및 내보내기</div>
-                      <p className="text-xs text-slate-500 leading-relaxed">
-                        주문서(스마트스토어/쿠팡 등) 파일을 불러오면, 상품명 표준화 및 합포장 다중 정렬이 완료됩니다. <strong>[가공정렬 & 요약보고서 다운로드]</strong>를 클릭해 가공된 파일을 받으세요.
-                      </p>
-                    </div>
-                    <div className="space-y-1.5">
-                      <div className="text-xs font-bold text-[#1E5B4A]">Step 2. 운송장 출력</div>
-                      <p className="text-xs text-slate-500 leading-relaxed">
-                        내려받은 가공정렬 파일을 바탕으로 택배사 소프트웨어를 실행하여 운송장을 인쇄하고, 인쇄 결과 파일(송장번호가 들어있는 엑셀)을 보관합니다.
-                      </p>
-                    </div>
-                    <div className="space-y-1.5">
-                      <div className="text-xs font-bold text-[#1E5B4A]">Step 3. 운송장 대조 매칭</div>
-                      <p className="text-xs text-slate-500 leading-relaxed">
-                        방금 받은 송장번호 엑셀을 우측 업로드란에 넣고 <strong>[운송장 대조 매칭]</strong>을 클릭하면 주문서에 송장번호가 1초 만에 기입된 완벽한 최종 발송 파일이 탄생합니다!
-                      </p>
-                    </div>
-                  </div>
                 </div>
               )}
 
@@ -3060,7 +2995,7 @@ export default function App() {
                     <div className="space-y-1">
                   {([
                     ['platforms', '플랫폼 설정'],
-                    ['products', '품목 정제 리스트'],
+                    ['products', '품목사전'],
                     ['backup', '설정 백업'],
                     ['account', '계정 · 문의'],
                   ] as const).map(([key, label]) => (
@@ -3068,7 +3003,7 @@ export default function App() {
                       key={key}
                       onClick={() => setSettingsSection(key)}
                       className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold transition ${
-                        settingsSection === key ? 'bg-[#1E5B4A] text-white' : 'text-slate-600 hover:bg-slate-100'
+                        settingsSection === key ? 'bg-brand-600 text-white' : 'text-slate-600 hover:bg-slate-100'
                       }`}
                     >
                       {label}
@@ -3134,27 +3069,27 @@ export default function App() {
                 exit={{ opacity: 0, y: -10 }}
                 className="max-w-3xl mx-auto"
               >
-                <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
+                <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 space-y-6">
                 
                   {/* 헤더 타이틀 */}
                   <div className="border-b border-slate-100 pb-5">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div>
                         <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                          <Database className="w-6 h-6 text-[#1E5B4A]" />
+                          <Database className="w-6 h-6 text-brand-600" />
                           통합 백업 & 복원 (데이터 전체 관리)
                         </h2>
                         <p className="text-xs text-slate-500 mt-1">
                           쇼핑몰 플랫폼 설정, 택배사 설정, 품목 대치 사전({productMappings.length}개 규칙)을 파일로 백업하거나 복원합니다.
                         </p>
                       </div>
-                      <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-xs font-bold shrink-0 shadow-2xs">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                      <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-xs font-bold shrink-0">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                         실시간 자동 백업 동기화 중
                       </div>
                     </div>
 
-                    <div className="mt-3 p-3 bg-[#F1F7F4]/60 border border-[#E9F3EE] rounded-xl text-xs text-[#0F3A2F] leading-relaxed">
+                    <div className="mt-3 p-3 bg-brand-50/60 border border-brand-100 rounded-xl text-xs text-[#0F3A2F] leading-relaxed">
                       <strong>설정은 자동으로 저장됩니다:</strong> 플랫폼 양식, 택배사 양식, 품목 대치 사전, 쇼핑몰 연동 설정은 로그인한 계정에 저장되어 다음에 접속해도 그대로 있습니다. <strong>엑셀 주문 데이터는 저장되지 않으며</strong>, 새로고침하면 사라집니다. API 키는 암호화되어 저장되고, 다른 컴퓨터에서는 다시 입력해야 합니다.
                     </div>
                   </div>
@@ -3165,14 +3100,14 @@ export default function App() {
                     {/* 1. 파일 가져오기 (복원/업로드) */}
                     <div className="p-0 md:px-8 first:md:pl-0 last:md:pr-0 flex flex-col justify-between space-y-4">
                       <div className="space-y-2">
-                        <span className="inline-block text-[10px] font-bold text-[#1E5B4A] bg-[#F1F7F4] border border-[#E9F3EE] px-2.5 py-0.5 rounded-md">
+                        <span className="inline-block text-xs font-bold text-brand-600 bg-brand-50 border border-brand-100 px-2.5 py-0.5 rounded-md">
                           RESTORE & IMPORT
                         </span>
                         <h3 className="font-bold text-slate-800 text-sm flex items-center gap-1.5">
-                          <Upload className="w-4 h-4 text-[#1E5B4A]" />
+                          <Upload className="w-4 h-4 text-brand-600" />
                           백업 / 사전 파일 가져오기
                         </h3>
-                        <p className="text-xs text-slate-500 leading-relaxed">
+                        <p className="text-sm text-slate-600 leading-relaxed max-w-[68ch]">
                           통합 백업 파일(<code>.json</code>) 또는 품목 사전(<code>.xlsx</code>, <code>.csv</code>, <code>.txt</code>)을 업로드하면 자동으로 형식을 감지해 복원합니다.
                         </p>
                       </div>
@@ -3219,26 +3154,26 @@ export default function App() {
                             }}
                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                           />
-                          <button className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1E5B4A] hover:bg-[#184A3C] text-white rounded-xl text-xs font-semibold transition shadow-sm cursor-pointer">
+                          <button className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-semibold transition shadow-sm cursor-pointer">
                             <Upload className="w-4 h-4" />
                             파일 선택하여 복원하기
                           </button>
                         </div>
-                        <p className="text-[10px] text-center text-slate-400">지원: .json (전체), .xlsx / .csv / .txt (품목사전)</p>
+                        <p className="text-xs text-center text-slate-400">지원: .json (전체), .xlsx / .csv / .txt (품목사전)</p>
                       </div>
                     </div>
 
                     {/* 2. 파일 내보내기 (백업/다운로드) */}
                     <div className="p-0 md:px-8 first:md:pl-0 last:md:pr-0 flex flex-col justify-between space-y-4">
                       <div className="space-y-2">
-                        <span className="inline-block text-[10px] font-bold text-slate-600 bg-slate-200/70 px-2.5 py-0.5 rounded-md">
+                        <span className="inline-block text-xs font-bold text-slate-600 bg-slate-200/70 px-2.5 py-0.5 rounded-md">
                           BACKUP & EXPORT
                         </span>
                         <h3 className="font-bold text-slate-800 text-sm flex items-center gap-1.5">
                           <Download className="w-4 h-4 text-slate-700" />
                           백업 / 사전 파일 내보내기
                         </h3>
-                        <p className="text-xs text-slate-500 leading-relaxed">
+                        <p className="text-sm text-slate-600 leading-relaxed max-w-[68ch]">
                           현재 설정된 <strong>플랫폼 양식, 택배사 양식, 품목 정제 사전</strong>을 백업 파일(.json)로 저장합니다. 주문 데이터는 포함되지 않습니다.
                         </p>
                       </div>
@@ -3255,14 +3190,14 @@ export default function App() {
                         <div className="grid grid-cols-2 gap-2 pt-0.5">
                           <button
                             onClick={handleExportProductMappingsExcel}
-                            className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-semibold transition cursor-pointer"
+                            className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition cursor-pointer"
                           >
                             <FileSpreadsheet className="w-3.5 h-3.5" />
                             품목사전 (.xlsx)
                           </button>
                           <button
                             onClick={handleExportProductMappingsCSV}
-                            className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[11px] font-semibold transition cursor-pointer"
+                            className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold transition cursor-pointer"
                           >
                             <FileText className="w-3.5 h-3.5" />
                             품목사전 (.csv)
@@ -3277,11 +3212,11 @@ export default function App() {
                   <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                     <div>
                       <h4 className="text-xs font-bold text-slate-700">기본 설정으로 원복</h4>
-                      <p className="text-[11px] text-slate-400 mt-0.5">처음 설치 시 제공된 네이버/쿠팡 및 샘플 품목 매핑 사전 데이터로 전체 원복합니다.</p>
+                      <p className="text-xs text-slate-400 mt-0.5">처음 설치 시 제공된 네이버/쿠팡 및 샘플 품목 매핑 사전 데이터로 전체 원복합니다.</p>
                     </div>
                     <button
                       onClick={handleResetToDefault}
-                      className="flex items-center gap-1.5 px-3.5 py-2 border border-rose-200 hover:border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl text-xs font-bold transition shadow-2xs shrink-0 cursor-pointer"
+                      className="flex items-center gap-1.5 px-3.5 py-2 border border-rose-200 hover:border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl text-xs font-bold transition shrink-0 cursor-pointer"
                     >
                       <RefreshCw className="w-3.5 h-3.5" />
                       기본 설정으로 전체 초기화
@@ -3293,7 +3228,7 @@ export default function App() {
             )}
 
                   {settingsSection === 'account' && (
-                    <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
+                    <div className="bg-white border border-slate-200 rounded-xl p-6 space-y-4">
                       <div>
                         <h2 className="text-base font-bold text-slate-900">계정 · 문의</h2>
                         <p className="mt-1 text-sm text-slate-600">문의나 버그는 아래 버튼으로 보내 주세요. 로그아웃도 여기서 합니다.</p>
@@ -3324,9 +3259,10 @@ export default function App() {
           {activeTab === 'analytics' && features.analytics && (
             <motion.div
               key="analytics-tab"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
             >
               <DeliveryAnalyticsReport 
                 orders={analyticsOrders.length > 0 ? analyticsOrders : (trackingResult?.outputOrders || orderParseResult?.orders || [])} 
@@ -3367,12 +3303,12 @@ export default function App() {
         >
           <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl border border-slate-100 space-y-4">
             <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
-              <div className="p-2.5 bg-[#F1F7F4] text-[#1E5B4A] rounded-xl">
+              <div className="p-2.5 bg-brand-50 text-brand-600 rounded-xl">
                 <Upload className="w-5 h-5" />
               </div>
               <div>
                 <h3 className="font-bold text-slate-800 text-sm">품목 대치 사전 가져오기</h3>
-                <p className="text-xs text-[#1E5B4A] font-semibold">총 {mappingImportConfirm.parsed.length}개의 대치 규칙 탐지됨</p>
+                <p className="text-xs text-brand-600 font-semibold">총 {mappingImportConfirm.parsed.length}개의 대치 규칙 탐지됨</p>
               </div>
             </div>
 
@@ -3383,10 +3319,10 @@ export default function App() {
             <div className="space-y-2 pt-1">
               <button
                 onClick={() => handleApplyMappingImport(false)}
-                className="w-full text-left p-3.5 bg-[#F1F7F4]/80 hover:bg-[#E9F3EE] border border-[#CFE3DA] text-[#0F3A2F] rounded-xl text-xs font-semibold transition flex flex-col gap-0.5 cursor-pointer"
+                className="w-full text-left p-3.5 bg-brand-50/80 hover:bg-brand-100 border border-brand-200 text-[#0F3A2F] rounded-xl text-xs font-semibold transition flex flex-col gap-0.5 cursor-pointer"
               >
                 <span> 기존 사전에 추가 (병합) [Enter]</span>
-                <span className="text-[10px] text-[#1E5B4A] font-normal">기존 목록을 유지하고 중복되지 않은 신규 항목만 추가합니다.</span>
+                <span className="text-xs text-brand-600 font-normal">기존 목록을 유지하고 중복되지 않은 신규 항목만 추가합니다.</span>
               </button>
 
               <button
@@ -3394,7 +3330,7 @@ export default function App() {
                 className="w-full text-left p-3.5 bg-rose-50/80 hover:bg-rose-100 border border-rose-200 text-rose-900 rounded-xl text-xs font-semibold transition flex flex-col gap-0.5 cursor-pointer"
               >
                 <span> 기존 사전 전체 교체 (덮어쓰기)</span>
-                <span className="text-[10px] text-rose-600 font-normal">기존 목록을 지우고 업로드한 파일 데이터로 전체 대체합니다.</span>
+                <span className="text-xs text-rose-600 font-normal">기존 목록을 지우고 업로드한 파일 데이터로 전체 대체합니다.</span>
               </button>
             </div>
 
@@ -3429,9 +3365,9 @@ export default function App() {
       />
 
       {/* 하단 푸터 */}
-      <footer id="main-footer" className="bg-slate-900 border-t border-slate-800 text-slate-500 py-3 text-center text-[10px] shrink-0 leading-relaxed">
-        <div className="max-w-7xl mx-auto px-4">
-          스마트 운송장 가공 및 매칭 시스템 · 본 브라우저 샌드박스 내부에서 100% 암호화 연산 처리되어 민감한 개인정보/주문 정보가 외부로 유출되지 않아 안전합니다.
+      <footer id="main-footer" className="border-t border-slate-200 py-4 text-center text-xs text-slate-500 shrink-0">
+        <div className="max-w-6xl mx-auto px-4">
+          주문 파일은 이 브라우저 안에서만 처리하고 서버에 저장하지 않아요.
         </div>
       </footer>
 

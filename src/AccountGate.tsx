@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { Check, Megaphone } from 'lucide-react';
-import { FREE_MONTHLY_UPLOADS, MONTHLY_PRICE_KRW, PRO_PRICE_KRW, APP_NAME } from './config/brand';
+import { APP_NAME, PLANS } from './config/brand';
 import { getCurrentUid, getCurrentUser, isFirebaseConfigured, logout } from './firebaseAuth';
 import {
   isAdminUser,
@@ -155,12 +155,6 @@ function ExpiredScreen({ status, account }: { status: AccountStatus; account: Ac
 }
 
 /** 구독하지 않은 회원(신규 가입, 기간 만료)에게 보여 주는 구독권 선택 화면. 결제는 아직 연결하지 않았습니다. */
-const PLANS = [
-  { name: '무료', price: 0, desc: '가볍게 써 보고 싶을 때', features: [`월 ${FREE_MONTHLY_UPLOADS}회 업로드`, '주문 정리 기본 기능'] },
-  { name: '기본', price: MONTHLY_PRICE_KRW, desc: '매달 주문을 정리하는 셀러', features: ['업로드 횟수 제한 없음', '모든 정리 기능', '설정 백업'] },
-  { name: '프로', price: PRO_PRICE_KRW, desc: '주문이 많은 셀러', features: ['기본 플랜의 모든 기능', '우선 문의 응대'] },
-];
-
 function PlanScreen() {
   const [notice, setNotice] = useState<string | null>(null);
   async function startFree() {
@@ -175,11 +169,11 @@ function PlanScreen() {
   return (
     <div className="flex min-h-screen flex-col bg-white px-6 text-[#191F28]" style={{ fontFamily: "'Inter', 'Noto Sans KR', system-ui, sans-serif" }}>
       <header className="flex w-full items-center justify-between py-6">
-        <span className="text-lg font-bold text-[#1E5B4A]">{APP_NAME}</span>
+        <span className="text-lg font-bold text-brand-600">{APP_NAME}</span>
       </header>
       <main className="flex flex-1 flex-col items-center pb-16">
         <div className="w-full max-w-4xl">
-          <p className="text-sm font-semibold text-[#1E5B4A]">구독 플랜</p>
+          <p className="text-sm font-semibold text-brand-600">구독 플랜</p>
           <h1 className="mt-3 text-3xl font-bold leading-tight sm:text-4xl">나에게 맞는 플랜을 골라 주세요</h1>
           <p className="mt-3 text-base leading-relaxed text-[#6B7684]">지금은 플랜 화면만 준비되어 있어요. 결제는 아직 연결되지 않았습니다.</p>
 
@@ -195,7 +189,7 @@ function PlanScreen() {
                 <ul className="mt-5 flex-1 space-y-2.5">
                   {plan.features.map((f) => (
                     <li key={f} className="flex items-start gap-2 text-sm text-[#4E5968]">
-                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#1E5B4A]" />
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
                       {f}
                     </li>
                   ))}
@@ -205,7 +199,7 @@ function PlanScreen() {
                   className={`mt-6 w-full rounded-xl px-4 py-3.5 text-base font-semibold transition-colors ${
                     plan.price === 0
                       ? 'border border-[#D1D6DB] text-[#191F28] hover:bg-[#F7F8FA]'
-                      : 'bg-[#1E5B4A] text-white hover:bg-[#184A3C]'
+                      : 'bg-brand-600 text-white hover:bg-brand-700'
                   }`}
                 >
                   {plan.price === 0 ? '무료로 시작' : '이 플랜 선택'}
@@ -214,11 +208,11 @@ function PlanScreen() {
             ))}
           </div>
 
-          {notice && <p className="mt-6 text-center text-base text-[#1E5B4A]">{notice}</p>}
+          {notice && <p className="mt-6 text-center text-base text-brand-600">{notice}</p>}
 
           <p className="mt-10 text-center text-base text-[#6B7684]">
             다른 계정으로 쓰고 싶다면{' '}
-            <button type="button" onClick={() => logout()} className="font-semibold text-[#1E5B4A] underline underline-offset-4">
+            <button type="button" onClick={() => logout()} className="font-semibold text-brand-600 underline underline-offset-4">
               로그아웃
             </button>
           </p>
@@ -248,7 +242,7 @@ function FailureScreen({ message }: { message: string }) {
         <button
           onClick={goHome}
           disabled={busy}
-          className="mt-8 w-full rounded-xl bg-[#1E5B4A] px-4 py-4 text-base font-semibold text-white hover:bg-[#184A3C] disabled:opacity-60"
+          className="mt-8 w-full rounded-xl bg-brand-600 px-4 py-4 text-base font-semibold text-white hover:bg-brand-700 disabled:opacity-60"
         >
           {busy ? "이동 중..." : "처음 화면으로 돌아가기"}
         </button>

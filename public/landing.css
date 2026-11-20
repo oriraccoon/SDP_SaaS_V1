@@ -3,45 +3,18 @@
 /* Hangul never breaks inside a word */
 :root { word-break: keep-all; overflow-wrap: break-word; }
 
-/* app-frame (sections-library.md, app-frame) */
-.app.ui { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); margin-top: var(--s-7); background: var(--u-bg); border: 1px solid var(--u-border); border-radius: var(--u-r); box-shadow: var(--u-shadow); }
-.app > .app__pane { position: relative; min-width: 0; min-height: 0; overflow: hidden; }
-.app > .app__pane + .app__pane { border-left: 1px solid var(--u-line); }
-.app > .app__pane > .ui-panel { width: 100%; border: 0; border-radius: 0; box-shadow: none; }
-.app > .app__pane::after { content: ""; position: absolute; inset: auto 0 0 0; height: 64px; background: linear-gradient(transparent, var(--u-bg)); pointer-events: none; }
-@media (min-width: 1024px) and (max-width: 1279px) { .app.ui { grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); } }
-@media (max-width: 1023px) {
-  .app.ui { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
-  .app > .app__pane--list { max-height: 252px; }
-  .app > .app__pane--list::after { display: none; }
-  .app .ui-win__side { display: none; }
-  .app .ui-win__body { grid-template-columns: minmax(0, 1fr); }
-  .app > .app__pane + .app__pane { border-left: 0; border-top: 1px solid var(--u-line); }
-}
-@media (max-width: 639px) {
-  .app.ui { grid-template-rows: minmax(0, 1fr); }
-  .app > .app__pane--list { display: none; }
-  .app > .app__pane + .app__pane { border-top: 0; }
-}
-
-/* the open item in the app-frame: the finished shipping file, one row marked */
-.sheet { font: 400 13px/1.4 var(--font-text); color: var(--u-ink, var(--ink)); }
-.sheet__head { display: flex; align-items: center; gap: 10px; height: 52px; padding: 0 16px; border-bottom: 1px solid var(--u-line); }
-.sheet__head img, .unlock__head img { width: 20px; height: 20px; }
-.sheet__name { font-weight: 500; }
-.sheet__meta { color: var(--u-muted, var(--muted)); font-size: 12px; }
-.sheet__table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
-.sheet__table th { text-align: left; font-weight: 500; font-size: 12px; color: var(--u-muted, var(--muted)); padding: 10px 16px; border-bottom: 1px solid var(--u-line); white-space: nowrap; }
-.sheet__table td { padding: 11px 16px; border-bottom: 1px solid var(--u-line); white-space: nowrap; }
-.sheet__table .num { text-align: right; font-family: var(--font-mono); font-size: 12.5px; }
-.sheet__table tr.is-mark td { background: color-mix(in oklab, var(--accent) 9%, transparent); }
-.sheet__table tr.is-mark td:last-child { color: var(--accent); font-family: var(--font-text); font-weight: 500; }
-@media (max-width: 639px) { .sheet__table th:nth-child(4), .sheet__table td:nth-child(4) { display: none; } }
+/* real app screenshots (public/assets/shots, taken from the app with sample orders) */
+.shot { display: block; width: 100%; height: auto; max-width: none; }
+.shot-win { overflow: hidden; background: #fff; border: 1px solid rgb(0 0 0 / .08); border-radius: 14px; box-shadow: 0 24px 60px -24px rgb(16 40 32 / .35), 0 2px 6px rgb(0 0 0 / .06); }
+.hero__art > .ly-piece--main.shot-win { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.shot-frame { margin: var(--s-7) 0 0; overflow: hidden; background: #fff; border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 30px 80px -40px rgb(16 40 32 / .35); }
+.shot-frame .shot { width: 100%; }
+#features .stage .shot, #privacy .stage .shot { border: 1px solid rgb(0 0 0 / .08); border-radius: 12px; box-shadow: 0 20px 50px -24px rgb(16 40 32 / .4), 0 2px 6px rgb(0 0 0 / .06); background: #fff; }
+.shot-ask { margin: var(--s-4) 0 0; max-width: 520px; overflow: hidden; border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 20px 50px -28px rgb(16 40 32 / .35); }
 
 /* features: one panel height for the group */
 #features .panel { --p-h: 336px; }
 @media (max-width: 639px) { #features .panel { --p-h: 220px; } }
-.ui-note__ico img, .ui-search__ico img { width: 18px; height: 18px; }
 
 /* privacy: the facts as plain lines */
 .facts { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-3); }
@@ -49,37 +22,14 @@
 .facts b { font-weight: 500; }
 .facts span { color: var(--muted); }
 
-/* privacy visual: the password window, drawn with the kit's UI tokens */
-.unlock { width: 520px; font: 400 13px/1.45 var(--font-text); }
-.unlock__head { display: flex; align-items: center; gap: 10px; height: 52px; padding: 0 18px; border-bottom: 1px solid var(--u-line); }
-.unlock__name { font-weight: 500; }
-.unlock__lock { font-size: 12px; color: var(--u-muted, var(--muted)); }
-.unlock__body { padding: 20px 18px 24px; display: grid; gap: 10px; }
-.unlock__label { margin: 0; font-size: 12px; color: var(--u-muted, var(--muted)); }
-.unlock__field { display: flex; align-items: center; height: 40px; padding: 0 12px; border: 1px solid var(--accent); border-radius: 8px; box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 16%, transparent); letter-spacing: 2px; }
-.unlock__row { display: flex; align-items: center; gap: 10px; }
-.unlock__note { color: var(--u-muted, var(--muted)); font-size: 12px; }
-.unlock__list { list-style: none; margin: 8px 0 0; padding: 0; }
-.unlock__list li { display: flex; justify-content: space-between; padding: 10px 0; border-top: 1px solid var(--u-line); }
-.unlock__list b { font-weight: 500; font-variant-numeric: tabular-nums; }
-
 /* hero collage (from the kit's hero-collage demo): the result card on the frame's lower left, the window's rows without a time column */
 .hero__art > .ly-piece--note { left: var(--s-6); bottom: var(--s-6); width: 300px; z-index: 2; }
-.d-note__line { display: flex; align-items: center; gap: 10px; padding: 7px 0; font-size: 13px; color: #3d4247; border-top: 1px solid rgb(0 0 0 / .06); }
-.d-note__line:first-of-type { border-top: 0; }
-.d-note__line i { width: 18px; height: 18px; border-radius: 50%; flex: none; display: grid; place-items: center; background: #e7f4ec; color: #17673f; font-style: normal; font-size: 13px; font-weight: 700; }
-.d-note__line i.warn { background: #fdf0dc; color: #8a5300; }
-.d-note__line b { font-weight: 500; color: #16181a; }
 .hero__proof { font-size: var(--t-small); color: var(--muted); }
-.ly-piece--main .d-row { grid-template-columns: 36px minmax(0, 1fr) 56px 96px; }
-.ly-piece--main .d-main { padding-right: var(--ly-cut-room); }
-@media (max-width: 639px) { .ly-piece--main .d-row { grid-template-columns: 36px minmax(0, 1fr) 96px; } }
 @media (max-width: 1023px) { .hero__art > .ly-piece--note { left: var(--s-4); bottom: var(--s-4); width: 270px; } }
 
 /* screen fit: the features group at 1024, the phone's privacy and FAQ sections inside one screen */
 @media (min-width: 1024px) and (max-width: 1279px) { #features .panel { --p-h: 296px; } }
 @media (max-width: 639px) {
-  #privacy .unlock__list { display: none; }
   #privacy .t-lead { font-size: var(--t-body); }
   #faq .span-5 > p { display: none; }
 }
@@ -115,31 +65,12 @@
 .usage__meter i { display: block; height: 6px; border-radius: 3px; background: color-mix(in oklab, var(--ink) 10%, transparent); position: relative; overflow: hidden; }
 .usage__meter i::after { content: ""; position: absolute; inset: 0; width: calc(var(--k) * 100%); background: var(--accent); border-radius: 3px; }
 
-/* FAQ: the app's own contact window */
-.ask { margin-top: var(--s-4); font: 400 14px/1.45 var(--font-text); }
-.ask__head { display: flex; align-items: center; height: 48px; padding: 0 16px; border-bottom: 1px solid var(--u-line); }
-.ask__head b { font-weight: 500; }
-.ask__x { color: var(--u-muted, var(--muted)); font-size: 18px; }
-.ask__chips { display: flex; gap: 6px; flex-wrap: wrap; padding: 14px 16px 0; }
-.ask__chips span { padding: 5px 10px; border-radius: 999px; font-size: 13px; background: color-mix(in oklab, var(--ink) 6%, transparent); }
-.ask__chips .is-on { background: var(--ink); color: var(--bg); }
-.ask__field { margin: 12px 16px 0; padding: 12px; min-height: 72px; border: 1px solid var(--u-line); border-radius: 8px; }
-.ask__foot { display: flex; align-items: center; gap: 10px; padding: 12px 16px 16px; font-size: 13px; color: var(--u-muted, var(--muted)); }
-
-/* phone: the shipping file keeps its first, product and number columns; the notify stack keeps two notes */
-@media (max-width: 639px) {
-  .sheet__table th:nth-child(3), .sheet__table td:nth-child(3) { display: none; }
-  .sheet__table th, .sheet__table td { padding-left: 10px; padding-right: 10px; }
-  #features .ui-note:nth-child(3) { display: none; }
-}
 
 /* screen fit after the usage meter and the contact window */
 @media (min-width: 1024px) and (max-width: 1279px) { #price .usage { display: none; } }
-@media (min-width: 640px) and (max-width: 1023px) { #price { --h: 2; } #faq .ask { display: none; } }
+@media (min-width: 640px) and (max-width: 1023px) { #price { --h: 2; } #faq .shot-ask { display: none; } }
 @media (max-width: 639px) {
-  .ly-piece--main .d-row:nth-child(n+3) { display: none; }
-  #faq .ask__chips, #faq .ask__field { display: none; }
-  #faq .ask__head { height: 44px; }
+  #faq .shot-ask { display: none; }
 }
 /* phone pricing: compact plan cards, the features as one wrapped line */
 @media (max-width: 639px) {
@@ -149,3 +80,7 @@
   #price .grid { gap: var(--s-3); }
   #price .usage__note { display: none; }
 }
+
+
+
+

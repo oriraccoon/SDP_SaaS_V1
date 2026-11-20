@@ -48,6 +48,18 @@ export default function AnomalousOrdersModal({
     { key: 'QTY', label: '수량', icon: <Package className="w-3.5 h-3.5" />, n: count('수량') },
   ];
   const missing = <span className="text-rose-700">비어 있음</span>;
+  // 검사 엔진이 주는 문구를 화면에서만 쉬운 말로 바꿉니다 (거르기는 원래 문구로 합니다)
+  const plainReason = (r: string) => {
+    if (r.includes('성명 누락')) return '받는 사람 이름이 비었어요';
+    if (r.includes('연락처(전화번호) 누락')) return '전화번호가 비었어요';
+    const phone = r.match(/연락처 자릿수 오류 \('(.*)'/);
+    if (phone) return `전화번호가 ${phone[1].replace(/\D/g, '').length}자리예요`;
+    if (r.includes('배송지 주소 누락')) return '주소가 비었어요';
+    if (r.includes('주소 상세정보 미흡')) return '주소가 너무 짧아요';
+    const qty = r.match(/주문 수량 오류 \((.*)개/);
+    if (qty) return `수량이 ${qty[1]}개예요`;
+    return r;
+  };
 
   return (
     <Modal
@@ -100,7 +112,7 @@ export default function AnomalousOrdersModal({
                 <div className="flex flex-wrap gap-1 sm:justify-end">
                   {issue.reasons.map((r, rIdx) => (
                     <span key={rIdx} className="inline-flex items-center gap-1 rounded-md bg-rose-50 px-2 py-0.5 text-[12px] font-semibold text-rose-800">
-                      <AlertCircle className="w-3 h-3" />{r}
+                      <AlertCircle className="w-3 h-3" />{plainReason(r)}
                     </span>
                   ))}
                 </div>

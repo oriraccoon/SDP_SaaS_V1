@@ -1462,7 +1462,7 @@ export default function App() {
       if (parsedTrackingList.length > 0) {
         setSourceFile(parsedTrackingList[0].file || null);
       }
-      showNotification('success', `${files.length}개 운송장 파일 자동 분석 완료. (매칭 성공: ${result.matchCount + result.softMatchCount}건)`);
+      showNotification('success', `송장 파일 ${files.length}개를 읽고 주문 ${result.matchCount + result.softMatchCount}건에 송장 번호를 붙였어요.`);
     } catch (err: any) {
       if (err.message === "PASSWORD_PROTECTED" || String(err).toLowerCase().includes('password')) {
         const firstFile = files[0];
@@ -2583,7 +2583,7 @@ export default function App() {
                     <div className="space-y-2">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-1.5">
                         <div className="text-xs font-semibold text-slate-700 flex items-center gap-1">
-                          <span>불러온 수집 데이터 세트 (총 {orderParseResult?.parsedFiles?.length || orderFiles.length}개):</span>
+                          <span>올린 주문 파일 {orderParseResult?.parsedFiles?.length || orderFiles.length}개</span>
                         </div>
                         <button
                           onClick={() => {
@@ -2621,10 +2621,10 @@ export default function App() {
                                   </div>
                                   <div className="text-xs text-slate-400 flex items-center gap-2 mt-0.5">
                                     {fileObj && <span>{(fileObj.size / 1024).toFixed(1)} KB</span>}
-                                    <span className="text-slate-600 font-medium">수집 주문: {pf.orders?.length || 0}건</span>
+                                    <span className="text-slate-600 font-medium">주문 {pf.orders?.length || 0}건</span>
                                     {detectedPlat && !isApiSynced && (
                                       <span className="text-brand-600 bg-brand-50 px-1.5 py-0.5 rounded font-medium">
-                                        감지됨: {detectedPlat.name}
+                                        {detectedPlat.name} 양식
                                       </span>
                                     )}
                                   </div>
@@ -2886,10 +2886,10 @@ export default function App() {
                         <div className="flex items-center gap-2">
                           <Truck className="w-4 h-4 text-brand-600" />
                           <span className="text-xs font-bold text-slate-800">
-                            불러온 운송장 소스 데이터 세트 (총 {parsedTrackingFiles.length}개)
+                            올린 송장 파일 {parsedTrackingFiles.length}개
                           </span>
                           <span className="text-xs text-slate-400 font-medium">
-                            (총 {parsedTrackingFiles.reduce((acc, curr) => acc + curr.count, 0)}건 운송장 데이터)
+                            송장 {parsedTrackingFiles.reduce((acc, curr) => acc + curr.count, 0)}건
                           </span>
                         </div>
                         <button
@@ -2921,7 +2921,7 @@ export default function App() {
                                   <div className="text-xs text-slate-400 flex items-center gap-2">
                                     <span>{ptf.file ? (ptf.file.size / 1024).toFixed(1) + " KB" : "캐시된 데이터"}</span>
                                     <span>·</span>
-                                    <span className="text-brand-600 font-bold">{ptf.count}건 운송장</span>
+                                    <span className="text-brand-600 font-bold">송장 {ptf.count}건</span>
                                   </div>
                                 </div>
                               </div>

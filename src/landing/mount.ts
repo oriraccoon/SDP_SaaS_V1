@@ -20,12 +20,13 @@ const esc = (s: string) =>
 const won = (n: number) => `${n.toLocaleString('ko-KR')}원`;
 const MAIN_ACTION = '무료로 시작하기';
 const APP_URL = '/app';
-const XLSX = '<img src="/assets/icons/xlsx.svg" alt="">';
-const CHECK =
-  '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4.5 8.2 2.3 2.3 4.7-5"/></svg>';
 const ARROW =
   '<svg class="m-arrow" viewBox="0 0 12 12" aria-hidden="true"><path class="m-arrow__stem" d="M1 6h8"/><path class="m-arrow__head" d="M4.5 2.5 8 6l-3.5 3.5"/></svg>';
 const shops = SUPPORTED_SHOPS.join(', ');
+
+// 실제 앱 화면 캡처 (public/assets/shots, 예시 데이터로 찍음)
+const shot = (name: string, w: number, h: number, alt: string, extra = '') =>
+  `<img class="shot" src="/assets/shots/${name}.webp" width="${w}" height="${h}" alt="${alt}" decoding="async" ${extra}>`;
 
 // ---------- nav and the side table of contents ----------
 const TOC: [string, string][] = [
@@ -92,16 +93,6 @@ const nav = `
 </header>`;
 
 // ---------- hero: collage ----------
-const heroRows: [string, string, string, string, string][] = [
-  // [색, 상품, 쇼핑몰 · 받는 사람, 수량, 상태(class|글자)]
-  ['#e4d7c0', '사과 5kg', '쿠팡 · 김○○', '2', '|합포장'],
-  ['#c1d8ce', '배 3kg', '쿠팡 · 김○○', '1', '|합포장'],
-  ['#e9c7c5', '포도 2kg', '네이버 · 이○○', '1', 'd-chip--low|확인 필요'],
-  ['#d9ddc4', '귤 10kg', '네이버 · 박○○', '3', '|정리됨'],
-  ['#ced3da', '단감 5kg', '토스 · 최○○', '1', '|정리됨'],
-  ['#f2ebdf', '사과즙 30포', '올웨이즈 · 정○○', '2', '|정리됨'],
-];
-
 const hero = `
 <section class="hero hero--collage" id="intro" data-enter aria-labelledby="hero-h">
   <div class="wrap"><div class="hero-text grid hero__grid">
@@ -111,132 +102,30 @@ const hero = `
       <div class="btn-row"><a class="btn btn--primary" href="${APP_URL}">${MAIN_ACTION}${ARROW}</a><a class="btn btn--secondary" href="#price">가격 보기</a></div>
       <p class="hero__proof">${shops} 주문 엑셀을 바로 읽어요.</p>
     </div>
-    <div class="hero__art span-6 start-7" data-fx="grain-gradient" data-fx-seed="7" role="img" aria-label="${APP_NAME}가 같은 사람의 주문을 위로 모아 정리한 주문 목록과, 168건에 송장 번호를 붙인 결과 카드">
-      <div class="ly-piece ly-piece--main d-win" aria-hidden="true">
-        <div class="d-win__bar"><span class="d-win__dots"><i></i><i></i><i></i></span><span>${APP_NAME} · 11월 20일 주문</span></div>
-        <div class="d-win__body">
-          <div class="d-side">
-            <span class="is-on"><i></i>주문정리</span><span><i></i>리포트</span><span><i></i>품목사전</span><span><i></i>설정</span>
-            <span class="d-side__label">쇼핑몰</span><span><i></i>쿠팡</span><span><i></i>스마트스토어</span>
-          </div>
-          <div class="d-main">
-            <div class="d-main__head"><h4>주문 170건</h4><span class="d-btn">택배사 파일 받기</span></div>
-            <div class="d-tabs"><span class="is-on">전체 170</span><span>합포장 12</span><span>확인 필요 2</span></div>
-            <div class="d-rows">
-              ${heroRows
-                .map(([c, name, who, qty, st]) => {
-                  const [cls, label] = st.split('|');
-                  return `<div class="d-row"><span class="d-thumb" style="background:${c}"></span><div><b>${name}</b><small>${who}</small></div><span class="num">${qty}</span><span class="d-chip ${cls}">${label}</span></div>`;
-                })
-                .join('')}
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="ly-piece ly-piece--note d-card" aria-hidden="true" data-ly-steps="700">
-        <div class="d-card__row"><h5>송장 맞추기</h5><span class="d-chip" data-step data-step-at="4">완료</span></div>
-        <div class="d-note__line" data-step><i class="warn">!</i><span><b>2건</b>은 받는 사람 이름이 달라요</span></div>
-        <div class="d-note__line" data-step><i>✓</i><span><b>168건</b>에 송장 번호를 붙였어요</span></div>
-        <div class="d-note__line" data-step><i>✓</i><span>쇼핑몰 파일 <b>2개</b>를 만들었어요</span></div>
-      </div>
+    <div class="hero__art span-6 start-7" data-fx="grain-gradient" data-fx-seed="7">
+      <div class="ly-piece ly-piece--main shot-win">${shot('app-overview', 1400, 1050, `${APP_NAME} 주문정리 화면: 주문서 올리기부터 송장 맞추기까지 끝난 모습`, 'fetchpriority="high"')}</div>
+      <div class="ly-piece ly-piece--note shot-win" aria-hidden="true">${shot('app-todo', 597, 440, '')}</div>
     </div>
   </div></div>
 </section>`;
 
 // ---------- app-frame ----------
-const fileRows: [string, string, string, string, string, string][] = [
-  // [tone, 줄임, 쇼핑몰, 파일 · 건수, 상태 class, 상태 글자]
-  ['1', '쿠', '쿠팡', '11월_쿠팡_주문.xlsx · 98건', 'is-done', '정리됨'],
-  ['3', '네', '네이버 스마트스토어', '11월_스마트스토어_주문.xlsx · 72건', 'is-done', '정리됨'],
-  ['4', 'CJ', 'CJ대한통운', '송장_1120.xlsx · 170건', 'is-done', '맞춤'],
-  ['2', '쿠', '쿠팡', '쿠팡_발송처리.xlsx · 97건', 'is-done', '받음'],
-  ['5', '네', '네이버 스마트스토어', '스마트스토어_발송처리.xlsx · 71건', 'is-done', '받음'],
-  ['1', '토', '토스', '11월_토스_주문.xlsx · 14건', 'is-you', '확인 필요'],
-  ['3', '식', '식봄', '11월_식봄_주문.xlsx · 9건', '', '정리 전'],
-  ['4', '올', '올웨이즈', '11월_올웨이즈_주문.xlsx · 21건', '', '정리 전'],
-  ['5', 'G', 'G마켓(옥션ESM)', '11월_G마켓_주문.xlsx · 6건', '', '정리 전'],
-  ['2', '롯', '롯데택배', '송장_1119.xlsx · 33건', 'is-done', '맞춤'],
-];
-
-const sheetRows: [string, string, string, string][] = [
-  ['김○○', '사과 5kg, 선물용', '2', '6894 2210 3381'],
-  ['김○○', '배 3kg', '1', '6894 2210 3381'],
-  ['박○○', '귤 10kg', '3', '6894 2210 3412'],
-  ['최○○', '단감 5kg', '1', '6894 2210 3429'],
-  ['이○○', '포도 2kg', '1', ''],
-  ['정○○', '사과즙 30포', '2', '6894 2210 3445'],
-  ['한○○', '사과 10kg', '1', '6894 2210 3460'],
-  ['윤○○', '배 5kg', '2', '6894 2210 3478'],
-  ['장○○', '귤 5kg', '1', '6894 2210 3483'],
-  ['임○○', '사과 5kg', '1', '6894 2210 3497'],
-  ['오○○', '단감 10kg', '1', '6894 2210 3502'],
-  ['서○○', '귤 10kg', '2', '6894 2210 3516'],
-  ['신○○', '사과 3kg', '1', '6894 2210 3524'],
-  ['권○○', '배 3kg', '1', '6894 2210 3531'],
-];
-
 const app = `
 <section class="section" id="app" aria-labelledby="app-h">
   <div class="wrap">
     <div class="grid grid--top">
       <h2 id="app-h" class="span-5">주문서와 송장을 한 화면에서 맞춰요</h2>
       <div class="span-6 start-7 stack-4">
-        <p>왼쪽에 올린 주문 엑셀과 송장 엑셀이 쌓이고, 오른쪽에서 주문마다 붙은 송장 번호를 바로 확인해요. 받는 사람이 다른 주문은 비워 두고 따로 알려 드려요.</p>
+        <p>택배사에서 받은 송장 엑셀을 올리면 주문마다 송장 번호를 붙이고, 몇 건이 맞았는지 바로 보여 줘요. 확인할 주문은 오른쪽에 따로 모아 알려 드려요.</p>
         <a class="link" href="#faq">자주 묻는 질문 보기</a>
       </div>
     </div>
-    <div class="ui app fill" role="img" aria-label="${APP_NAME} 주문정리 화면: 올린 파일 목록 옆에 송장 번호를 붙인 쿠팡 발송처리 파일" data-ui-pause-host>
-      <div class="app__pane app__pane--list">
-        <div class="ui ui-panel ui-win" data-ui="window" data-open="정리 전" data-work="정리 중" data-done="정리됨">
-          <div class="ui-win__bar">
-            <span class="ui-dots" aria-hidden="true"><i></i><i></i><i></i></span>
-            <span class="ui-win__crumb">${APP_NAME} <i>/</i> <b>주문정리</b></span>
-            <span class="ui-spacer"></span>
-            <span class="ui-win__search" aria-hidden="true"><svg class="ui-icon" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3"/></svg><span class="ui-win__ph">찾기</span><span class="ui-kbd">/</span></span>
-          </div>
-          <div class="ui-win__body">
-            <nav class="ui-win__side" aria-hidden="true">
-              <span class="ui-win__nav is-on"><svg class="ui-icon" viewBox="0 0 16 16"><path d="M4 2.5h5l3 3v8H4z"/><path d="M9 2.5v3h3"/></svg>파일<em>10</em></span>
-              <span class="ui-win__nav"><svg class="ui-icon" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3.5"/><path d="M8 10.8v.2"/></svg>확인 필요<em>2</em></span>
-              <span class="ui-win__nav"><svg class="ui-icon" viewBox="0 0 16 16"><path d="m3.5 8.4 2.8 2.8 6.2-6.4"/></svg>받은 파일<em>2</em></span>
-              <span class="ui-win__label">쇼핑몰</span>
-              <span class="ui-win__nav"><span class="ui-win__hash">#</span>쿠팡</span>
-              <span class="ui-win__nav"><span class="ui-win__hash">#</span>스마트스토어</span>
-            </nav>
-            <div class="ui-win__main">
-              <div class="ui-win__cols" aria-hidden="true"><span>쇼핑몰</span><span>파일</span><span>상태</span><span>시간</span></div>
-              <ul class="ui-win__rows">
-                ${fileRows
-                  .map(
-                    ([tone, ab, who, sub, cls, st], i) =>
-                      `<li class="ui-win__row" data-row><span class="ui-avatar" data-tone="${tone}">${ab}</span><span class="ui-win__who">${who}</span><span class="ui-win__sub">${sub}</span><span class="ui-win__st ${cls}" data-st>${st}</span><span class="ui-win__age">${2 + i * 3}분</span></li>`,
-                  )
-                  .join('')}
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="app__pane app__pane--open">
-        <div class="ui ui-panel sheet">
-          <div class="sheet__head">
-            ${XLSX}<span class="sheet__name">쿠팡_발송처리.xlsx</span><span class="sheet__meta">97건 · 송장 96건</span>
-            <span class="ui-spacer"></span><span class="ui-btn ui-btn--primary">파일 받기</span>
-          </div>
-          <table class="sheet__table">
-            <thead><tr><th>받는 사람</th><th>상품</th><th class="num">수량</th><th>택배사</th><th>송장 번호</th></tr></thead>
-            <tbody>
-              ${sheetRows
-                .map(
-                  ([who, item, qty, no]) =>
-                    `<tr${no ? '' : ' class="is-mark"'}><td>${who}</td><td>${item}</td><td class="num">${qty}</td><td>CJ대한통운</td><td class="num">${no || '받는 사람 이름 확인'}</td></tr>`,
-                )
-                .join('')}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+    <figure class="shot-frame">
+      <picture>
+        <source media="(max-width: 639px)" srcset="/assets/shots/app-match-phone.webp" width="1120" height="894">
+        ${shot('app-match', 2000, 889, `${APP_NAME} 주문정리 화면: 송장 엑셀을 올려 주문 14건 모두에 송장 번호를 붙인 결과`, 'loading="lazy"')}
+      </picture>
+    </figure>
   </div>
 </section>`;
 
@@ -256,34 +145,14 @@ const features = `
           <h3>쇼핑몰 양식을 알아서 구분해요</h3>
           <p>${SUPPORTED_SHOPS.length}곳의 주문 엑셀을 한꺼번에 올려도 파일마다 어느 쇼핑몰 양식인지 읽어 내요.</p>
           <div class="panel" ${mesh(21)}>
-            <div class="stage stage--fade-b"><div class="at-rise fit" style="--fit-max:380px;--ax:max(24px, 50% - 190px);--ay:56px;--ay-sm:24px" data-ui-loop>
-              <div class="ui ui-notify" data-ui="notify">
-                <ul class="ui-notify__list" data-notify-list>
-                  <li class="ui-note"><span class="ui-note__ico">${XLSX}</span><span class="ui-note__text"><span class="ui-note__title">쿠팡 양식으로 읽었어요<time>방금</time></span><span class="ui-note__body">11월_쿠팡_주문.xlsx, 주문 98건</span></span></li>
-                  <li class="ui-note"><span class="ui-note__ico">${XLSX}</span><span class="ui-note__text"><span class="ui-note__title">스마트스토어 양식이에요<time>방금</time></span><span class="ui-note__body">11월_스마트스토어_주문.xlsx, 72건</span></span></li>
-                  <li class="ui-note"><span class="ui-note__ico">${XLSX}</span><span class="ui-note__text"><span class="ui-note__title">토스 양식으로 읽었어요<time>1분</time></span><span class="ui-note__body">11월_토스_주문.xlsx, 주문 14건</span></span></li>
-                </ul>
-              </div>
-            </div></div>
+            <div class="stage stage--fade-b"><div class="at-corner to-edge" style="--ax:28px;--ay:28px">${shot('files-detected', 1600, 653, '주문서 올리기 카드: 올린 주문 파일 두 개를 쿠팡 양식, 네이버 스마트스토어 양식으로 알아본 모습', 'loading="lazy" style="width:780px"')}</div></div>
           </div>
         </article>
         <article class="card card--row card--open span-6">
           <h3>같은 사람에게 갈 주문을 모아요</h3>
           <p>받는 사람과 주소가 같은 주문은 위쪽에 모으고, 품목별로 정렬해서 택배사 파일을 만들어요.</p>
           <div class="panel" ${mesh(34)}>
-            <div class="stage stage--fade-b"><div class="at-rise fit" style="--fit-max:340px;--ax:max(24px, 50% - 170px);--ay:56px;--ay-sm:24px">
-              <div class="ui ui-panel ui-checks" data-ui="checklist">
-                <div class="ui-checks__head"><div class="ui-title">주문 정리</div><span class="ui-spacer"></span><div class="ui-meta" data-checks-count>2 / 5 완료</div></div>
-                <div class="ui-checks__bar"><i data-checks-bar style="--k:0.4"></i></div>
-                <ul class="ui-checks__list">
-                  <li class="ui-check is-done"><span class="ui-check__box">${CHECK}</span><span class="ui-check__label">쇼핑몰 양식 구분하기</span></li>
-                  <li class="ui-check is-done"><span class="ui-check__box">${CHECK}</span><span class="ui-check__label">상품명을 품목사전으로 바꾸기</span></li>
-                  <li class="ui-check"><span class="ui-check__box">${CHECK}</span><span class="ui-check__label">합포장 주문 위로 모으기</span></li>
-                  <li class="ui-check"><span class="ui-check__box">${CHECK}</span><span class="ui-check__label">품목별로 정렬하기</span></li>
-                  <li class="ui-check"><span class="ui-check__box">${CHECK}</span><span class="ui-check__label">택배사 파일 만들기</span></li>
-                </ul>
-              </div>
-            </div></div>
+            <div class="stage stage--fade-b"><div class="at-corner to-edge" style="--ax:28px;--ay:28px">${shot('courier-file', 1800, 1312, '택배사에 넣을 파일 미리 보기: 같은 받는 사람의 주문이 위아래로 붙어 있는 표', 'loading="lazy" style="width:860px"')}</div></div>
           </div>
         </article>
       </div>
@@ -293,43 +162,14 @@ const features = `
         <h3>확인할 주문을 먼저 보여 줘요</h3>
         <p>받는 사람 이름이 비었거나 전화번호가 10자리보다 짧은 주문을 송장을 뽑기 전에 골라 둬요.</p>
         <div class="panel" ${mesh(47)}>
-            <div class="stage stage--fade-b"><div class="at-corner fit" style="--ax:24px;--ay:28px;--fit-max:456px">
-              <div class="ui ui-panel ui-win" data-ui="window" data-ui-opts='{"compact":true}' data-open="확인 필요" data-work="확인 중" data-done="고침">
-                <div class="ui-win__bar"><span class="ui-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="ui-win__crumb">확인할 주문</span><span class="ui-spacer"></span></div>
-                <div class="ui-win__body">
-                  <div class="ui-win__main">
-                    <ul class="ui-win__rows">
-                      <li class="ui-win__row" data-row><span class="ui-avatar" data-tone="1">이</span><span class="ui-win__who">이○○</span><span class="ui-win__sub">받는 사람 이름이 송장과 달라요</span><span class="ui-win__st" data-st>확인 필요</span><span class="ui-win__age">1분</span></li>
-                      <li class="ui-win__row" data-row><span class="ui-avatar" data-tone="3">?</span><span class="ui-win__who">이름 없음</span><span class="ui-win__sub">주문 2077, 받는 사람 칸이 비었어요</span><span class="ui-win__st" data-st>확인 필요</span><span class="ui-win__age">3분</span></li>
-                      <li class="ui-win__row" data-row><span class="ui-avatar" data-tone="4">한</span><span class="ui-win__who">한○○</span><span class="ui-win__sub">전화번호가 9자리예요</span><span class="ui-win__st" data-st>확인 필요</span><span class="ui-win__age">5분</span></li>
-                      <li class="ui-win__row" data-row><span class="ui-avatar" data-tone="2">윤</span><span class="ui-win__who">윤○○</span><span class="ui-win__sub">주소에 동·호수가 없어요</span><span class="ui-win__st is-done" data-st>고침</span><span class="ui-win__age">8분</span></li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div></div>
+            <div class="stage stage--fade-b"><div class="at-corner to-edge" style="--ax:28px;--ay:28px">${shot('check-orders', 1344, 784, '잘못 배송될 수 있는 주문 2건: 전화번호가 9자리, 주소가 너무 짧음', 'loading="lazy" style="width:600px"')}</div></div>
         </div>
       </article>
       <article class="card card--row card--open span-6">
         <h3>상품명을 품목사전으로 맞춰요</h3>
         <p>광고 문구가 붙은 긴 상품명을 내가 정한 짧은 이름으로 바꿔서 품목별로 셀 수 있게 해요.</p>
         <div class="panel" ${mesh(58)}>
-          <div class="stage stage--fade-b"><div class="at-rise to-edge" style="--w:380px;--ax:max(24px, 50% - 190px);--ay:56px;--ay-sm:24px">
-            <div class="ui ui-panel ui-search" data-ui="search">
-              <div class="ui-search__field">
-                <svg class="ui-icon" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3"/></svg>
-                <span class="ui-search__q"><span data-search-q>꿀사과 5kg 선물용</span><i class="ui-search__caret"></i></span>
-                <kbd class="ui-search__kbd">Ctrl K</kbd>
-              </div>
-              <div class="ui-search__group">품목사전</div>
-              <ul class="ui-search__list" data-search-list>
-                <li class="ui-search__row is-sel"><span class="ui-search__ico">${XLSX}</span><span class="ui-search__t"><b>사과 5kg</b> (선물용)</span><span class="ui-search__m">12건</span></li>
-                <li class="ui-search__row"><span class="ui-search__ico">${XLSX}</span><span class="ui-search__t"><b>사과</b> 10kg</span><span class="ui-search__m">4건</span></li>
-                <li class="ui-search__row"><span class="ui-search__ico">${XLSX}</span><span class="ui-search__t"><b>사과</b>즙 30포</span><span class="ui-search__m">2건</span></li>
-              </ul>
-              <div class="ui-search__foot"><span><kbd>&uarr;</kbd><kbd>&darr;</kbd> 이동</span><span><kbd>Enter</kbd> 바꾸기</span></div>
-            </div>
-          </div></div>
+          <div class="stage stage--fade-b"><div class="at-corner to-edge" style="--ax:28px;--ay:28px">${shot('dictionary', 1600, 1417, '품목사전 화면: 긴 상품명마다 바꿀 짧은 이름이 적힌 목록', 'loading="lazy" style="width:760px"')}</div></div>
         </div>
       </article>
     </div>
@@ -382,19 +222,7 @@ const privacy = `
       </div>
       <div class="frame frame--split frame--fill span-6 start-7">
         <div class="stage stage--fade-br"><div class="at-corner to-edge" style="--ax:56px;--ay:56px">
-          <div class="ui ui-panel unlock" role="img" aria-label="비밀번호가 걸린 스마트스토어 주문 엑셀을 브라우저에서 여는 창">
-            <div class="unlock__head">${XLSX}<span class="unlock__name">11월_스마트스토어_주문.xlsx</span><span class="ui-spacer"></span><span class="unlock__lock">비밀번호 필요</span></div>
-            <div class="unlock__body">
-              <p class="unlock__label">비밀번호</p>
-              <div class="unlock__field"><span>●●●●●●●●</span><i class="ui-search__caret"></i></div>
-              <div class="unlock__row"><span class="unlock__note">파일은 이 브라우저 밖으로 나가지 않아요</span><span class="ui-spacer"></span><span class="ui-btn ui-btn--primary">열기</span></div>
-              <ul class="unlock__list">
-                <li><span>시트</span><b>주문목록</b></li>
-                <li><span>읽은 주문</span><b>72건</b></li>
-                <li><span>서버로 보낸 파일</span><b>0개</b></li>
-              </ul>
-            </div>
-          </div>
+          ${shot('unlock', 840, 508, '비밀번호가 걸린 스마트스토어 주문 엑셀을 여는 창', 'loading="lazy" style="width:520px"')}
         </div></div>
       </div>
     </div>
@@ -412,12 +240,7 @@ const faq = `
       <div class="span-5 stack-4">
         <h2 id="faq-h">자주 묻는 질문</h2>
         <p>더 궁금한 점은 로그인한 뒤 왼쪽 메뉴의 문의하기로 보내 주세요.</p>
-        <div class="ask ui ui-panel" role="img" aria-label="${APP_NAME} 앱의 문의하기 창">
-          <div class="ask__head"><b>문의하기</b><span class="ui-spacer"></span><span class="ask__x" aria-hidden="true">×</span></div>
-          <div class="ask__chips"><span class="is-on">사용 방법</span><span>버그 신고</span><span>기능 제안</span></div>
-          <div class="ask__field">롯데택배 송장 엑셀은 어느 칸을 맞추면 되나요?</div>
-          <div class="ask__foot"><span>답변은 가입한 이메일로 보내 드려요</span><span class="ui-spacer"></span><span class="ui-btn ui-btn--primary">보내기</span></div>
-        </div>
+        <figure class="shot-ask">${shot('contact', 1040, 948, `${APP_NAME} 앱의 문의하기 창`, 'loading="lazy"')}</figure>
       </div>
       <div class="faq span-6 start-7" data-faq-list>${faqItems(DEFAULT_FAQS)}</div>
     </div>

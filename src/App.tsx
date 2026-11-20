@@ -211,6 +211,8 @@ function migratePlatforms(parsed: PlatformConfig[]): PlatformConfig[] {
   return finalPlatforms;
 }
 
+const STEP_TITLES = ['주문 엑셀 올리기', '송장 받기', '송장 맞추기', '쇼핑몰 올리기'];
+
 export default function App() {
   const { features, account } = useAccount();
   // 왼쪽 메뉴 하단에 보여 줄 구독 상태
@@ -239,7 +241,7 @@ export default function App() {
     parsed: ProductMapping[];
   } | null>(null);
 
-  const [activeTab, setActiveTab] = useState<'process' | 'analytics'>('process');
+  const [activeTab, setActiveTab] = useState<'process' | 'analytics' | 'api'>('process');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [settingsSection, setSettingsSection] = useState<'platforms' | 'products' | 'backup' | 'account'>('platforms');
@@ -2224,7 +2226,7 @@ export default function App() {
           {[
             { key: 'process', label: '주문정리', icon: <Layers className="w-5 h-5 shrink-0" />, selected: activeTab === 'process' && !isSettingsOpen, show: true, action: () => setActiveTab('process') },
             { key: 'analytics', label: '리포트', icon: <BarChart3 className="w-5 h-5 shrink-0" />, selected: activeTab === 'analytics' && !isSettingsOpen, show: features.analytics, action: () => setActiveTab('analytics') },
-            { key: 'api', label: 'API 연동', icon: <Plug className="w-5 h-5 shrink-0" />, selected: false, show: features.apiSync, action: () => { setActiveTab('process'); setTimeout(() => document.getElementById('api-connect-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60); } },
+            { key: 'api', label: 'API 연동', icon: <Plug className="w-5 h-5 shrink-0" />, selected: activeTab === 'api' && !isSettingsOpen, show: features.apiSync, action: () => setActiveTab('api') },
             { key: 'products', label: '품목사전', icon: <Grid className="w-5 h-5 shrink-0" />, selected: isSettingsOpen && settingsSection === 'products', show: true, action: () => openSettings('products') },
             { key: 'settings', label: '설정', icon: <Settings className="w-5 h-5 shrink-0" />, selected: isSettingsOpen && settingsSection !== 'products', show: true, action: () => openSettings('platforms') },
             { key: 'support', label: '문의하기', icon: <MessageSquare className="w-5 h-5 shrink-0" />, selected: false, show: true, action: () => setIsFeedbackOpen(true) },
@@ -2290,6 +2292,22 @@ export default function App() {
             >
 
               {/* 한눈에 보는 작업 순서 */}
+              {/* 현재 단계: 시안처럼 크게 보여 줍니다 */}
+              {(() => {
+                const cur = orderParseResult ? 2 : 0;
+                return (
+                  <div className="flex flex-wrap items-end justify-between gap-2">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[13px] font-semibold text-[#1E5B4A]">{cur + 1}단계</span>
+                      <span className="text-3xl font-bold tracking-tight text-slate-900">{STEP_TITLES[cur]}</span>
+                    </div>
+                    {cur < STEP_TITLES.length - 1 && (
+                      <span className="text-[13px] text-slate-500">다음 단계: {STEP_TITLES[cur + 1]}</span>
+                    )}
+                  </div>
+                );
+              })()}
+
               <div className="grid grid-cols-2 overflow-hidden rounded-xl border border-slate-200 bg-white md:grid-cols-4">
                 {[
                   { no: '1', title: '주문 엑셀 올리기' },
@@ -2423,15 +2441,6 @@ export default function App() {
                   </motion.div>
                 )}
 
-                {/* 쇼핑몰 API 자동 연동 수집 센터 모듈 */}
-                {features.apiSync && (
-                  <SmartApiConnector
-                    onOrdersSynced={handleOrdersApiSynced}
-                    showNotification={showNotification}
-                    configs={apiConfigs}
-                    setConfigs={setApiConfigs}
-                  />
-                )}
                 
                 {/* 1단계 카드: 주문 데이터 가공 */}
                 <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
@@ -3324,6 +3333,21 @@ export default function App() {
           )}
 
           {/* 탭 4: 시각화 리포트 탭 */}
+          {activeTab === 'api' && features.apiSync && (
+            <motion.div
+              key="api-tab"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-6"
+            >
+                <SmartApiConnector
+                  onOrdersSynced={handleOrdersApiSynced}
+                  showNotification={showNotification}
+                  configs={apiConfigs}
+                  setConfigs={setApiConfigs}
+                />
+            </motion.div>
+          )}
           {activeTab === 'analytics' && features.analytics && (
             <motion.div
               key="analytics-tab"

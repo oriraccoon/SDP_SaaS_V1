@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
 import {
   CheckCircle2,
   XCircle,
@@ -20,6 +19,7 @@ import {
   PlusCircle
 } from 'lucide-react';
 import { InspectionCheckItem, StepValidationResult } from '../types';
+import Modal, { btn } from './ui/Modal';
 
 interface ExcelValidationDashboardProps {
   validationResult?: StepValidationResult;
@@ -40,6 +40,7 @@ export default function ExcelValidationDashboard({
   // 전체 검사 항목 팝업 모달 상태
   const [isFullListModalOpen, setIsFullListModalOpen] = useState(false);
   const [selectedDetailCheck, setSelectedDetailCheck] = useState<InspectionCheckItem | null>(null);
+  const [showCodes, setShowCodes] = useState(false);
 
   // 자동 맞춤 개별 수정 상태 (rawName -> inputVal)
   const [editingRawName, setEditingRawName] = useState<string | null>(null);
@@ -159,7 +160,7 @@ export default function ExcelValidationDashboard({
     // 화면 표기용 정제명만 임시 수정 (대치 사전에 자동 저장하지 않음)
     setSavedCustomEditedMap(prev => ({ ...prev, [rawName]: finalVal }));
 
-    setEditSuccessMsg(`'${rawName}'의 정제명이 '${finalVal}'(으)로 수정되었습니다. [대치 리스트에 추가]를 눌러 사전에 등록할 수 있습니다.`);
+    setEditSuccessMsg(`'${finalVal}'(으)로 고쳤어요. '품목사전에 넣기'를 누르면 앞으로도 이 이름으로 나와요.`);
     setTimeout(() => setEditSuccessMsg(null), 3500);
     setEditingRawName(null);
   };
@@ -173,7 +174,7 @@ export default function ExcelValidationDashboard({
     setSavedCustomEditedMap(prev => ({ ...prev, [rawName]: targetMappedName }));
     setAddedToDictSet(prev => new Set(prev).add(rawName));
 
-    setEditSuccessMsg(`'${rawName}' ➔ '${targetMappedName}' 규칙이 대치 사전에 추가되어 성공적으로 반영되었습니다.`);
+    setEditSuccessMsg(`'${rawName}' ➔ '${targetMappedName}'(으)로 품목사전에 넣었어요.`);
     setTimeout(() => setEditSuccessMsg(null), 3500);
   };
 
@@ -204,567 +205,334 @@ export default function ExcelValidationDashboard({
 
     setSavedCustomEditedMap(newMap);
     setAddedToDictSet(newSet);
-    setEditSuccessMsg(`Warning 매칭 ${validItems.length}건 전체가 대치 사전에 추가되어 적용되었습니다.`);
+    setEditSuccessMsg(`자동으로 맞춘 상품 ${validItems.length}개를 모두 품목사전에 넣었어요.`);
     setTimeout(() => setEditSuccessMsg(null), 3500);
   };
+
+  // 검사 코드별 쉬운 이름 (화면 표시용). 검사 내용 자체는 validationEngine 그대로입니다.
+  const PLAIN_TITLE: Record<string, string> = {
+    STEP1_E1: "요약 보고서 '상세내역' 시트의 칸 순서",
+    STEP1_E2: "요약 보고서 '상세내역'에 빠진 내용이 없는지",
+    STEP1_E3: "원래 주문과 '상세내역'의 주문 수·수량",
+    STEP1_E4: "원래 주문과 '상품준비요약'의 수량",
+    STEP1_E6: '택배사에 넣을 파일(품목별정렬)의 칸 순서',
+    STEP1_E7: "택배사에 넣을 파일의 '수량(고정)' 칸이 모두 1인지",
+    STEP1_E8: '택배사에 넣을 파일에 빠진 내용이 없는지',
+    STEP1_E9: '택배사에 넣을 파일의 상품명이 원래 이름 그대로인지',
+    STEP1_E10: '받는 사람·전화번호·주소가 이상한 주문',
+    STEP1_E11: '원래 주문과 택배사에 넣을 파일의 주문 수·수량',
+    STEP1_E12: '같은 주문이 두 번 들어갔는지',
+    STEP1_W1: '품목사전에 없는 상품',
+    STEP1_W2: '비슷한 이름으로 자동으로 맞춘 상품',
+    STEP2_E1: '송장 붙인 파일의 총 주문 수량',
+    STEP2_E2: '송장 붙인 파일이 쇼핑몰 원래 양식과 같은지',
+    STEP2_E3: '송장 번호가 빠진 주문',
+    STEP2_E4: '쿠팡 묶음배송 주문이 두 번 들어가지 않았는지',
+    STEP2_E5: '쿠팡 묶음배송 품목 수',
+    STEP2_W1: '택배사 이름이 들어갔는지',
+  };
+  const plainTitle = (item: InspectionCheckItem) => PLAIN_TITLE[item.code] || item.title;
 
   const getStatusBadge = (status: 'PASS' | 'FAIL' | 'WARNING') => {
     switch (status) {
       case 'PASS':
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold bg-emerald-100 text-emerald-800 rounded-full border border-emerald-300 flex-shrink-0">
-            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-            PASS
-          </span>
-        );
+        return <span className="shrink-0 rounded-md bg-brand-50 px-2 py-0.5 text-[12px] font-semibold text-brand-700">문제없음</span>;
       case 'FAIL':
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold bg-rose-100 text-rose-800 rounded-full border border-rose-300 flex-shrink-0">
-            <XCircle className="w-3 h-3 text-rose-600" />
-            ERROR
-          </span>
-        );
+        return <span className="shrink-0 rounded-md bg-rose-50 px-2 py-0.5 text-[12px] font-semibold text-rose-700">고쳐야 해요</span>;
       case 'WARNING':
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold bg-amber-100 text-amber-800 rounded-full border border-amber-300 flex-shrink-0">
-            <AlertTriangle className="w-3 h-3 text-amber-600" />
-            WARNING
-          </span>
-        );
+        return <span className="shrink-0 rounded-md bg-amber-50 px-2 py-0.5 text-[12px] font-semibold text-amber-800">확인해 주세요</span>;
     }
   };
 
   const stepTitle =
     stepFilter === 1
-      ? '1단계 주문 데이터 가공 품질 검사'
+      ? '주문 정리 품질 검사'
       : stepFilter === 2
-      ? '2단계 최종 발송 엑셀 검증'
-      : '엑셀 품질 및 무결성 종합 검사';
+      ? '송장 붙인 파일 검사'
+      : '엑셀 품질 검사';
 
-  const stepIcon = stepFilter === 2 ? <Truck className="w-5 h-5" /> : <Layers className="w-5 h-5" />;
+  const stepIcon = stepFilter === 2 ? <Truck className="w-4 h-4" /> : <Layers className="w-4 h-4" />;
+  const passCount = currentStepChecks.length - failCount - warningCount;
+  const passChecks = currentStepChecks.filter((c) => c.status === 'PASS');
+
+  const summaryText =
+    failCount > 0
+      ? `${failCount}가지는 고쳐야 해요.${warningCount > 0 ? ` ${warningCount}가지는 확인해 주세요.` : ''}`
+      : warningCount > 0
+      ? `${passCount}가지는 문제없어요. ${warningCount}가지만 확인해 주세요.`
+      : `${currentStepChecks.length}가지 모두 문제없어요.`;
+
+  const renderCheckRow = (item: InspectionCheckItem) => (
+    <li key={item.id}>
+      <button
+        type="button"
+        onClick={() => setSelectedDetailCheck(item)}
+        className="flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left transition hover:bg-slate-50 cursor-pointer"
+      >
+        <span className="min-w-0 text-sm text-slate-800">
+          {plainTitle(item)}
+          {showCodes && <span className="ml-2 font-mono text-[11px] text-slate-400">{item.code}</span>}
+        </span>
+        <span className="flex shrink-0 items-center gap-1.5">
+          {getStatusBadge(item.status)}
+          <ChevronRight className="w-4 h-4 text-slate-400" />
+        </span>
+      </button>
+    </li>
+  );
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden mb-6">
-      {/* 1. 상단 요약 바 */}
-      <div
-        className={`px-4 py-3 flex flex-wrap items-center justify-between transition-colors ${
-          failCount > 0
-            ? 'bg-rose-50/80 border-b border-rose-100'
-            : warningCount > 0
-            ? 'bg-amber-50/80 border-b border-amber-100'
-            : 'bg-emerald-50/80 border-b border-emerald-100'
-        }`}
-      >
-        <div className="flex items-center gap-2.5">
-          {failCount > 0 ? (
-            <div className="p-2 bg-rose-100 text-rose-700 rounded-lg border border-rose-200 flex-shrink-0">
-              <ShieldAlert className="w-5 h-5" />
-            </div>
-          ) : warningCount > 0 ? (
-            <div className="p-2 bg-amber-100 text-amber-700 rounded-lg border border-amber-200 flex-shrink-0">
-              <AlertTriangle className="w-5 h-5" />
-            </div>
-          ) : (
-            <div className="p-2 bg-emerald-100 text-emerald-700 rounded-lg border border-emerald-200 flex-shrink-0">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
-          )}
-
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-1.5">
-                {stepIcon}
-                <span>{stepTitle}</span>
-              </h3>
-              {failCount > 0 ? (
-                <span className="px-2 py-0.5 text-xs font-bold bg-rose-600 text-white rounded-full">
-                  오류 {failCount}건
-                </span>
-              ) : warningCount > 0 ? (
-                <span className="px-2 py-0.5 text-xs font-bold bg-amber-500 text-white rounded-full">
-                  경고 {warningCount}건
-                </span>
-              ) : (
-                <span className="px-2 py-0.5 text-xs font-bold bg-emerald-600 text-white rounded-full">
-                  정상 (PASS)
-                </span>
-              )}
-            </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              {currentStepChecks.length}개 항목 검사 완료 (진단 결과: {currentStepStatus})
-            </p>
+      {/* 1. 요약 */}
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 px-4 py-3">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-full ${
+            failCount > 0 ? 'bg-rose-50 text-rose-700' : warningCount > 0 ? 'bg-amber-50 text-amber-800' : 'bg-brand-50 text-brand-700'
+          }`}>
+            {failCount > 0 ? <ShieldAlert className="w-4 h-4" /> : warningCount > 0 ? <AlertTriangle className="w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}
+          </span>
+          <div className="min-w-0">
+            <h3 className="flex items-center gap-1.5 text-sm font-semibold text-slate-900">
+              {stepIcon}
+              <span>{stepTitle}</span>
+            </h3>
+            <p className="text-[13px] text-slate-600">{summaryText}</p>
           </div>
         </div>
-
-        {/* 전체 검사 리스트 팝업 버튼 */}
         <button
+          type="button"
           onClick={() => setIsFullListModalOpen(true)}
-          className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-brand-700 bg-brand-50 hover:bg-brand-100 border border-brand-200 rounded-lg transition-colors mt-2 sm:mt-0"
+          className="inline-flex min-h-9 items-center gap-1 rounded-lg border border-slate-300 bg-white px-3 text-[13px] font-semibold text-slate-800 transition hover:bg-slate-50 cursor-pointer"
         >
-          <ListFilter className="w-3.5 h-3.5 text-brand-600" />
-          <span>전체 검사 항목 ({currentStepChecks.length})</span>
+          <ListFilter className="w-3.5 h-3.5" />
+          <span>검사 {currentStepChecks.length}가지 보기</span>
         </button>
       </div>
 
-      {/* 2. 평소 메인 영역: 에러/경고 한 줄 슬림 목록 */}
-      <div className="p-3">
-        {issueChecks.length > 0 ? (
-          <div className="space-y-1.5">
-            <div className="text-xs font-bold text-slate-500 px-1 mb-1">
-              ※ 클릭하면 상세 오류 내역을 확인할 수 있습니다.
-            </div>
+      {/* 2. 확인할 것만 짧게 */}
+      {issueChecks.length > 0 && (
+        <div className="p-3">
+          <ul className="divide-y divide-slate-100 overflow-hidden rounded-lg border border-amber-200 bg-amber-50/40">
+            {issueChecks.map(renderCheckRow)}
+          </ul>
+        </div>
+      )}
 
-            <div className="divide-y divide-slate-100 border border-slate-200 rounded-lg overflow-hidden bg-white">
-              {issueChecks.map((item) => (
-                <div
-                  key={item.id}
-                  onClick={() => setSelectedDetailCheck(item)}
-                  className={`px-3 py-2.5 flex items-center justify-between gap-2 cursor-pointer transition-colors hover:bg-slate-50 ${
-                    item.status === 'FAIL' ? 'bg-rose-50/20' : 'bg-amber-50/20'
-                  }`}
-                >
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <span
-                      className={`px-1.5 py-0.5 text-xs font-mono font-extrabold rounded flex-shrink-0 ${
-                        item.category === 'ERROR' ? 'bg-rose-600 text-white' : 'bg-amber-500 text-white'
-                      }`}
-                    >
-                      {item.code}
-                    </span>
-
-                    <span className="text-xs font-bold text-slate-800 flex-shrink-0">
-                      {item.title}
-                    </span>
-
-                    <span className="text-xs text-slate-500 truncate min-w-0">
-                      - {item.description}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    {getStatusBadge(item.status)}
-                    <ChevronRight className="w-4 h-4 text-slate-400" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : (
-          /* 에러/경고가 전혀 없는 경우 */
-          <div className="py-3 px-4 bg-emerald-50/50 rounded-lg border border-emerald-200 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-              <span className="text-xs font-bold text-emerald-900">
-                모든 검사를 통과했어요. (오류/경고 없음)
-              </span>
-            </div>
-            <button
-              onClick={() => setIsFullListModalOpen(true)}
-              className="text-xs text-emerald-700 underline font-semibold hover:text-emerald-900"
-            >
-              전체 항목 보기
+      {/* 3. 전체 검사 목록 */}
+      {isFullListModalOpen && (
+        <Modal
+          onClose={() => setIsFullListModalOpen(false)}
+          title={stepTitle}
+          description={`정리된 파일이 원래 주문과 맞는지 ${currentStepChecks.length}가지를 확인했어요. 눌러서 자세히 볼 수 있어요.`}
+          size="lg"
+          closeOnEsc={false}
+          footerStart={
+            <button type="button" onClick={() => setShowCodes(v => !v)} className="text-[13px] font-medium text-slate-500 underline underline-offset-2 hover:text-slate-700 cursor-pointer">
+              {showCodes ? '검사 코드 숨기기' : '검사 코드 보기 (문의할 때 필요해요)'}
             </button>
+          }
+          footer={<button type="button" onClick={() => setIsFullListModalOpen(false)} className={btn.dark}>닫기</button>}
+        >
+          <div className={`flex items-center gap-3 rounded-xl border px-4 py-3 ${
+            failCount > 0 ? 'border-rose-200 bg-rose-50' : warningCount > 0 ? 'border-amber-200 bg-amber-50' : 'border-brand-200 bg-brand-50'
+          }`}>
+            <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full text-white ${failCount > 0 ? 'bg-rose-700' : warningCount > 0 ? 'bg-amber-600' : 'bg-brand-600'}`}>
+              {failCount > 0 ? <XCircle className="w-5 h-5" /> : warningCount > 0 ? <AlertTriangle className="w-5 h-5" /> : <Check className="w-5 h-5" />}
+            </span>
+            <div className="text-sm font-semibold text-slate-900">{summaryText}</div>
           </div>
-        )}
-      </div>
 
-      {/* 3. 전체 검사 리스트 팝업 모달 */}
-      <AnimatePresence>
-        {isFullListModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-4xl w-full overflow-hidden flex flex-col max-h-[85vh]"
-            >
-              {/* 모달 헤더 */}
-              <div className="px-5 py-3.5 border-b border-slate-200 flex items-center justify-between bg-slate-50">
-                <div className="flex items-center gap-2">
-                  <ListFilter className="w-4 h-4 text-brand-600" />
-                  <h3 className="text-sm font-bold text-slate-800">
-                    {stepTitle} 전체 항목 ({currentStepChecks.length}개)
-                  </h3>
-                </div>
+          {issueChecks.length > 0 && (
+            <>
+              <div className="mt-4 mb-1.5 text-[13px] font-semibold text-amber-800">확인해 주세요 {issueChecks.length}</div>
+              <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-amber-200 bg-amber-50/40">
+                {issueChecks.map(renderCheckRow)}
+              </ul>
+            </>
+          )}
 
-                <button
-                  onClick={() => setIsFullListModalOpen(false)}
-                  className="p-1 text-slate-500 hover:text-slate-700 rounded-lg transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+          {passChecks.length > 0 && (
+            <>
+              <div className="mt-4 mb-1.5 text-[13px] font-semibold text-slate-600">문제없음 {passChecks.length}</div>
+              <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200">
+                {passChecks.map(renderCheckRow)}
+              </ul>
+            </>
+          )}
+        </Modal>
+      )}
+
+      {/* 4. 검사 하나 자세히 */}
+      {selectedDetailCheck && (
+        <Modal
+          onClose={() => setSelectedDetailCheck(null)}
+          title={plainTitle(selectedDetailCheck)}
+          description={<span className="inline-flex items-center gap-2">{getStatusBadge(selectedDetailCheck.status)}{showCodes && <span className="font-mono text-[11px] text-slate-400">{selectedDetailCheck.code}</span>}</span>}
+          size="lg"
+          zIndex={60}
+          closeOnEsc={false}
+          footer={<button type="button" onClick={() => setSelectedDetailCheck(null)} className={btn.dark}>닫기</button>}
+        >
+          <div className="space-y-4">
+            <p className="rounded-lg bg-slate-50 px-3 py-2 text-[13px] leading-relaxed text-slate-600">
+              {selectedDetailCheck.description}
+            </p>
+
+            {editSuccessMsg && (
+              <div className="flex items-center gap-2 rounded-lg border border-brand-200 bg-brand-50 px-3 py-2 text-[13px] font-semibold text-brand-900">
+                <CheckCircle2 className="w-4 h-4 shrink-0 text-brand-700" />
+                <span>{editSuccessMsg}</span>
               </div>
+            )}
 
-              {/* 모달 검사 리스트 테이블 */}
-              <div className="p-4 overflow-y-auto flex-1">
-                <div className="text-xs font-bold text-slate-500 mb-2">
-                  ※ 각 검사 항목을 클릭하면 세부 규격 및 진단 기록을 확인할 수 있습니다.
+            {selectedDetailCheck.code === 'STEP1_W2' ? (
+              <div className="space-y-3">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <span className="flex items-center gap-1.5 text-sm font-semibold text-slate-800">
+                    <Lightbulb className="w-4 h-4 text-amber-600" />
+                    자동으로 맞춘 상품 {selectedDetailCheck.details.length}개
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleAddAllToDict(selectedDetailCheck.details)}
+                    className={btn.primary}
+                  >
+                    <PlusCircle className="w-4 h-4" />
+                    모두 품목사전에 넣기
+                  </button>
                 </div>
-                <div className="overflow-x-auto border border-slate-200 rounded-lg">
-                  <table className="w-full text-xs text-left text-slate-700">
-                    <thead className="bg-slate-100 text-slate-700 uppercase font-semibold border-b border-slate-200">
-                      <tr>
-                        <th className="px-3 py-2 w-16 text-center">구분</th>
-                        <th className="px-3 py-2 w-20 text-center">코드</th>
-                        <th className="px-3 py-2 w-48">검사 항목명</th>
-                        <th className="px-3 py-2">검사 세부 내용</th>
-                        <th className="px-3 py-2 w-24 text-center">결과</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200 bg-white">
-                      {currentStepChecks.map((item) => (
-                        <tr
-                          key={item.id}
-                          onClick={() => setSelectedDetailCheck(item)}
-                          className={`hover:bg-brand-50/50 cursor-pointer transition-colors ${
-                            item.status === 'FAIL'
-                              ? 'bg-rose-50/30'
-                              : item.status === 'WARNING'
-                              ? 'bg-amber-50/30'
-                              : ''
-                          }`}
-                        >
-                          <td className="px-3 py-2.5 text-center font-bold">
-                            {item.category === 'ERROR' ? (
-                              <span className="px-1.5 py-0.5 text-xs font-extrabold bg-rose-100 text-rose-700 rounded border border-rose-200">
-                                ERROR
-                              </span>
+
+                <div className="space-y-2.5">
+                  {selectedDetailCheck.details.map((dt, idx) => {
+                    const parsed = parseSmartMatchDetail(dt);
+                    if (!parsed) {
+                      return (
+                        <div key={idx} className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-[13px] text-slate-700">{dt}</div>
+                      );
+                    }
+
+                    const isEditingThis = editingRawName === parsed.rawName;
+                    const savedMappedName = savedCustomEditedMap[parsed.rawName];
+                    const isAdded = addedToDictSet.has(parsed.rawName);
+                    const hasCustomText = !!savedMappedName;
+                    const currentMappedName = savedMappedName || parsed.mappedName;
+
+                    return (
+                      <div key={idx} className={`space-y-2 rounded-xl border p-3.5 ${isAdded ? 'border-brand-200 bg-brand-50/50' : 'border-slate-200 bg-white'}`}>
+                        <div className="flex items-center justify-between gap-2 text-[13px] text-slate-600">
+                          <span>받는 사람 <b className="font-semibold text-slate-900">{parsed.recipient}</b></span>
+                          {isAdded ? (
+                            <span className="inline-flex items-center gap-1 rounded-md bg-brand-600 px-2 py-0.5 text-[12px] font-semibold text-white"><Check className="w-3 h-3" />품목사전에 넣었어요</span>
+                          ) : hasCustomText ? (
+                            <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[12px] font-semibold text-slate-700">고침 (아직 안 넣음)</span>
+                          ) : (
+                            <span className="rounded-md bg-amber-50 px-2 py-0.5 text-[12px] font-semibold text-amber-800">{parsed.score}% 비슷함</span>
+                          )}
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-2 text-[13px] sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+                          <div className="rounded-lg border border-slate-200 bg-slate-50 p-2.5">
+                            <div className="text-[12px] text-slate-500">원래 상품명</div>
+                            <div className="break-words font-medium text-slate-800">{parsed.rawName}</div>
+                          </div>
+                          <ArrowRight className="hidden w-4 h-4 text-slate-400 sm:block" />
+                          <div className={`rounded-lg border p-2.5 ${isAdded || hasCustomText ? 'border-brand-200 bg-brand-50' : 'border-slate-200 bg-white'}`}>
+                            <div className="text-[12px] text-slate-500">{isAdded ? '품목사전에 넣은 이름' : hasCustomText ? '고친 이름' : '자동으로 맞춘 이름'}</div>
+                            <div className="break-words font-semibold text-slate-900">{currentMappedName}</div>
+                          </div>
+                        </div>
+
+                        {isEditingThis ? (
+                          <div className="flex items-center gap-2 border-t border-slate-100 pt-2">
+                            <input
+                              type="text"
+                              value={editingVal}
+                              onChange={(e) => setEditingVal(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleSaveEdit(parsed.rawName);
+                                } else if (e.key === 'Escape') {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  setEditingRawName(null);
+                                }
+                              }}
+                              placeholder="바꿀 이름 (Enter 저장, Esc 취소)"
+                              aria-label="바꿀 이름"
+                              className="h-9 min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600/30 focus:border-brand-600"
+                              autoFocus
+                            />
+                            <button type="button" onClick={() => handleSaveEdit(parsed.rawName)} className={`${btn.primary} min-h-9 px-3`}>
+                              <Check className="w-4 h-4" />저장
+                            </button>
+                            <button type="button" onClick={() => setEditingRawName(null)} className={`${btn.secondary} min-h-9 px-3`}>
+                              취소
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-end gap-2 pt-0.5">
+                            {isAdded ? (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingRawName(parsed.rawName);
+                                  setEditingVal(currentMappedName);
+                                }}
+                                className={`${btn.ghost} min-h-8 px-3 text-[13px]`}
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />다시 고치기
+                              </button>
                             ) : (
-                              <span className="px-1.5 py-0.5 text-xs font-extrabold bg-amber-100 text-amber-800 rounded border border-amber-200">
-                                WARN
-                              </span>
-                            )}
-                          </td>
-
-                          <td className="px-3 py-2.5 text-center font-mono font-bold text-slate-600">
-                            {item.code}
-                          </td>
-
-                          <td className="px-3 py-2.5 font-bold text-slate-800">
-                            {item.title}
-                          </td>
-
-                          <td className="px-3 py-2.5 text-slate-600 truncate max-w-xs">
-                            {item.description}
-                          </td>
-
-                          <td className="px-3 py-2.5 text-center">
-                            {getStatusBadge(item.status)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* 모달 푸터 */}
-              <div className="px-5 py-3 border-t border-slate-200 bg-slate-50 flex justify-end">
-                <button
-                  onClick={() => setIsFullListModalOpen(false)}
-                  className="px-4 py-1.5 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 border border-slate-300 rounded-lg transition-colors"
-                >
-                  닫기
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* 4. 세부 로그 모달 팝업 */}
-      <AnimatePresence>
-        {selectedDetailCheck && (
-          <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xs">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-3xl w-full overflow-hidden"
-            >
-              {/* 모달 헤더 */}
-              <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
-                <div className="flex items-center gap-2">
-                  <Info className="w-5 h-5 text-brand-600" />
-                  <h4 className="text-sm font-bold text-slate-800">
-                    검사 항목 세부 진단 결과 [{selectedDetailCheck.code}]
-                  </h4>
-                </div>
-                <button
-                  onClick={() => setSelectedDetailCheck(null)}
-                  className="p-1 text-slate-500 hover:text-slate-700 rounded-lg transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* 모달 바디 */}
-              <div className="p-5 max-h-[70vh] overflow-y-auto space-y-4">
-                <div>
-                  <div className="text-xs font-semibold text-slate-500">검사 항목명</div>
-                  <div className="text-base font-bold text-slate-800 mt-0.5 flex items-center gap-2">
-                    {selectedDetailCheck.code === 'STEP1_W2' && (
-                      <Lightbulb className="w-5 h-5 text-amber-500 shrink-0" />
-                    )}
-                    <span>[{selectedDetailCheck.step}단계] {selectedDetailCheck.title}</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
-                  <span className="text-xs font-medium text-slate-600">진단 상태</span>
-                  <div>{getStatusBadge(selectedDetailCheck.status)}</div>
-                </div>
-
-                <div>
-                  <div className="text-xs font-semibold text-slate-500 mb-1">검사 요구 조건 / 설명</div>
-                  <p className="text-xs text-slate-700 bg-slate-50 p-3 rounded-xl border border-slate-200 leading-relaxed">
-                    {selectedDetailCheck.description}
-                  </p>
-                </div>
-
-                {/* 성공 알림 메세지 */}
-                {editSuccessMsg && (
-                  <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs font-bold text-emerald-800 flex items-center gap-2 animate-fade-in">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>{editSuccessMsg}</span>
-                  </div>
-                )}
-
-                {/* 자동 맞춤 (STEP1_W2) 시각적 카드 / 대조 리스트 */}
-                {selectedDetailCheck.code === 'STEP1_W2' ? (
-                  <div className="space-y-3">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                      <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                        <Lightbulb className="w-4 h-4 text-amber-500" />
-                        자동 매칭 결과 전후 비교 ({selectedDetailCheck.details.length}건)
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => handleAddAllToDict(selectedDetailCheck.details)}
-                        className="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition shadow-xs flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
-                      >
-                        <PlusCircle className="w-3.5 h-3.5" />
-                        Warning 매칭 전체 대치 리스트에 일괄 추가
-                      </button>
-                    </div>
-
-                    <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1">
-                      {selectedDetailCheck.details.map((dt, idx) => {
-                        const parsed = parseSmartMatchDetail(dt);
-                        if (!parsed) {
-                          return (
-                            <div key={idx} className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700">
-                              {dt}
-                            </div>
-                          );
-                        }
-
-                        const isEditingThis = editingRawName === parsed.rawName;
-                        const savedMappedName = savedCustomEditedMap[parsed.rawName];
-                        const isAdded = addedToDictSet.has(parsed.rawName);
-                        const hasCustomText = !!savedMappedName;
-                        const currentMappedName = savedMappedName || parsed.mappedName;
-
-                        return (
-                          <div
-                            key={idx}
-                            className={`p-3.5 border rounded-2xl shadow-2xs space-y-2 transition ${
-                              isAdded
-                                ? 'bg-emerald-50/60 border-emerald-200'
-                                : hasCustomText
-                                ? 'bg-brand-50/40 border-brand-200 hover:border-[#9CC7B5]'
-                                : 'bg-white border-slate-200 hover:border-[#9CC7B5]'
-                            }`}
-                          >
-                            <div className="flex items-center justify-between text-xs text-slate-500 border-b border-slate-100 pb-2">
-                              <span className="font-semibold text-slate-600">
-                                수령인: <strong className="text-slate-800">{parsed.recipient}</strong>
-                              </span>
-                              {isAdded ? (
-                                <span className="px-2.5 py-0.5 font-extrabold bg-emerald-600 text-white rounded-md text-xs flex items-center gap-1 shadow-2xs">
-                                  <Check className="w-3 h-3 text-white" />
-                                  대치 리스트 반영 완료
-                                </span>
-                              ) : hasCustomText ? (
-                                <span className="px-2.5 py-0.5 font-extrabold bg-brand-600 text-white rounded-md text-xs flex items-center gap-1 shadow-2xs">
-                                  글자 수정됨 (미반영)
-                                </span>
-                              ) : (
-                                <span className="px-2 py-0.5 font-bold bg-amber-100 text-amber-800 rounded-md text-xs">
-                                  유사도 {parsed.score}% 일치
-                                </span>
-                              )}
-                            </div>
-
-                            {/* 전후 비교 바 */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-0.5">
-                              <div className="bg-white/80 p-2.5 rounded-xl border border-slate-200">
-                                <div className="text-xs font-bold text-slate-400 mb-0.5"> 원본 상품명</div>
-                                <div className="font-semibold text-slate-800 break-words whitespace-normal leading-snug">
-                                  {parsed.rawName}
-                                </div>
-                              </div>
-
-                              <div className={`p-2.5 rounded-xl border ${
-                                isAdded
-                                  ? 'bg-emerald-100/60 border-emerald-300 text-emerald-950'
-                                  : hasCustomText
-                                  ? 'bg-brand-100/80 border-[#9CC7B5] text-[#0A2A22] font-semibold'
-                                  : 'bg-brand-50/50 border-[#E0EFE8] text-[#0F3A2F]'
-                              }`}>
-                                <div className={`text-xs font-bold mb-0.5 flex items-center gap-1 ${
-                                  isAdded
-                                    ? 'text-emerald-700 font-extrabold'
-                                    : hasCustomText
-                                    ? 'text-brand-700 font-extrabold'
-                                    : 'text-brand-600'
-                                }`}>
-                                  <span>{isAdded ? ' 반영된 대치 정제명' : hasCustomText ? ' 수정한 정제명' : ' 매칭된 정제명'}</span>
-                                </div>
-                                <div className="font-bold break-words whitespace-normal leading-snug">
-                                  {currentMappedName}
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* 직접 수정 / 대치 사전 추가 영역 */}
-                            {isEditingThis ? (
-                              <div className="pt-2 border-t border-slate-100 flex items-center gap-2">
-                                <input
-                                  type="text"
-                                  value={editingVal}
-                                  onChange={(e) => setEditingVal(e.target.value)}
-                                  onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                      e.preventDefault();
-                                      e.stopPropagation();
-                                      handleSaveEdit(parsed.rawName);
-                                    } else if (e.key === 'Escape') {
-                                      e.preventDefault();
-                                      e.stopPropagation();
-                                      setEditingRawName(null);
-                                    }
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setEditingRawName(parsed.rawName);
+                                    setEditingVal(currentMappedName);
                                   }}
-                                  placeholder="새로운 올바른 정제명 입력... (Enter: 저장, ESC: 취소)"
-                                  className="flex-1 text-xs border border-[#9CC7B5] rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-600/20 bg-white font-medium"
-                                  autoFocus
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => handleSaveEdit(parsed.rawName)}
-                                  className="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shrink-0 cursor-pointer shadow-2xs"
+                                  className={`${btn.ghost} min-h-8 px-3 text-[13px]`}
                                 >
-                                  <Check className="w-3.5 h-3.5" />
-                                  저장
+                                  <Edit2 className="w-3.5 h-3.5" />이름 고치기
                                 </button>
                                 <button
                                   type="button"
-                                  onClick={() => setEditingRawName(null)}
-                                  className="px-2.5 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-semibold transition shrink-0 cursor-pointer"
+                                  onClick={() => handleAddToDict(parsed.rawName, currentMappedName)}
+                                  className={`${btn.secondary} min-h-8 px-3 text-[13px]`}
                                 >
-                                  취소
+                                  <Plus className="w-3.5 h-3.5" />품목사전에 넣기
                                 </button>
-                              </div>
-                            ) : (
-                              <div className="pt-1.5 flex items-center justify-end gap-2">
-                                {isAdded ? (
-                                  <div className="flex items-center gap-2">
-                                    <span className="px-2.5 py-1 bg-emerald-100/90 text-emerald-800 border border-emerald-300 rounded-lg text-xs font-extrabold flex items-center gap-1">
-                                      <Check className="w-3.5 h-3.5 text-emerald-600" />
-                                      대치 리스트에 반영됨
-                                    </span>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setEditingRawName(parsed.rawName);
-                                        setEditingVal(currentMappedName);
-                                      }}
-                                      className="px-2 py-1 bg-white hover:bg-slate-100 text-slate-600 border border-slate-300 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1"
-                                    >
-                                      <Edit2 className="w-3 h-3" />
-                                      다시 수정
-                                    </button>
-                                  </div>
-                                ) : (
-                                  <>
-                                    <button
-                                      type="button"
-                                      onClick={() => handleAddToDict(parsed.rawName, currentMappedName)}
-                                      className={`px-2.5 py-1 border rounded-lg text-xs font-bold transition shadow-2xs flex items-center gap-1 cursor-pointer ${
-                                        hasCustomText
-                                          ? 'bg-brand-600 hover:bg-brand-700 text-white border-brand-600'
-                                          : 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-300 hover:border-amber-400'
-                                      }`}
-                                      title="이 매칭 결과를 대치 사전에 추가하여 반영합니다."
-                                    >
-                                      <Plus className={`w-3 h-3 ${hasCustomText ? 'text-white' : 'text-amber-600'}`} />
-                                      대치 리스트에 추가
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setEditingRawName(parsed.rawName);
-                                        setEditingVal(currentMappedName);
-                                      }}
-                                      className="px-2.5 py-1 bg-white hover:bg-brand-50 text-brand-600 border border-brand-200 hover:border-brand-400 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer"
-                                    >
-                                      <Edit2 className="w-3 h-3" />
-                                      직접 고치기
-                                    </button>
-                                  </>
-                                )}
-                              </div>
+                              </>
                             )}
                           </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ) : (
-                  /* 일반 진단 및 세부 로깅 메시지 (라이트 카드 뷰) */
-                  <div>
-                    <div className="text-xs font-bold text-slate-700 mb-2 flex items-center justify-between">
-                      <span>진단 및 세부 로깅 메시지</span>
-                      <span className="text-xs text-slate-500 font-normal">
-                        총 {selectedDetailCheck.details.length}건
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div className="mb-2 flex items-center justify-between text-[13px]">
+                  <span className="font-semibold text-slate-800">자세한 내용</span>
+                  <span className="text-slate-500">{selectedDetailCheck.details.length}건</span>
+                </div>
+                <ul className="space-y-1.5">
+                  {selectedDetailCheck.details.map((dt, idx) => (
+                    <li key={idx} className="flex items-start gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-[13px] leading-relaxed">
+                      <span className="mt-0.5 shrink-0 font-mono text-[11px] text-slate-400">{idx + 1}</span>
+                      <span className={selectedDetailCheck.status === 'FAIL' ? 'text-rose-800' : selectedDetailCheck.status === 'WARNING' ? 'text-amber-900' : 'text-slate-700'}>
+                        {dt}
                       </span>
-                    </div>
-
-                    <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs leading-relaxed space-y-2 max-h-52 overflow-y-auto">
-                      {selectedDetailCheck.details.map((dt, idx) => (
-                        <div key={idx} className="flex items-start gap-2 p-2 bg-white rounded-lg border border-slate-150">
-                          <span className="text-slate-400 font-mono text-xs select-none shrink-0 mt-0.5">[{idx + 1}]</span>
-                          <span
-                            className={`font-medium ${
-                              selectedDetailCheck.status === 'FAIL'
-                                ? 'text-rose-700'
-                                : selectedDetailCheck.status === 'WARNING'
-                                ? 'text-amber-800'
-                                : 'text-emerald-700'
-                            }`}
-                          >
-                            {dt}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                    </li>
+                  ))}
+                </ul>
               </div>
-
-              {/* 모달 푸터 */}
-              <div className="px-5 py-3 border-t border-slate-200 bg-slate-50 flex justify-end">
-                <button
-                  onClick={() => setSelectedDetailCheck(null)}
-                  className="px-4 py-2 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 border border-slate-300 rounded-lg transition-colors"
-                >
-                  닫기
-                </button>
-              </div>
-            </motion.div>
+            )}
           </div>
-        )}
-      </AnimatePresence>
+        </Modal>
+      )}
     </div>
   );
 }

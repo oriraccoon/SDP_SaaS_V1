@@ -1255,8 +1255,13 @@ export default function PlatformSettings({
             if (key === 'courier_col') return activePlatform.courier_col !== undefined ? activePlatform.courier_col : -1;
             return (activePlatform.col_map as any)[key] !== undefined ? (activePlatform.col_map as any)[key] : 0;
           };
+          // 읽는 항목(상품명·받는 사람 등)끼리만 겹치는지 셉니다. 송장·택배사 칸은 '써 넣는 칸'이라 따로 봅니다.
           const usedCount = new Map<number, number>();
-          TARGET_FIELDS.forEach(f => { const c = colOf(f.key); if (c >= 0) usedCount.set(c, (usedCount.get(c) || 0) + 1); });
+          TARGET_FIELDS.forEach(f => {
+            if (f.key === 'tracking_col' || f.key === 'courier_col') return;
+            const c = colOf(f.key); if (c >= 0) usedCount.set(c, (usedCount.get(c) || 0) + 1);
+          });
+          const readFieldLabelAt = (c: number) => TARGET_FIELDS.find(f => f.key !== 'tracking_col' && f.key !== 'courier_col' && colOf(f.key) === c)?.label;
           const openNewPlatformModal = () => {
             const autoName = activeFile.fileName.replace(/\.[^/.]+$/, "").replace(/[0-9_\-\s]/g, " ").trim() || "신규 쇼핑몰";
             const autoKey = activeFile.fileName.replace(/\.[^/.]+$/, "").split(/[_ -]/)[0] || "";
@@ -1380,7 +1385,14 @@ export default function PlatformSettings({
                         const headerText = assigned && rawHeaders[idx] !== undefined ? String(rawHeaders[idx]).trim() : '';
                         const sample = assigned && sampleRow[idx] !== undefined ? String(sampleRow[idx]).trim() : '';
                         const isWriteCol = field.key === 'tracking_col' || field.key === 'courier_col';
-                        const warn = !assigned ? '' : !headerText ? '칸 이름이 없어요' : (usedCount.get(idx) || 0) > 1 ? '다른 항목과 같은 칸이에요' : '';
+                        const overlapsRead = isWriteCol && assigned ? readFieldLabelAt(idx) : undefined;
+                        const looksLikeBuyer = (field.key === '수령인' || field.key === '연락처') && /주문자|구매자|주문인/.test(headerText);
+                        const warn = !assigned ? ''
+                          : !headerText ? '칸 이름이 없어요'
+                          : isWriteCol ? (overlapsRead ? `'${overlapsRead}' 칸과 같아요. 송장을 붙인 파일에서 이 칸 내용이 바뀌어요` : '')
+                          : (usedCount.get(idx) || 0) > 1 ? '다른 항목과 같은 칸이에요'
+                          : looksLikeBuyer ? '주문한 사람 칸 같아요. 받는 사람 칸이 맞는지 예시를 보세요'
+                          : '';
                         return (
                           <tr key={field.key} className={`max-sm:grid max-sm:grid-cols-1 max-sm:gap-1.5 max-sm:px-4 max-sm:py-3 ${warn ? 'bg-amber-50/70' : ''}`}>
                             <td className="py-3 px-4 align-top max-sm:p-0">

@@ -151,7 +151,7 @@ export default function ExcelPreviewModal({
           <div className="flex items-center gap-2 overflow-x-auto py-0.5">
             <span className="text-xs font-bold text-slate-400 shrink-0 flex items-center gap-1 mr-1">
               <Layers className="w-3.5 h-3.5 text-emerald-400" />
-              플랫폼 선택:
+              파일:
             </span>
 
             {files.map((file, fIdx) => {
@@ -184,7 +184,7 @@ export default function ExcelPreviewModal({
               className="px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 rounded-lg text-xs font-semibold transition shrink-0 flex items-center gap-1.5 cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
-              {currentFile.platformName || '선택 플랫폼'} 엑셀 다운로드
+              이 파일 받기
             </button>
           )}
         </div>
@@ -208,7 +208,7 @@ export default function ExcelPreviewModal({
             <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="시트 내부 모든 셀 데이터 검색..."
+              placeholder="이 시트에서 찾기"
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
@@ -327,7 +327,7 @@ export default function ExcelPreviewModal({
                                   </span>
                                 )
                               ) : (
-                                cellStr || <span className="text-slate-300 font-mono text-xs italic">N/A</span>
+                                cellStr
                               )}
                             </td>
                           );
@@ -357,7 +357,7 @@ export default function ExcelPreviewModal({
           <div className="flex items-center gap-1 overflow-x-auto max-w-3xl py-0.5">
             <span className="text-xs font-bold text-slate-700 mr-2 flex items-center gap-1 bg-slate-300 px-2 py-1 rounded">
               <Table className="w-3.5 h-3.5 text-[#107c41]" />
-              선택 파일 시트:
+              시트:
             </span>
 
             {currentSheets.map((sheet, sIdx) => {

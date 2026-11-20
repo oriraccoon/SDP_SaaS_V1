@@ -25,6 +25,47 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/invites/$(email)).data;
     }
 
+    // ---- 회원 문서(users/{uid}) 검사용 ----
+    // 회원 문서 필드 (앱이 쓰는 것):
+    //   email: string (로그인 이메일) / lastLoginAt: string (ISO 시각)
+    //   expiresAt: string|null, features: map, blocked: bool, deletedAt: string|null  (관리자 또는 초대만)
+    //   uploadLimit: int|null (월 업로드 한도, 없거나 null이면 제한 없음. 본인은 처음 한 번 5만 설정)
+    //   usage: { month: 'YYYY-MM', count: int } (이번 달 업로드 사용량. 본인은 늘리기만 가능)
+
+    // 시각을 'YYYY-MM' 달 키로 바꿉니다.
+    function monthKey(t) {
+      let m = t.month();
+      return string(t.year()) + '-' + (m < 10 ? '0' + string(m) : string(m));
+    }
+
+    // 앱은 사용자 컴퓨터 시각으로 달을 정합니다. 국제 표준시(UTC)와 한국 시각(UTC+9)의 이번 달을 허용합니다.
+    function isThisMonth(key) {
+      return key == monthKey(request.time) || key == monthKey(request.time + duration.value(9, 'h'));
+    }
+
+    // 로그인 시각은 짧은 글자여야 합니다.
+    function isValidLoginAt(data) {
+      return !('lastLoginAt' in data) || (data.lastLoginAt is string && data.lastLoginAt.size() <= 40);
+    }
+
+    // 업로드 사용량: 이번 달 기록이고, 한도를 넘지 않고, 같은 달이면 늘어나기만 합니다.
+    // (줄이거나 0으로 되돌리거나 지난달·다음 달로 바꾸는 것은 막습니다)
+    function isValidUsageIncrease() {
+      let before = resource.data.get('usage', null);
+      let u = request.resource.data.get('usage', null);
+      let limit = request.resource.data.get('uploadLimit', null);
+      return u is map
+        && u.keys().hasOnly(['month', 'count']) && u.keys().hasAll(['month', 'count'])
+        && u.month is string && isThisMonth(u.month)
+        && u.count is int && u.count >= 1 && u.count <= 100000
+        && (limit == null || u.count <= limit)
+        && (
+          !(before is map)
+          || (before.get('month', '') == u.month && u.count > before.get('count', 0))
+          || (before.get('month', '') != u.month && u.month > before.get('month', ''))
+        );
+    }
+
     // 회원 기본 정보: 이메일, 마지막 접속, 구독 만료일, 정지 여부, 기능 설정
     match /users/{uid} {
       allow read: if isSignedIn() && (request.auth.uid == uid || isAdmin());
@@ -33,6 +74,7 @@ service cloud.firestore {
       allow create: if isSignedIn() && request.auth.uid == uid
         && request.auth.token.email_verified == true
         && request.resource.data.email == request.auth.token.email
+        && isValidLoginAt(request.resource.data)
         && (
           request.resource.data.keys().hasOnly(['email', 'lastLoginAt'])
           || (
@@ -45,7 +87,10 @@ service cloud.firestore {
         );
       // 이미 가입한 계정도, 본인 이메일로 된 초대가 있으면 초대 설정(기간·기능·정지)을 한 번 받을 수 있습니다.
       allow update: if (isSignedIn() && request.auth.uid == uid
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['email', 'lastLoginAt']))
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['email', 'lastLoginAt'])
+          && (request.resource.data.get('email', null) == resource.data.get('email', null)
+            || request.resource.data.email == request.auth.token.email)
+          && isValidLoginAt(request.resource.data))
         || (isSignedIn() && request.auth.uid == uid
           && request.auth.token.email_verified == true
           && request.resource.data.email == request.auth.token.email
@@ -54,10 +99,13 @@ service cloud.firestore {
           && invite(request.resource.data.email).expiresAt == request.resource.data.expiresAt
           && invite(request.resource.data.email).features == request.resource.data.features
           && invite(request.resource.data.email).blocked == request.resource.data.blocked)
-        // 본인은 이번 달 업로드 사용량(usage)을 기록할 수 있고, 무료 플랜 한도(5회)만 스스로 설정할 수 있습니다.
+        // 본인은 이번 달 업로드 사용량(usage)을 늘리기만 할 수 있습니다.
+        // 무료 플랜 한도(5회)는 한도가 아직 없을 때 한 번만 스스로 설정할 수 있습니다 (관리자가 정한 한도는 못 바꿈).
         || (isSignedIn() && request.auth.uid == uid
-          && (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['usage'])
+          && ((request.resource.data.diff(resource.data).affectedKeys().hasOnly(['usage'])
+              && isValidUsageIncrease())
             || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['uploadLimit'])
+              && !('uploadLimit' in resource.data)
               && request.resource.data.uploadLimit == 5)))
         || isAdmin();
       // 관리자는 휴지통에서 영구 삭제할 때 회원 정보를 지울 수 있습니다.

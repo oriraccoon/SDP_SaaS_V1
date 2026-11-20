@@ -234,11 +234,11 @@ export default function App() {
     parsed: ProductMapping[];
   } | null>(null);
 
-  const [activeTab, setActiveTab] = useState<'process' | 'analytics'>('process');
+  const [activeTab, setActiveTab] = useState<'process' | 'analytics' | 'products' | 'platforms'>('process');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => typeof window === 'undefined' || window.innerWidth >= 768);
-  const [settingsSection, setSettingsSection] = useState<'platforms' | 'products' | 'backup' | 'account'>('platforms');
-  const openSettings = (section: 'platforms' | 'products' | 'backup' | 'account') => {
+  const [settingsSection, setSettingsSection] = useState<'backup' | 'account'>('backup');
+  const openSettings = (section: 'backup' | 'account') => {
     setSettingsSection(section);
     setIsSettingsOpen(true);
   };
@@ -2217,15 +2217,16 @@ export default function App() {
           {[
             { key: 'process', label: '주문정리', icon: <Layers className="w-5 h-5 shrink-0" />, selected: activeTab === 'process' && !isSettingsOpen, show: true, action: () => setActiveTab('process') },
             { key: 'analytics', label: '리포트', icon: <BarChart3 className="w-5 h-5 shrink-0" />, selected: activeTab === 'analytics' && !isSettingsOpen, show: features.analytics, action: () => setActiveTab('analytics') },
-            { key: 'products', label: '품목사전', icon: <Grid className="w-5 h-5 shrink-0" />, selected: isSettingsOpen && settingsSection === 'products', show: true, action: () => openSettings('products') },
-            { key: 'settings', label: '설정', icon: <Settings className="w-5 h-5 shrink-0" />, selected: isSettingsOpen && settingsSection !== 'products', show: true, action: () => openSettings('platforms') },
+            { key: 'products', label: '품목사전', icon: <ClipboardList className="w-5 h-5 shrink-0" />, selected: activeTab === 'products' && !isSettingsOpen, show: true, action: () => setActiveTab('products') },
+            { key: 'platforms', label: '플랫폼 설정', icon: <Grid className="w-5 h-5 shrink-0" />, selected: activeTab === 'platforms' && !isSettingsOpen, show: true, action: () => setActiveTab('platforms') },
+            { key: 'settings', label: '설정', icon: <Settings className="w-5 h-5 shrink-0" />, selected: isSettingsOpen, show: true, action: () => openSettings('backup') },
             { key: 'support', label: '문의하기', icon: <MessageSquare className="w-5 h-5 shrink-0" />, selected: false, show: true, action: () => setIsFeedbackOpen(true) },
           ]
             .filter((item) => item.show)
             .map((item) => (
               <React.Fragment key={item.key}>
                 {/* 화면을 바꾸는 메뉴와 창을 여는 메뉴 사이 구분선 */}
-                {item.key === 'products' && <div className="my-2 border-t border-slate-200" aria-hidden="true" />}
+                {item.key === 'settings' && <div className="my-2 border-t border-slate-200" aria-hidden="true" />}
                 <button
                   onClick={() => {
                     item.action();
@@ -2514,7 +2515,7 @@ export default function App() {
                         <button
                           onClick={() => {
                             setPlatformMatrixType('platform');
-                            openSettings('platforms');
+                            setActiveTab('platforms');
                           }}
                           className="text-xs bg-brand-50 hover:bg-brand-100 text-brand-700 font-bold px-2.5 py-1 rounded-lg border border-brand-200 transition flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
                         >
@@ -2822,7 +2823,7 @@ export default function App() {
                         <button
                           onClick={() => {
                             setPlatformMatrixType('courier');
-                            openSettings('platforms');
+                            setActiveTab('platforms');
                           }}
                           className="text-xs bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold px-2.5 py-1 rounded-lg border border-amber-200 transition flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
                         >
@@ -2975,7 +2976,7 @@ export default function App() {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 12 }}
-                className="flex max-h-[88vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl"
+                className="flex h-[min(680px,88vh)] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
@@ -2990,11 +2991,9 @@ export default function App() {
                 </div>
 
                 <div className="flex min-h-0 flex-1 flex-col md:flex-row">
-                  <aside className="shrink-0 border-b border-slate-200 p-3 md:w-56 md:border-b-0 md:border-r">
+                  <aside className="shrink-0 border-b border-slate-200 p-3 md:w-44 md:border-b-0 md:border-r">
                     <div className="space-y-1">
                   {([
-                    ['platforms', '플랫폼 설정'],
-                    ['products', '품목사전'],
                     ['backup', '설정 백업'],
                     ['account', '계정'],
                   ] as const).map(([key, label]) => (
@@ -3012,60 +3011,12 @@ export default function App() {
                   </aside>
 
                   <section className="min-w-0 flex-1 overflow-y-auto bg-slate-50 p-5">
-            {/* 탭 2: 플랫폼 관리 */}
-            {settingsSection === 'platforms' && (
-              <motion.div
-                key="platforms-tab"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-              >
-                <PlatformSettings 
-                  platforms={platforms} 
-                  onChange={(updatedPlatforms) => {
-                    setPlatforms(updatedPlatforms);
-                    if (orderFiles.length > 0) {
-                      processMultipleOrderFiles(orderFiles, customFilePlatforms, decryptedFilesCache, productMappings, updatedPlatforms);
-                    }
-                  }} 
-                  couriers={couriers}
-                  onCouriersChange={setCouriers}
-                  parsedFiles={orderParseResult?.parsedFiles}
-                  parsedTrackingFiles={parsedTrackingFiles}
-                  onFilePlatformChange={handleFilePlatformChange}
-                  onFileCourierChange={handleTrackingFileCourierChange}
-                  onNavigateToProcessTab={() => setActiveTab('process')}
-                  onReProcessOrders={() => {
-                    if (orderFiles.length > 0) {
-                      processMultipleOrderFiles(orderFiles, customFilePlatforms, decryptedFilesCache, productMappings, platforms);
-                    }
-                  }}
-                  initialMatrixType={platformMatrixType}
-                />
-              </motion.div>
-            )}
-
-            {/* 탭 3: 품목 정제 사전 */}
-            {settingsSection === 'products' && (
-              <motion.div
-                key="products-tab"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-              >
-                <ProductMappingList 
-                  mappings={productMappings} 
-                  onChange={setProductMappings} 
-                />
-              </motion.div>
-            )}
-
             {settingsSection === 'backup' && (
               <motion.div
                 key="backup-tab"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
                 className="max-w-3xl mx-auto"
               >
                 <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 space-y-6">
@@ -3274,7 +3225,56 @@ export default function App() {
             </motion.div>
           )}
 
-          {/* 탭 4: 설정 백업/동기화 */}
+          {/* 화면: 플랫폼 설정 (쇼핑몰·택배사 엑셀 열 위치) */}
+          {activeTab === 'platforms' && (
+            <motion.div
+              key="platforms-tab"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
+            >
+              <PlatformSettings 
+                platforms={platforms} 
+                onChange={(updatedPlatforms) => {
+                  setPlatforms(updatedPlatforms);
+                  if (orderFiles.length > 0) {
+                    processMultipleOrderFiles(orderFiles, customFilePlatforms, decryptedFilesCache, productMappings, updatedPlatforms);
+                  }
+                }} 
+                couriers={couriers}
+                onCouriersChange={setCouriers}
+                parsedFiles={orderParseResult?.parsedFiles}
+                parsedTrackingFiles={parsedTrackingFiles}
+                onFilePlatformChange={handleFilePlatformChange}
+                onFileCourierChange={handleTrackingFileCourierChange}
+                onNavigateToProcessTab={() => setActiveTab('process')}
+                onReProcessOrders={() => {
+                  if (orderFiles.length > 0) {
+                    processMultipleOrderFiles(orderFiles, customFilePlatforms, decryptedFilesCache, productMappings, platforms);
+                  }
+                }}
+                initialMatrixType={platformMatrixType}
+              />
+            </motion.div>
+          )}
+
+          {/* 화면: 품목사전 */}
+          {activeTab === 'products' && (
+            <motion.div
+              key="products-tab"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
+            >
+              <ProductMappingList 
+                mappings={productMappings} 
+                onChange={setProductMappings} 
+              />
+            </motion.div>
+          )}
+
         </AnimatePresence>
         </main>
       </div>

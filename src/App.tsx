@@ -1159,14 +1159,14 @@ export default function App() {
 
     setPreviewModal({
       isOpen: true,
-      title: "정리된 파일 미리 보기 (2개)",
-      subtitle: "다운로드되는 실제 엑셀 파일 및 시트 구조와 100% 동일한 미리보기 화면입니다.",
+      title: "정리된 파일 미리 보기",
+      subtitle: "받게 될 파일과 똑같은 내용이에요. 받기 전에 받는 사람과 수량을 한 번 훑어보세요.",
       files: [summaryReportFile, productSortedFile],
       onDownloadAll: () => {
         setPreviewModal(prev => ({ ...prev, isOpen: false }));
         handleDownloadAllProcessed();
       },
-      downloadAllButtonText: "두 파일 한 번에 모두 다운로드"
+      downloadAllButtonText: "두 파일 한 번에 받기"
     });
   };
 
@@ -1363,13 +1363,13 @@ export default function App() {
     setPreviewModal({
       isOpen: true,
       title: `송장 붙인 파일 미리 보기`,
-      subtitle: "입력된 원본 쇼핑몰 양식의 행 순서와 구성을 100% 유지한 실제 출력 엑셀 파일 미리보기입니다.",
+      subtitle: "쇼핑몰에서 받은 파일 모양 그대로 송장 번호만 붙였어요. 쇼핑몰 사이트에 이대로 올리면 돼요.",
       files: previewFiles,
       onDownloadAll: () => {
         setPreviewModal(prev => ({ ...prev, isOpen: false }));
         handleDownloadFinalTracking();
       },
-      downloadAllButtonText: previewFiles.length > 1 ? "모든 최종 배송엑셀 파일 한 번에 다운로드" : "최종 배송엑셀 파일 다운로드"
+      downloadAllButtonText: previewFiles.length > 1 ? "모든 파일 한 번에 받기" : "이 파일 받기"
     });
   };
 

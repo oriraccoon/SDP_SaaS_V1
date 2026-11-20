@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { X, Search, Download, FileSpreadsheet, ChevronLeft, ChevronRight, CheckCircle2, Table, Layers, Lightbulb } from 'lucide-react';
+import { Search, Download, ChevronLeft, ChevronRight, Lightbulb, Truck, FileText } from 'lucide-react';
+import Modal, { btn } from './ui/Modal';
 
 export interface ExcelPreviewSheet {
   sheetName: string;
@@ -41,15 +42,16 @@ export default function ExcelPreviewModal({
   isOpen,
   onClose,
   title,
-  subtitle = "실제 다운로드되는 엑셀 파일과 동일한 구조로 시트별 미리보기를 제공합니다.",
+  subtitle = "받게 될 파일과 똑같은 내용이에요. 받기 전에 받는 사람과 수량을 한 번 훑어보세요.",
   files,
   onDownloadAll,
-  downloadAllButtonText = "전체 파일 다운로드"
+  downloadAllButtonText = "모두 받기"
 }: ExcelPreviewModalProps) {
   const [activeFileIndex, setActiveFileIndex] = useState(0);
   const [activeSheetIndex, setActiveSheetIndex] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [mobileTable, setMobileTable] = useState(false);
   const pageSize = 50;
 
   // 모달 오픈 시 또는 files 변경 시 상태 리셋
@@ -110,102 +112,135 @@ export default function ExcelPreviewModal({
 
   if (!isOpen || !files || files.length === 0 || !currentFile || !currentSheet) return null;
 
+  // 파일 카드에 보일 쉬운 이름 (파일 이름은 그 아래 작게)
+  const friendlyName = (file: ExcelPreviewFile) => {
+    if (file.fileName.includes('품목별정렬')) return '택배사에 넣을 파일';
+    if (file.fileName.includes('요약보고서')) return '상품 준비용 보고서';
+    return file.platformName || file.fileName;
+  };
+  const fileMeta = (file: ExcelPreviewFile) => {
+    const sheets = file.sheets || [];
+    const rowsText = sheets.length > 1 ? `시트 ${sheets.length}개` : `${sheets[0]?.rows.length ?? 0}줄`;
+    return `${file.fileName} · ${rowsText}`;
+  };
+
+  // 휴대폰 카드 보기: 받는 사람 이름이 들어 있는 칸을 카드 제목으로 씁니다
+  const nameColIdx = currentSheet.columns.findIndex(c => /수령인|받는\s*사람|받는분|수취인|주문자/.test(String(c)));
+  const matchBadge = (v: string) =>
+    v === 'exact' ? <span className="rounded-md bg-brand-50 px-1.5 py-0.5 text-[12px] font-semibold text-brand-700">정확히 맞음</span>
+    : v === 'soft' ? <span className="rounded-md bg-amber-50 px-1.5 py-0.5 text-[12px] font-semibold text-amber-800">비슷하게 맞음</span>
+    : <span className="rounded-md bg-rose-50 px-1.5 py-0.5 text-[12px] font-semibold text-rose-700">못 맞춤</span>;
+  const isBadge = (v: string) => v === 'exact' || v === 'soft' || v === 'unmatched';
+
   return (
-    <div className="fixed inset-0 bg-black/75 backdrop-blur-xs flex items-center justify-center z-50 p-2 sm:p-5 animate-fade-in">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-7xl h-[92vh] flex flex-col overflow-hidden border border-slate-300 font-sans">
-        
-        {/* Microsoft Excel 스타일 그린 타이틀 바 */}
-        <div className="bg-[#107c41] text-white px-5 py-3 flex items-center justify-between shrink-0 shadow-md">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-white/10 rounded-lg backdrop-blur-xs text-white border border-white/20">
-              <FileSpreadsheet className="w-6 h-6" />
-            </div>
-            <div>
-              <h2 className="text-base font-bold tracking-tight">{title}</h2>
-              <p className="text-xs text-emerald-100/80 mt-0.5">{subtitle}</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {onDownloadAll && (
+    <Modal
+      onClose={onClose}
+      title={title}
+      description={subtitle}
+      size="full"
+      flushBody
+      closeOnEsc={false}
+      footerStart={
+        <div className="flex items-center gap-2">
+          <span>{totalRows}줄{totalPages > 1 ? ` · ${safePage}/${totalPages}쪽` : ''}</span>
+          {totalPages > 1 && (
+            <span className="inline-flex items-center gap-0.5">
               <button
-                onClick={onDownloadAll}
-                className="px-4 py-2 bg-white text-[#107c41] hover:bg-emerald-50 rounded-xl text-xs font-bold transition shadow-md flex items-center gap-2 cursor-pointer border border-emerald-200"
+                type="button"
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={safePage <= 1}
+                className="grid h-8 w-8 place-items-center rounded-md text-slate-600 hover:bg-slate-100 disabled:opacity-30 cursor-pointer"
+                aria-label="이전 쪽"
               >
-                <Download className="w-4 h-4" />
-                {downloadAllButtonText}
+                <ChevronLeft className="w-4 h-4" />
               </button>
-            )}
-            <button
-              onClick={onClose}
-              className="p-1.5 text-emerald-100 hover:text-white hover:bg-emerald-800/80 rounded-lg transition cursor-pointer"
-              title="닫기"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-
-        {/* 1단계: 생성되는 엑셀 파일 선택 탭 (플랫폼 이름 중심) */}
-        <div className="bg-slate-800 text-slate-200 px-4 py-2.5 flex items-center justify-between gap-3 shrink-0 border-b border-slate-700">
-          <div className="flex items-center gap-2 overflow-x-auto py-0.5">
-            <span className="text-xs font-bold text-slate-400 shrink-0 flex items-center gap-1 mr-1">
-              <Layers className="w-3.5 h-3.5 text-emerald-400" />
-              파일:
+              <button
+                type="button"
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={safePage >= totalPages}
+                className="grid h-8 w-8 place-items-center rounded-md text-slate-600 hover:bg-slate-100 disabled:opacity-30 cursor-pointer"
+                aria-label="다음 쪽"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
             </span>
-
+          )}
+        </div>
+      }
+      footer={
+        <>
+          {currentFile.onDownload && (files.length > 1 || !onDownloadAll) && (
+            <button type="button" onClick={currentFile.onDownload} className={btn.secondary}>
+              <Download className="w-4 h-4" />이 파일 받기
+            </button>
+          )}
+          {onDownloadAll && (
+            <button type="button" onClick={onDownloadAll} className={btn.primary}>
+              <Download className="w-4 h-4" />{downloadAllButtonText}
+            </button>
+          )}
+        </>
+      }
+    >
+      <div className="flex h-full min-h-0 flex-col">
+        {/* 파일 고르기 */}
+        {files.length > 1 && (
+          <div className="grid shrink-0 grid-cols-2 gap-2 px-5 sm:gap-3 sm:px-6" role="tablist" aria-label="파일 고르기">
             {files.map((file, fIdx) => {
               const isSelected = activeFileIndex === fIdx;
-              const displayName = file.platformName || file.fileName;
+              const isCourier = file.fileName.includes('품목별정렬');
               return (
                 <button
                   key={fIdx}
+                  type="button"
+                  role="tab"
+                  aria-selected={isSelected}
                   onClick={() => {
                     setActiveFileIndex(fIdx);
                     setActiveSheetIndex(0);
                     setCurrentPage(1);
                   }}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-2 cursor-pointer whitespace-nowrap ${
-                    isSelected
-                      ? 'bg-emerald-600 text-white shadow-md ring-2 ring-emerald-400/40'
-                      : 'bg-slate-700/80 text-slate-300 hover:bg-slate-700 hover:text-white'
+                  className={`min-w-0 rounded-xl px-3 py-2.5 text-left transition cursor-pointer sm:px-4 sm:py-3 ${
+                    isSelected ? 'border-2 border-brand-600 bg-brand-50' : 'border border-slate-200 bg-white hover:bg-slate-50'
                   }`}
                 >
-                  <FileSpreadsheet className={`w-3.5 h-3.5 ${isSelected ? 'text-white' : 'text-slate-400'}`} />
-                  <span className="text-sm font-extrabold">{displayName}</span>
+                  <div className={`flex items-center gap-2 text-[13px] font-semibold sm:text-sm ${isSelected ? 'text-brand-800' : 'text-slate-800'}`}>
+                    {isCourier ? <Truck className="hidden w-4 h-4 shrink-0 sm:block" /> : <FileText className="hidden w-4 h-4 shrink-0 sm:block" />}
+                    <span className="truncate">{friendlyName(file)}</span>
+                  </div>
+                  <div className="mt-0.5 truncate text-[12px] text-slate-600 sm:text-[13px]">{fileMeta(file)}</div>
                 </button>
               );
             })}
           </div>
+        )}
 
-          {currentFile.onDownload && (
-            <button
-              onClick={currentFile.onDownload}
-              className="px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 rounded-lg text-xs font-semibold transition shrink-0 flex items-center gap-1.5 cursor-pointer"
-            >
-              <Download className="w-3.5 h-3.5" />
-              이 파일 받기
-            </button>
-          )}
-        </div>
-
-        {/* 2단계: 현재 선택된 플랫폼 서브 정보 및 검색 서브툴바 */}
-        <div className="bg-slate-100 border-b border-slate-200 px-4 py-2 flex flex-col sm:flex-row items-center justify-between gap-2 shrink-0">
-          
-          <div className="flex items-center gap-2 text-xs text-slate-700 font-medium">
-            <span className="bg-emerald-100 text-emerald-900 font-extrabold px-2.5 py-1 rounded-md text-xs flex items-center gap-1 border border-emerald-300">
-              <Table className="w-3.5 h-3.5 text-emerald-700" />
-              {currentFile.platformName ? `${currentFile.platformName} (${currentFile.fileName})` : currentFile.fileName}
-            </span>
-            <span className="text-slate-400">|</span>
-            <span className="text-slate-600 truncate max-w-md">
-              시트: <strong className="text-slate-900 font-bold">{currentSheet.sheetName}</strong> (총 {currentSheet.rows.length}행)
-            </span>
+        {/* 시트 고르기 + 찾기 */}
+        <div className="mt-3 flex shrink-0 flex-col gap-2 border-y border-slate-200 bg-slate-50 px-5 py-2.5 sm:mt-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          <div className="flex items-center gap-1.5 overflow-x-auto text-[13px]">
+            <span className="mr-1 shrink-0 text-slate-500">시트</span>
+            {currentSheets.map((sheet, sIdx) => {
+              const isActive = activeSheetIndex === sIdx;
+              return (
+                <button
+                  key={sIdx}
+                  type="button"
+                  onClick={() => {
+                    setActiveSheetIndex(sIdx);
+                    setCurrentPage(1);
+                  }}
+                  className={`shrink-0 whitespace-nowrap rounded-md px-2.5 py-1 transition cursor-pointer ${
+                    isActive ? 'border border-slate-300 bg-white font-semibold text-slate-900 shadow-xs' : 'text-slate-600 hover:bg-white'
+                  }`}
+                >
+                  {sheet.sheetName} <span className="font-normal text-slate-500">{sheet.rows.length}줄</span>
+                </button>
+              );
+            })}
           </div>
-
-          {/* 실시간 셀 데이터 검색 */}
-          <div className="relative w-full sm:w-72">
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <label className="relative block w-full sm:w-72">
+            <span className="sr-only">이 시트에서 찾기</span>
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder="이 시트에서 찾기"
@@ -225,199 +260,111 @@ export default function ExcelPreviewModal({
                   (e.target as HTMLInputElement).blur();
                 }
               }}
-              className="w-full pl-8 pr-3 py-1 text-xs bg-white border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#107c41] transition"
+              className="h-9 w-full rounded-lg border border-slate-300 bg-white pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600/30 focus:border-brand-600"
             />
-          </div>
-
+          </label>
         </div>
 
-        {/* 보조 옵션/단위 확장 감지 알림 배너 */}
+        {/* 옵션이 여러 칸에 나뉜 파일 안내 */}
         {currentFile.secondaryOptionColsInfo && currentFile.secondaryOptionColsInfo.length > 0 && (
-          <div className="bg-purple-50/90 border-b border-purple-200 px-4 py-2 flex items-center justify-between gap-3 text-xs shrink-0">
-            <div className="flex items-center gap-2 text-purple-950 font-bold">
-              <Lightbulb className="w-4 h-4 text-purple-600 shrink-0" />
-              <span>
-                스마트 보조 규격/단위 열 확장 감지됨 ({currentFile.secondaryOptionColsInfo.length}개):
-                {" "}
-                <span className="text-purple-800 font-normal">
-                  {currentFile.secondaryOptionColsInfo.map(s => `${s.letter}열 [${s.headerName}]`).join(', ')} 이(가) 메인 [용량/옵션] 정보 뒤에 실시간으로 자동 병합되었습니다.
-                </span>
-              </span>
-            </div>
-            <span className="px-2 py-0.5 bg-purple-200 text-purple-900 font-extrabold text-xs rounded shrink-0">
-              실시간 자동 결합
+          <div className="mx-5 mt-3 flex shrink-0 items-start gap-2 rounded-lg bg-brand-50 px-3 py-2 text-[13px] text-brand-900 sm:mx-6">
+            <Lightbulb className="mt-0.5 w-4 h-4 shrink-0 text-brand-700" />
+            <span>
+              옵션이 여러 칸에 나뉘어 있어서 {currentFile.secondaryOptionColsInfo.map(s => `${s.letter}열(${s.headerName})`).join(', ')}을 옵션·용량 뒤에 붙였어요.
             </span>
           </div>
         )}
 
-        {/* 엑셀 그리드 메인 워크시트 영역 */}
-        <div className="flex-1 overflow-auto bg-slate-200 p-2 relative">
-          <div className="bg-white border border-slate-300 shadow-inner h-full flex flex-col">
-            <div className="overflow-auto flex-1">
-              <table className="w-full text-xs border-collapse font-sans text-slate-800">
-                
-                {/* 엑셀 열 라벨 (A, B, C, D...) 및 실제 컬럼명 2열 헤더 */}
-                <thead className="sticky top-0 z-20 shadow-xs">
-                  {/* 1행: 엑셀 알파벳 열 헤더 */}
-                  <tr className="bg-slate-100 text-slate-500 font-mono text-xs select-none border-b border-slate-300">
-                    <th className="w-12 bg-slate-200 border-r border-slate-300 py-1 text-center font-bold text-slate-600">
-                      #
-                    </th>
-                    {currentSheet.columns.map((_, cIdx) => (
-                      <th key={cIdx} className="border-r border-slate-300 px-3 py-1 text-center font-semibold bg-slate-100">
-                        {getExcelColumnLabel(cIdx)}
-                      </th>
-                    ))}
-                  </tr>
-
-                  {/* 2행: 실제 데이터 컬럼명 헤더 */}
-                  <tr className="bg-slate-800 text-white font-bold select-none border-b-2 border-[#107c41]">
-                    <th className="w-12 bg-slate-900 border-r border-slate-700 py-2 text-center font-mono text-xs text-slate-400">
-                      #
-                    </th>
-                    {currentSheet.columns.map((col, cIdx) => (
-                      <th
-                        key={cIdx}
-                        className="border-r border-slate-700 px-3 py-2 text-left whitespace-nowrap text-xs tracking-tight"
-                      >
-                        {col}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-
-                {/* 엑셀 데이터 셀 바디 */}
-                <tbody className="divide-y divide-slate-200 font-normal">
-                  {paginatedRows.map((row, rIdx) => {
-                    const globalRowIndex = (safePage - 1) * pageSize + rIdx + 1;
+        {/* 휴대폰: 줄마다 카드 */}
+        <div className={`${mobileTable ? 'hidden' : 'block'} min-h-0 flex-1 space-y-2 overflow-y-auto bg-slate-50 px-5 py-3 sm:hidden`}>
+          {paginatedRows.map((row, rIdx) => {
+            const globalRowIndex = (safePage - 1) * pageSize + rIdx + 1;
+            const titleCell = nameColIdx >= 0 ? row[nameColIdx] : row[0];
+            return (
+              <div key={rIdx} className="rounded-xl border border-slate-200 bg-white p-3 text-[13px]">
+                <div className="flex items-center justify-between gap-2">
+                  <b className="truncate text-sm text-slate-900">{titleCell !== null && titleCell !== undefined && String(titleCell) !== '' ? String(titleCell) : `${globalRowIndex}번째 줄`}</b>
+                  <span className="shrink-0 text-slate-500">{globalRowIndex}번째</span>
+                </div>
+                <dl className="mt-1.5 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5">
+                  {row.map((cell, cIdx) => {
+                    if (cIdx === nameColIdx) return null;
+                    const v = cell !== null && cell !== undefined ? String(cell) : '';
+                    if (!v) return null;
                     return (
-                      <tr key={rIdx} className="hover:bg-emerald-50/50 transition odd:bg-white even:bg-slate-50/80">
-                        
-                        {/* 엑셀 행 번호 (1, 2, 3...) */}
-                        <td className="px-2 py-1.5 text-center text-slate-500 font-mono text-xs bg-slate-100 border-r border-slate-300 select-none font-medium">
-                          {globalRowIndex}
-                        </td>
-
-                        {/* 셀 데이터 */}
-                        {row.map((cell, cIdx) => {
-                          const cellStr = cell !== null && cell !== undefined ? String(cell) : '';
-                          const isNumeric = typeof cell === 'number';
-                          const isMatchedBadge = cellStr === 'exact' || cellStr === 'soft' || cellStr === 'unmatched';
-                          
-                          return (
-                            <td
-                              key={cIdx}
-                              className={`px-3 py-1.5 border-r border-slate-200 text-slate-800 whitespace-nowrap max-w-xs truncate text-xs ${
-                                isNumeric ? 'text-right font-mono text-slate-900 font-semibold' : 'text-left'
-                              }`}
-                              title={cellStr}
-                            >
-                              {isMatchedBadge ? (
-                                cellStr === 'exact' ? (
-                                  <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-0.5 rounded font-bold text-xs">
-                                    완전 매칭
-                                  </span>
-                                ) : cellStr === 'soft' ? (
-                                  <span className="bg-amber-100 text-amber-800 border border-amber-300 px-2 py-0.5 rounded font-bold text-xs">
-                                    부분 매칭
-                                  </span>
-                                ) : (
-                                  <span className="bg-rose-100 text-rose-800 border border-rose-300 px-2 py-0.5 rounded font-bold text-xs">
-                                    미매칭
-                                  </span>
-                                )
-                              ) : (
-                                cellStr
-                              )}
-                            </td>
-                          );
-                        })}
-                      </tr>
+                      <React.Fragment key={cIdx}>
+                        <dt className="text-slate-500">{currentSheet.columns[cIdx]}</dt>
+                        <dd className="min-w-0 break-words text-slate-800">{isBadge(v) ? matchBadge(v) : v}</dd>
+                      </React.Fragment>
                     );
                   })}
-
-                  {paginatedRows.length === 0 && (
-                    <tr>
-                      <td colSpan={currentSheet.columns.length + 1} className="py-16 text-center text-slate-400 font-medium">
-                        검색 조건에 해당되는 셀 데이터가 존재하지 않습니다.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-
-              </table>
-            </div>
-          </div>
+                </dl>
+              </div>
+            );
+          })}
+          {paginatedRows.length === 0 && (
+            <p className="py-12 text-center text-sm text-slate-500">찾는 내용이 없어요.</p>
+          )}
+          <button type="button" onClick={() => setMobileTable(true)} className="text-[13px] font-semibold text-brand-700 underline underline-offset-2 cursor-pointer">
+            엑셀 표 모양으로 보기
+          </button>
         </div>
 
-        {/* 선택된 파일 내부 시트 탭 바 (Sheet Tabs Footer) */}
-        <div className="bg-slate-200 border-t-2 border-slate-300 px-3 py-2 flex items-center justify-between shrink-0 shadow-inner select-none">
-          
-          {/* 시트 탭 목록 */}
-          <div className="flex items-center gap-1 overflow-x-auto max-w-3xl py-0.5">
-            <span className="text-xs font-bold text-slate-700 mr-2 flex items-center gap-1 bg-slate-300 px-2 py-1 rounded">
-              <Table className="w-3.5 h-3.5 text-[#107c41]" />
-              시트:
-            </span>
-
-            {currentSheets.map((sheet, sIdx) => {
-              const isActive = activeSheetIndex === sIdx;
-              return (
-                <button
-                  key={sIdx}
-                  onClick={() => {
-                    setActiveSheetIndex(sIdx);
-                    setCurrentPage(1);
-                  }}
-                  className={`pressable px-4 py-1.5 text-xs font-bold flex items-center gap-2 rounded-t-md border border-b-0 cursor-pointer whitespace-nowrap ${
-                    isActive
-                      ? 'bg-white text-[#107c41] border-slate-300'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-50 border-slate-200'
-                  }`}
-                >
-                  <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-[#107c41]' : 'bg-slate-400'}`} />
-                  <span>{sheet.sheetName}</span>
-                  <span className={`text-xs px-1.5 py-0.2 rounded-full ${isActive ? 'bg-emerald-100 text-[#107c41]' : 'bg-slate-200 text-slate-600'}`}>
-                    {sheet.rows.length}행
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* 페이지 조작 & 상태 요약 */}
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="text-xs text-slate-600 font-medium hidden md:flex items-center gap-1">
-              <CheckCircle2 className="w-3.5 h-3.5 text-[#107c41]" />
-              <span>시트 데이터 총 <strong>{totalRows}</strong>행</span>
-            </div>
-
-            <div className="flex items-center gap-1 bg-white border border-slate-300 rounded-md p-0.5">
-              <button
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                disabled={safePage <= 1}
-                className="p-1 hover:bg-slate-100 disabled:opacity-30 rounded transition text-slate-700"
-                title="이전 페이지"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <span className="text-xs font-bold text-slate-800 px-2">
-                {safePage} / {totalPages}
-              </span>
-              <button
-                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                disabled={safePage >= totalPages}
-                className="p-1 hover:bg-slate-100 disabled:opacity-30 rounded transition text-slate-700"
-                title="다음 페이지"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
+        {/* 표 보기 (컴퓨터, 또는 휴대폰에서 표 모양을 고른 경우) */}
+        <div className={`${mobileTable ? 'block' : 'hidden'} min-h-0 flex-1 overflow-auto px-5 py-3 sm:block sm:px-6 sm:py-4`}>
+          {mobileTable && (
+            <button type="button" onClick={() => setMobileTable(false)} className="mb-2 text-[13px] font-semibold text-brand-700 underline underline-offset-2 cursor-pointer sm:hidden">
+              카드로 보기
+            </button>
+          )}
+          <table className="w-full border-collapse text-sm text-slate-800">
+            <thead className="sticky top-0 z-10 bg-white">
+              <tr className="select-none font-mono text-[11px] text-slate-400">
+                <th className="w-10" />
+                {currentSheet.columns.map((_, cIdx) => (
+                  <th key={cIdx} className="px-3 py-1 text-left font-normal">{getExcelColumnLabel(cIdx)}</th>
+                ))}
+              </tr>
+              <tr className="select-none border-y border-slate-200 bg-slate-100 text-left text-[13px] font-semibold text-slate-700">
+                <th className="w-10 py-2 text-center font-mono text-[11px] font-normal text-slate-400">1</th>
+                {currentSheet.columns.map((col, cIdx) => (
+                  <th key={cIdx} className="whitespace-nowrap px-3 py-2">{col}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {paginatedRows.map((row, rIdx) => {
+                const globalRowIndex = (safePage - 1) * pageSize + rIdx + 2;
+                return (
+                  <tr key={rIdx} className="hover:bg-slate-50">
+                    <td className="py-2 text-center font-mono text-[11px] text-slate-400 select-none">{globalRowIndex}</td>
+                    {row.map((cell, cIdx) => {
+                      const cellStr = cell !== null && cell !== undefined ? String(cell) : '';
+                      const isNumeric = typeof cell === 'number';
+                      return (
+                        <td
+                          key={cIdx}
+                          className={`max-w-xs truncate whitespace-nowrap px-3 py-2 ${isNumeric ? 'text-right tabular-nums' : 'text-left'}`}
+                          title={cellStr}
+                        >
+                          {isBadge(cellStr) ? matchBadge(cellStr) : cellStr}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+              {paginatedRows.length === 0 && (
+                <tr>
+                  <td colSpan={currentSheet.columns.length + 1} className="py-16 text-center text-sm text-slate-500">
+                    찾는 내용이 없어요.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
-
       </div>
-    </div>
+    </Modal>
   );
 }

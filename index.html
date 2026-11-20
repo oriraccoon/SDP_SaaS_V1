@@ -1,16 +1,73 @@
 <!doctype html>
-<html lang="en">
+<html lang="ko">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Smart-Delivery</title>
-      <link rel="preconnect" href="https://fonts.googleapis.com">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>ezorder</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+      // 랜딩("/")만 taste 디자인 시스템을 씁니다. 앱(/app, /admin)은 이 블록을 건너뜁니다.
+      // 스타일을 그리기 전에 넣어야 화면이 깜빡이지 않아서, 여기서 바로 씁니다.
+      (function () {
+        if (location.pathname.replace(/\/+$/, '') !== '') {
+          document.write('<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">');
+          return;
+        }
+        var h = document.documentElement;
+        h.setAttribute('data-type', 'software');
+        h.setAttribute('data-radius', 'soft');
+        h.setAttribute('data-ground', 'sage');
+        h.setAttribute('data-buttons', 'pill');
+        h.setAttribute('data-motion', '');
+        h.classList.add('m-enter', 'mo-js');
+        setTimeout(function () { h.classList.add('m-enter-done'); }, 700);
+        setTimeout(function () { h.classList.add('mo-safe'); }, 2500);
+        document.title = 'ezorder: 온라인 셀러를 위한 주문·송장 엑셀 정리';
+        document.write([
+          '<meta name="description" content="쇼핑몰 주문 엑셀로 택배사 파일을 만들고, 받아 온 송장 번호를 주문마다 붙여 쇼핑몰별 업로드 파일로 나눠 주는 서비스예요.">',
+          '<meta property="og:type" content="website">',
+          '<meta property="og:title" content="ezorder: 온라인 셀러를 위한 주문·송장 엑셀 정리">',
+          '<meta property="og:description" content="주문 엑셀을 올리면 송장 붙인 쇼핑몰별 파일까지 만들어 드려요.">',
+          '<meta name="twitter:card" content="summary_large_image">',
+          '<meta name="site-kind" content="software">',
+          '<meta name="page-type" content="software">',
+          '<meta name="theme-color" content="#ffffff">',
+          '<link rel="icon" href="/favicon.svg" type="image/svg+xml">',
+          '<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wdth,wght@75..100,400..700&family=DM+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">',
+          '<link rel="stylesheet" href="/assets/system.css">',
+          '<link rel="stylesheet" href="/assets/ui/cards.css">',
+          '<link rel="stylesheet" href="/assets/motion/motion.css">',
+          '<link rel="stylesheet" href="/assets/backgrounds/backgrounds.css">',
+          '<link rel="stylesheet" href="/assets/layout/layout.css">',
+          '<link rel="stylesheet" href="/assets/icons/icon.css">',
+          '<style>:root{',
+          '--p-bg:#ffffff;--p-surface:#f4f5f3;--p-ink:#191f28;--p-muted:#676c72;',
+          '--p-accent:#1e5b4a;--p-accent-ink:#ffffff;--p-action:#1e5b4a;--p-action-ink:#ffffff;',
+          '--p-inv-bg:#191f28;--p-inv-surface:#262c35;--p-inv-ink:#ffffff;--p-inv-muted:#9fa2a6;',
+          '--p-inv-accent:#ffffff;--p-inv-accent-ink:#191f28;--p-inv-action:#ffffff;--p-inv-action-ink:#191f28;',
+          '--font-display:"Instrument Sans","Noto Sans KR",system-ui,sans-serif;',
+          '--font-text:"Instrument Sans","Noto Sans KR",system-ui,sans-serif;',
+          '--font-mono:"DM Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;',
+          '--display-weight:500;--display-tracking:-0.028em;--display-tracking-xl:-0.036em;--display-stretch:96%;--ly-scale:1.04;',
+          '}</style>',
+          '<link rel="stylesheet" href="/assets/ui/base.css">',
+          '<link rel="stylesheet" href="/assets/ui/window/fragment.css">',
+          '<link rel="stylesheet" href="/assets/ui/notify/fragment.css">',
+          '<link rel="stylesheet" href="/assets/ui/checklist/fragment.css">',
+          '<link rel="stylesheet" href="/assets/ui/search/fragment.css">',
+          '<link rel="stylesheet" href="/assets/layout/demo.css">',
+          '<link rel="stylesheet" href="/landing.css">',
+          '<script src="/assets/backgrounds/backgrounds.js"><\/script>',
+          '<link rel="modulepreload" href="/assets/moments/moments.js">',
+          '<link rel="modulepreload" href="/assets/moments/lib.js">',
+          '<link rel="modulepreload" href="/assets/moments/line-carries-colour/moment.js">'
+        ].join(''));
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-

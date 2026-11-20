@@ -1,0 +1,10 @@
+[
+  {
+    "file": "xlsx.svg",
+    "set": "file",
+    "source": "@iconify-json/vscode-icons 1.2.30 (file-type-excel)",
+    "licence": "MIT",
+    "trademark": false,
+    "site": "https://github.com/vscode-icons/vscode-icons"
+  }
+]

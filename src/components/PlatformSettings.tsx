@@ -533,9 +533,7 @@ export default function PlatformSettings({
       }
     }
 
-    if (onReProcessOrders) {
-      onReProcessOrders();
-    }
+    // 주문 다시 정리는 onChange가 바뀐 설정으로 해 줍니다. (여기서 또 부르면 옛 설정으로 한 번 더 돌아 덮어씀)
 
     const colLetter = colNumToLetter(newColIndex + 1);
     setToastMessage(`${colLetter}열로 바꿨어요. 주문도 다시 정리했어요.`);
@@ -719,7 +717,7 @@ export default function PlatformSettings({
       onFilePlatformChange(activeFile.fileName, activePlatform.id, updatedPlatforms);
     }
 
-    if (onReProcessOrders) onReProcessOrders();
+    // 주문 다시 정리는 onChange와 onFilePlatformChange가 바뀐 설정으로 해 줍니다.
 
     setToastMessage(`칸 이름으로 ${matchedCount}개를 다시 찾았어요.`);
     setTimeout(() => setToastMessage(null), 3500);
@@ -753,9 +751,7 @@ export default function PlatformSettings({
       onFilePlatformChange(activeFile.fileName, activePlatform.id, updatedPlatforms);
     }
 
-    if (onReProcessOrders) {
-      onReProcessOrders();
-    }
+    // 주문 다시 정리는 onChange와 onFilePlatformChange가 바뀐 설정으로 해 줍니다.
 
     setToastMessage(`'${activePlatform.name}' 양식에 저장하고 주문을 다시 정리했어요.`);
     setTimeout(() => setToastMessage(null), 4000);

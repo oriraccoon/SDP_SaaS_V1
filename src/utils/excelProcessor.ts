@@ -1504,8 +1504,17 @@ export function processRawRows(
 
   let colMap: ColumnMapping;
   if (isRegisteredPlatform) {
-    // 등록된 양식인 경우 사용자가 지정한 col_map을 바탕으로 맵 생성
-    colMap = resolveColumnMapping(headerRow, platform.col_map);
+    // 등록된 양식은 저장된 칸을 그대로 씁니다. (칸 이름 추측이 사용자가 고른 칸을 덮어쓰지 않게)
+    // 저장된 칸이 없거나 파일의 칸 범위를 벗어난 항목만 칸 이름으로 찾습니다.
+    const guessed = resolveColumnMapping(headerRow, platform.col_map);
+    const headerLen = Array.isArray(headerRow) ? headerRow.length : 0;
+    colMap = { ...guessed };
+    (Object.keys(guessed) as Array<keyof ColumnMapping>).forEach(key => {
+      const saved = platform.col_map?.[key];
+      if (typeof saved === 'number' && saved >= 0 && (headerLen === 0 || saved < headerLen)) {
+        colMap[key] = saved;
+      }
+    });
   } else {
     // 등록되지 않은 양식/기본 양식인 경우 헤더 키워드를 실시간 스캔하여 자동 매칭
     colMap = resolveColumnMapping(headerRow, platform.col_map);

@@ -786,7 +786,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
           <div>
             <h2 className="text-xl font-semibold tracking-tight text-slate-900">품목사전</h2>
             <p className="text-sm text-slate-600 mt-1.5 leading-relaxed max-w-[64ch]">
-              쇼핑몰마다 다른 긴 상품명을 내가 쓰는 짧은 이름으로 바꿔요. 정리된 주문 파일과 보고서에 이 짧은 이름이 쓰여요.
+              쇼핑몰마다 다른 긴 상품명을 내가 쓰는 짧은 이름으로 바꿔요. 요약 보고서의 상품 준비 목록에 이 짧은 이름이 쓰여요. 택배사에 넣을 파일에는 원래 상품명이 그대로 남아요.
             </p>
             <p className="mt-2 inline-flex flex-wrap items-center gap-x-2 rounded-lg bg-slate-50 px-3 py-1.5 text-[13px] text-slate-700">
               <span className="text-slate-500">예</span>

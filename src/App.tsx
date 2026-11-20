@@ -2018,15 +2018,13 @@ export default function App() {
         <div 
           className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in"
           onKeyDown={(e) => {
+            // 되돌릴 수 없는 작업만 묻는 창이라 Enter로는 확정하지 않습니다 (포커스가 '취소'에 있습니다)
             if (e.key === 'Escape') {
               setConfirmModal(null);
-            } else if (e.key === 'Enter') {
-              e.preventDefault();
-              confirmModal.onConfirm();
             }
           }}
-          tabIndex={-1}
-          ref={(node) => node?.focus()}
+          role="alertdialog"
+          aria-modal="true"
         >
           <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4 border border-slate-100">
             <h3 className="font-bold text-slate-800 text-base flex items-center gap-2">
@@ -2039,15 +2037,16 @@ export default function App() {
             <div className="flex justify-end gap-2 pt-3">
               <button
                 onClick={() => setConfirmModal(null)}
-                className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition cursor-pointer"
+                autoFocus
+                className="pressable px-4 py-2 bg-white hover:bg-slate-50 border border-slate-300 text-slate-800 rounded-lg text-sm font-semibold cursor-pointer"
               >
-                취소 (ESC)
+                취소
               </button>
               <button
                 onClick={confirmModal.onConfirm}
-                className="px-3.5 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-xs font-semibold transition shadow-md cursor-pointer"
+                className="pressable px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-sm font-semibold cursor-pointer"
               >
-                확인 (Enter)
+                확인
               </button>
             </div>
           </div>
@@ -2997,7 +2996,7 @@ export default function App() {
                     ['platforms', '플랫폼 설정'],
                     ['products', '품목사전'],
                     ['backup', '설정 백업'],
-                    ['account', '계정 · 문의'],
+                    ['account', '계정'],
                   ] as const).map(([key, label]) => (
                     <button
                       key={key}
@@ -3230,16 +3229,10 @@ export default function App() {
                   {settingsSection === 'account' && (
                     <div className="bg-white border border-slate-200 rounded-xl p-6 space-y-4">
                       <div>
-                        <h2 className="text-base font-bold text-slate-900">계정 · 문의</h2>
-                        <p className="mt-1 text-sm text-slate-600">문의나 버그는 아래 버튼으로 보내 주세요. 로그아웃도 여기서 합니다.</p>
+                        <h2 className="text-base font-bold text-slate-900">계정</h2>
+                        <p className="mt-1 text-sm text-slate-600">문의나 버그 신고는 왼쪽 메뉴의 '문의하기'에서 보내 주세요.</p>
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        <button
-                          onClick={() => setIsFeedbackOpen(true)}
-                          className="px-4 py-2 rounded-lg border border-slate-300 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50"
-                        >
-                          문의 / 버그 신고
-                        </button>
                         <button
                           onClick={() => openConfirm('로그아웃', '로그아웃 하시겠습니까? 저장되지 않은 작업은 사라집니다.', () => logout())}
                           className="px-4 py-2 rounded-lg border border-slate-300 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50"

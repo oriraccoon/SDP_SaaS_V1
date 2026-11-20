@@ -2027,7 +2027,7 @@ export default function App() {
         >
           <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4 border border-slate-100">
             <h3 className="font-bold text-slate-800 text-base flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-indigo-600 shrink-0" />
+              <AlertCircle className="w-5 h-5 text-[#1E5B4A] shrink-0" />
               {confirmModal.title}
             </h3>
             <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-line">
@@ -2042,7 +2042,7 @@ export default function App() {
               </button>
               <button
                 onClick={confirmModal.onConfirm}
-                className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold transition shadow-md cursor-pointer"
+                className="px-3.5 py-1.5 bg-[#1E5B4A] hover:bg-[#184A3C] text-white rounded-lg text-xs font-semibold transition shadow-md cursor-pointer"
               >
                 확인 (Enter)
               </button>
@@ -2080,7 +2080,7 @@ export default function App() {
             className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4 border border-slate-100"
           >
             <h3 className="font-bold text-slate-800 text-base flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-indigo-600 shrink-0" />
+              <AlertCircle className="w-5 h-5 text-[#1E5B4A] shrink-0" />
               엑셀 비밀번호 입력 필요
             </h3>
             <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-line">
@@ -2106,7 +2106,7 @@ export default function App() {
                 }}
                 disabled={isDecrypting}
                 autoFocus
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E5B4A] focus:border-[#1E5B4A] transition"
               />
             </div>
             <div className="flex justify-end gap-2 pt-1">
@@ -2121,7 +2121,7 @@ export default function App() {
               <button
                 type="submit"
                 disabled={isDecrypting || !promptPassword}
-                className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition shadow-md flex items-center gap-1.5 cursor-pointer"
+                className="px-3.5 py-1.5 bg-[#1E5B4A] hover:bg-[#184A3C] disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition shadow-md flex items-center gap-1.5 cursor-pointer"
               >
                 {isDecrypting ? (
                   <>
@@ -2153,7 +2153,7 @@ export default function App() {
                 ? 'bg-emerald-50 border-emerald-200 text-emerald-800' 
                 : notification.type === 'error' 
                 ? 'bg-rose-50 border-rose-200 text-rose-800'
-                : 'bg-indigo-50 border-indigo-200 text-indigo-800'
+                : 'bg-[#F1F7F4] border-[#CFE3DA] text-[#123A30]'
             }`}
           >
             {notification.type === 'success' ? (
@@ -2181,7 +2181,7 @@ export default function App() {
           <div className="flex items-center gap-2.5">
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-base sm:text-lg font-bold tracking-tight">{APP_NAME}</h1>
+                <h1 className="text-base sm:text-lg font-bold tracking-tight text-[#1E5B4A]">{APP_NAME}</h1>
                 <span className="text-[10px] bg-slate-100 text-slate-600 border border-slate-200 font-medium px-1.5 py-0.5 rounded-md shrink-0">v1.0.1 PRO</span>
               </div>
               <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 hidden xs:block">주문서와 송장을 맞춰 발송 엑셀을 만듭니다</p>
@@ -2207,40 +2207,47 @@ export default function App() {
             <Menu className="w-5 h-5" />
           </button>
 
-          {([
-            ['process', '엑셀 / 가공 & 매칭', <Layers className="w-5 h-5 shrink-0" />, () => setActiveTab('process'), activeTab === 'process' && !isSettingsOpen],
-            ...(features.analytics
-              ? [['analytics', '시각화 리포트', <BarChart3 className="w-5 h-5 shrink-0" />, () => setActiveTab('analytics'), activeTab === 'analytics' && !isSettingsOpen] as const]
-              : []),
-          ] as const).map(([key, label, icon, action, selected]) => (
-            <button
-              key={key}
-              onClick={action}
-              title={label}
-              className={`flex h-10 items-center gap-3 rounded-lg text-sm font-semibold transition ${
-                isSidebarOpen ? 'w-full px-3' : 'w-10 justify-center'
-              } ${selected ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-100'}`}
-            >
-              {icon}
-              {isSidebarOpen && <span className="whitespace-nowrap">{label}</span>}
-            </button>
-          ))}
+          {[
+            { key: 'process', label: '주문정리', icon: <Layers className="w-5 h-5 shrink-0" />, selected: activeTab === 'process' && !isSettingsOpen, show: true, action: () => setActiveTab('process') },
+            { key: 'analytics', label: '리포트', icon: <BarChart3 className="w-5 h-5 shrink-0" />, selected: activeTab === 'analytics' && !isSettingsOpen, show: features.analytics, action: () => setActiveTab('analytics') },
+            { key: 'products', label: '품목사전', icon: <Grid className="w-5 h-5 shrink-0" />, selected: isSettingsOpen && settingsSection === 'products', show: true, action: () => openSettings('products') },
+            { key: 'settings', label: '설정', icon: <Settings className="w-5 h-5 shrink-0" />, selected: isSettingsOpen && settingsSection !== 'products', show: true, action: () => openSettings('platforms') },
+            { key: 'support', label: '문의하기', icon: <MessageSquare className="w-5 h-5 shrink-0" />, selected: false, show: true, action: () => setIsFeedbackOpen(true) },
+          ]
+            .filter((item) => item.show)
+            .map((item) => (
+              <button
+                key={item.key}
+                onClick={item.action}
+                title={item.label}
+                className={`flex h-10 items-center gap-3 rounded-lg text-sm font-semibold transition ${
+                  isSidebarOpen ? 'w-full px-3' : 'w-10 justify-center'
+                } ${item.selected ? 'bg-[#E9F3EE] text-[#1E5B4A] shadow-[inset_3px_0_0_#1E5B4A]' : 'text-slate-600 hover:bg-slate-100'}`}
+              >
+                {item.icon}
+                {isSidebarOpen && <span className="whitespace-nowrap">{item.label}</span>}
+              </button>
+            ))}
 
-          {/* 설정은 맨 아래에 따로 버튼으로 둡니다 */}
-          <button
-            onClick={() => openSettings('platforms')}
-            title="설정"
-            className={`mt-auto flex h-10 items-center gap-3 rounded-lg border text-sm font-semibold transition ${
-              isSidebarOpen ? 'w-full px-3' : 'w-10 justify-center'
-            } ${
-              isSettingsOpen
-                ? 'border-indigo-600 bg-indigo-600 text-white'
-                : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
-            }`}
-          >
-            <Settings className="w-5 h-5 shrink-0" />
-            {isSidebarOpen && <span className="whitespace-nowrap">설정</span>}
-          </button>
+          {/* 하단: 로그인한 계정과 로그아웃 */}
+          <div className="mt-auto flex flex-col gap-2 border-t border-slate-200 pt-3">
+            {isSidebarOpen && (
+              <span className="truncate px-3 text-xs text-slate-500" title={account?.email ?? ''}>
+                {account?.email || '로그인한 계정'}
+              </span>
+            )}
+            <button
+              onClick={() => openConfirm('로그아웃', '로그아웃 하시겠습니까? 저장되지 않은 작업은 사라집니다.', () => logout())}
+              title="로그아웃"
+              className={`flex h-10 items-center gap-3 rounded-lg border border-slate-300 bg-white text-sm font-semibold text-slate-700 transition hover:bg-slate-50 ${
+                isSidebarOpen ? 'w-full px-3' : 'w-10 justify-center'
+              }`}
+            >
+              <LogOut className="w-5 h-5 shrink-0" />
+              {isSidebarOpen && <span className="whitespace-nowrap">로그아웃</span>}
+            </button>
+          </div>
+
         </aside>
 
         {/* 메인 본문 콘텐츠 */}
@@ -2258,7 +2265,7 @@ export default function App() {
             >
 
               {/* 한눈에 보는 작업 순서 */}
-              <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+              <div className="grid grid-cols-2 overflow-hidden rounded-xl border border-slate-200 bg-white md:grid-cols-4">
                 {[
                   { no: '1', title: '주문서 올리기', desc: '쇼핑몰 주문 엑셀', outside: false },
                   { no: '2', title: '택배사에서 송장 받기', desc: '택배사 사이트에서 진행', outside: true },
@@ -2267,13 +2274,13 @@ export default function App() {
                 ].map((st) => (
                   <div
                     key={st.no}
-                    className={`rounded-2xl border p-5 ${
-                      st.outside ? 'border-slate-200 bg-white' : 'border-[#CFE3DA] bg-[#F1F7F4]'
+                    className={`flex flex-col gap-1.5 border-b border-r border-slate-200 p-4 last:border-r-0 md:border-b-0 ${
+                      st.outside ? '' : 'bg-[#F1F7F4]'
                     }`}
                   >
                     <div className="flex items-center gap-2">
                       <span
-                        className={`flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold ${
+                        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-bold ${
                           st.outside ? 'bg-slate-200 text-slate-600' : 'bg-[#1E5B4A] text-white'
                         }`}
                       >
@@ -2281,7 +2288,7 @@ export default function App() {
                       </span>
                       <span className="text-sm font-bold text-slate-900">{st.title}</span>
                     </div>
-                    <p className="mt-2 text-xs text-slate-500">
+                    <p className="text-xs text-slate-500">
                       {st.desc}
                       {st.outside ? ' (이 화면 밖)' : ''}
                     </p>
@@ -2336,7 +2343,7 @@ export default function App() {
                     {/* 가이드 단계 */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
                       <div className="bg-slate-50 p-3 rounded-lg border border-slate-150 space-y-1.5">
-                        <div className="text-xs font-bold text-indigo-600">방법 A. 엑셀(Excel)에서 해제</div>
+                        <div className="text-xs font-bold text-[#1E5B4A]">방법 A. 엑셀(Excel)에서 해제</div>
                         <ol className="text-[11px] text-slate-500 list-decimal list-inside space-y-1">
                           <li>암호가 걸린 파일을 엑셀로 엽니다.</li>
                           <li>상단 메뉴 <strong className="text-slate-700">파일 &gt; 정보</strong>를 누릅니다.</li>
@@ -2347,7 +2354,7 @@ export default function App() {
                       </div>
 
                       <div className="bg-slate-50 p-3 rounded-lg border border-slate-150 space-y-1.5">
-                        <div className="text-xs font-bold text-indigo-600">방법 B. 구글 시트(Sheets)에서 해제</div>
+                        <div className="text-xs font-bold text-[#1E5B4A]">방법 B. 구글 시트(Sheets)에서 해제</div>
                         <ol className="text-[11px] text-slate-500 list-decimal list-inside space-y-1">
                           <li>구글 드라이브에 파일을 올리고 구글 스프레드시트로 엽니다.</li>
                           <li><strong className="text-slate-700">파일 &gt; 다운로드 &gt; Microsoft Excel(.xlsx)</strong>을 누릅니다.</li>
@@ -2356,7 +2363,7 @@ export default function App() {
                       </div>
 
                       <div className="bg-slate-50 p-3 rounded-lg border border-slate-150 space-y-1.5">
-                        <div className="text-xs font-bold text-indigo-600">방법 C. 다른 이름으로 저장</div>
+                        <div className="text-xs font-bold text-[#1E5B4A]">방법 C. 다른 이름으로 저장</div>
                         <ol className="text-[11px] text-slate-500 list-decimal list-inside space-y-1">
                           <li>암호가 걸린 파일을 엑셀로 엽니다.</li>
                           <li><strong className="text-slate-700">다른 이름으로 저장</strong>을 선택합니다.</li>
@@ -2414,7 +2421,7 @@ export default function App() {
                 <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
                   <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                     <div className="flex items-center gap-2.5">
-                      <span className="w-6 h-6 rounded-full bg-indigo-50 text-indigo-600 text-xs font-extrabold flex items-center justify-center">1</span>
+                      <span className="w-6 h-6 rounded-full bg-[#F1F7F4] text-[#1E5B4A] text-xs font-extrabold flex items-center justify-center">1</span>
                       <h2 className="font-bold text-slate-800 text-sm">쇼핑몰 주문 데이터 불러오기 및 가공</h2>
                     </div>
                     {orderParseResult && (
@@ -2449,7 +2456,7 @@ export default function App() {
                       setPasswordErrorFile(null);
                       await processMultipleOrderFiles(updatedFiles);
                     }}
-                    className="relative border-2 border-dashed border-slate-200 hover:border-indigo-500 rounded-xl p-6 bg-slate-50 text-center transition cursor-pointer"
+                    className="relative border-2 border-dashed border-slate-200 hover:border-[#1E5B4A] rounded-xl p-6 bg-slate-50 text-center transition cursor-pointer"
                   >
                     <input
                       type="file"
@@ -2458,13 +2465,13 @@ export default function App() {
                       onChange={handleOrderFileUpload}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     />
-                    <Upload className="w-8 h-8 text-indigo-500 mx-auto mb-2" />
+                    <Upload className="w-8 h-8 text-[#1E5B4A] mx-auto mb-2" />
                     {orderFiles.length > 0 ? (
                       <div className="space-y-1">
                         <div className="text-sm font-semibold text-slate-800">
                           {orderFiles.length}개의 주문 파일 불러옴
                         </div>
-                        <div className="text-xs text-indigo-500 font-medium">
+                        <div className="text-xs text-[#1E5B4A] font-medium">
                           파일을 추가로 올리려면 클릭하세요 (드래그 & 드롭 지원)
                         </div>
                       </div>
@@ -2488,9 +2495,9 @@ export default function App() {
                             setPlatformMatrixType('platform');
                             openSettings('platforms');
                           }}
-                          className="text-[11px] bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold px-2.5 py-1 rounded-lg border border-indigo-200 transition flex items-center gap-1.5 cursor-pointer shadow-2xs self-start sm:self-auto"
+                          className="text-[11px] bg-[#F1F7F4] hover:bg-[#E9F3EE] text-[#184A3C] font-bold px-2.5 py-1 rounded-lg border border-[#CFE3DA] transition flex items-center gap-1.5 cursor-pointer shadow-2xs self-start sm:self-auto"
                         >
-                          <Grid className="w-3.5 h-3.5 text-indigo-600" />
+                          <Grid className="w-3.5 h-3.5 text-[#1E5B4A]" />
                           <span> 플랫폼 설정에서 감지된 열 매핑 한눈에 보기 →</span>
                         </button>
                       </div>
@@ -2521,7 +2528,7 @@ export default function App() {
                                     {fileObj && <span>{(fileObj.size / 1024).toFixed(1)} KB</span>}
                                     <span className="text-slate-600 font-medium">수집 주문: {pf.orders?.length || 0}건</span>
                                     {detectedPlat && !isApiSynced && (
-                                      <span className="text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded font-medium">
+                                      <span className="text-[#1E5B4A] bg-[#F1F7F4] px-1.5 py-0.5 rounded font-medium">
                                         감지됨: {detectedPlat.name}
                                       </span>
                                     )}
@@ -2536,7 +2543,7 @@ export default function App() {
                                     <select
                                       value={detectedPlat?.id || ""}
                                       onChange={(e) => handleFilePlatformChange(pf.fileName, e.target.value)}
-                                      className="text-[11px] border border-slate-200 hover:border-slate-300 rounded px-1.5 py-0.5 bg-white font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                      className="text-[11px] border border-slate-200 hover:border-slate-300 rounded px-1.5 py-0.5 bg-white font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#1E5B4A]"
                                     >
                                       <option value="" disabled>-- 플랫폼 선택 --</option>
                                       {platforms.map(p => (
@@ -2668,16 +2675,16 @@ export default function App() {
                         <div className="space-y-2">
                           <button
                             onClick={handlePreviewStep1Excel}
-                            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg text-xs font-bold transition shadow-2xs cursor-pointer"
+                            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-[#F1F7F4] hover:bg-[#E9F3EE] text-[#184A3C] border border-[#CFE3DA] rounded-lg text-xs font-bold transition shadow-2xs cursor-pointer"
                           >
-                            <Eye className="w-4 h-4 text-indigo-600" />
+                            <Eye className="w-4 h-4 text-[#1E5B4A]" />
                             가공 엑셀 데이터 미리보기 (화면 확대 검수)
                           </button>
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             <button
                               onClick={handleDownloadSummaryReport}
-                              className="flex items-center justify-center gap-2 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold transition shadow-sm"
+                              className="flex items-center justify-center gap-2 px-3 py-2 bg-[#1E5B4A] hover:bg-[#184A3C] text-white rounded-lg text-xs font-semibold transition shadow-sm"
                             >
                               <Download className="w-3.5 h-3.5" />
                               1. 요약보고서 다운로드
@@ -2694,7 +2701,7 @@ export default function App() {
                             onClick={handleDownloadAllProcessed}
                             className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-bold transition shadow-sm"
                           >
-                            <Layers className="w-3.5 h-3.5 text-indigo-400" />
+                            <Layers className="w-3.5 h-3.5 text-[#4F8A75]" />
                             두 개 파일 한 번에 모두 다운로드하기
                           </button>
                         </div>
@@ -2722,7 +2729,7 @@ export default function App() {
                   )}
 
                   {isProcessingOrders && (
-                    <div className="flex items-center justify-center gap-2 text-xs text-indigo-600 py-2">
+                    <div className="flex items-center justify-center gap-2 text-xs text-[#1E5B4A] py-2">
                       <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                       주문 엑셀 데이터를 정밀 분석 및 다중 정렬 중...
                     </div>
@@ -2747,7 +2754,7 @@ export default function App() {
                 <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
                   <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                     <div className="flex items-center gap-2.5">
-                      <span className="w-6 h-6 rounded-full bg-indigo-50 text-indigo-600 text-xs font-extrabold flex items-center justify-center">2</span>
+                      <span className="w-6 h-6 rounded-full bg-[#F1F7F4] text-[#1E5B4A] text-xs font-extrabold flex items-center justify-center">2</span>
                       <h2 className="font-bold text-slate-800 text-sm">운송장 소스 매칭 및 최종 발송엑셀 완성</h2>
                     </div>
                     {trackingResult && (
@@ -2781,7 +2788,7 @@ export default function App() {
                       setTrackingFiles(updatedFiles);
                       await processMultipleTrackingFiles(updatedFiles);
                     }}
-                    className="relative border-2 border-dashed border-slate-200 hover:border-indigo-500 rounded-xl p-6 bg-slate-50 text-center transition cursor-pointer"
+                    className="relative border-2 border-dashed border-slate-200 hover:border-[#1E5B4A] rounded-xl p-6 bg-slate-50 text-center transition cursor-pointer"
                   >
                     <input
                       type="file"
@@ -2790,7 +2797,7 @@ export default function App() {
                       onChange={handleSourceFileUpload}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     />
-                    <Upload className="w-8 h-8 mx-auto mb-2 text-indigo-500" />
+                    <Upload className="w-8 h-8 mx-auto mb-2 text-[#1E5B4A]" />
                     <div>
                       <div className="text-xs font-semibold text-slate-700">
                         {trackingFiles.length > 0 ? "추가 운송장 엑셀 파일 올리기 (다중 선택 가능)" : "여기를 클릭하거나 운송장 엑셀 파일들을 끌어다 놓으세요 (다중 선택 지원)"}
@@ -2807,7 +2814,7 @@ export default function App() {
                     <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2.5">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200/80 pb-2">
                         <div className="flex items-center gap-2">
-                          <Truck className="w-4 h-4 text-indigo-600" />
+                          <Truck className="w-4 h-4 text-[#1E5B4A]" />
                           <span className="text-xs font-bold text-slate-800">
                             불러온 운송장 소스 데이터 세트 (총 {parsedTrackingFiles.length}개)
                           </span>
@@ -2836,7 +2843,7 @@ export default function App() {
                               className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 bg-white rounded-lg border border-slate-200/80 shadow-2xs text-xs"
                             >
                               <div className="flex items-center gap-2 min-w-0">
-                                <FileSpreadsheet className="w-4 h-4 text-indigo-500 shrink-0" />
+                                <FileSpreadsheet className="w-4 h-4 text-[#1E5B4A] shrink-0" />
                                 <div className="min-w-0">
                                   <div className="font-semibold text-slate-800 truncate" title={ptf.fileName}>
                                     {ptf.fileName}
@@ -2844,7 +2851,7 @@ export default function App() {
                                   <div className="text-[10px] text-slate-400 flex items-center gap-2">
                                     <span>{ptf.file ? (ptf.file.size / 1024).toFixed(1) + " KB" : "캐시된 데이터"}</span>
                                     <span>·</span>
-                                    <span className="text-indigo-600 font-bold">{ptf.count}건 운송장</span>
+                                    <span className="text-[#1E5B4A] font-bold">{ptf.count}건 운송장</span>
                                   </div>
                                 </div>
                               </div>
@@ -2855,7 +2862,7 @@ export default function App() {
                                   <select
                                     value={currentCourier}
                                     onChange={(e) => handleTrackingFileCourierChange(ptf.fileName, e.target.value)}
-                                    className="text-[11px] border border-slate-200 hover:border-slate-300 rounded px-1.5 py-0.5 bg-white font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                    className="text-[11px] border border-slate-200 hover:border-slate-300 rounded px-1.5 py-0.5 bg-white font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#1E5B4A]"
                                   >
                                     <option value="한진택배">한진택배</option>
                                     <option value="CJ대한통운">CJ대한통운</option>
@@ -2889,9 +2896,9 @@ export default function App() {
                         <div className="space-y-2 w-full">
                           <button
                             onClick={handlePreviewStep2Excel}
-                            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg text-xs font-bold transition shadow-2xs cursor-pointer"
+                            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-[#F1F7F4] hover:bg-[#E9F3EE] text-[#184A3C] border border-[#CFE3DA] rounded-lg text-xs font-bold transition shadow-2xs cursor-pointer"
                           >
-                            <Eye className="w-4 h-4 text-indigo-600" />
+                            <Eye className="w-4 h-4 text-[#1E5B4A]" />
                             최종 운송장반영 엑셀 미리보기 (화면 확대 검수)
                           </button>
                           <button
@@ -2926,7 +2933,7 @@ export default function App() {
                   )}
 
                   {isProcessingTracking && (
-                    <div className="flex items-center justify-center gap-2 text-xs text-indigo-600 py-2">
+                    <div className="flex items-center justify-center gap-2 text-xs text-[#1E5B4A] py-2">
                       <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                       고객명/주소/우편번호 교차 검증 및 지능형 매칭 대조 중...
                     </div>
@@ -2980,25 +2987,25 @@ export default function App() {
               {!orderParseResult && (
                 <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
                   <h3 className="font-bold text-slate-800 text-sm flex items-center gap-1.5 border-b border-slate-100 pb-3">
-                    <Info className="w-4 h-4 text-indigo-500" />
+                    <Info className="w-4 h-4 text-[#1E5B4A]" />
                     운송장 관리 자동화 워크플로우 안내
                   </h3>
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
                     <div className="space-y-1.5">
-                      <div className="text-xs font-bold text-indigo-600">Step 1. 주문 가공 및 내보내기</div>
+                      <div className="text-xs font-bold text-[#1E5B4A]">Step 1. 주문 가공 및 내보내기</div>
                       <p className="text-xs text-slate-500 leading-relaxed">
                         주문서(스마트스토어/쿠팡 등) 파일을 불러오면, 상품명 표준화 및 합포장 다중 정렬이 완료됩니다. <strong>[가공정렬 & 요약보고서 다운로드]</strong>를 클릭해 가공된 파일을 받으세요.
                       </p>
                     </div>
                     <div className="space-y-1.5">
-                      <div className="text-xs font-bold text-indigo-600">Step 2. 운송장 출력</div>
+                      <div className="text-xs font-bold text-[#1E5B4A]">Step 2. 운송장 출력</div>
                       <p className="text-xs text-slate-500 leading-relaxed">
                         내려받은 가공정렬 파일을 바탕으로 택배사 소프트웨어를 실행하여 운송장을 인쇄하고, 인쇄 결과 파일(송장번호가 들어있는 엑셀)을 보관합니다.
                       </p>
                     </div>
                     <div className="space-y-1.5">
-                      <div className="text-xs font-bold text-indigo-600">Step 3. 운송장 대조 매칭</div>
+                      <div className="text-xs font-bold text-[#1E5B4A]">Step 3. 운송장 대조 매칭</div>
                       <p className="text-xs text-slate-500 leading-relaxed">
                         방금 받은 송장번호 엑셀을 우측 업로드란에 넣고 <strong>[운송장 대조 매칭]</strong>을 클릭하면 주문서에 송장번호가 1초 만에 기입된 완벽한 최종 발송 파일이 탄생합니다!
                       </p>
@@ -3048,7 +3055,7 @@ export default function App() {
                       key={key}
                       onClick={() => setSettingsSection(key)}
                       className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold transition ${
-                        settingsSection === key ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-slate-100'
+                        settingsSection === key ? 'bg-[#1E5B4A] text-white' : 'text-slate-600 hover:bg-slate-100'
                       }`}
                     >
                       {label}
@@ -3121,7 +3128,7 @@ export default function App() {
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div>
                         <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                          <Database className="w-6 h-6 text-indigo-600" />
+                          <Database className="w-6 h-6 text-[#1E5B4A]" />
                           통합 백업 & 복원 (데이터 전체 관리)
                         </h2>
                         <p className="text-xs text-slate-500 mt-1">
@@ -3134,7 +3141,7 @@ export default function App() {
                       </div>
                     </div>
 
-                    <div className="mt-3 p-3 bg-indigo-50/60 border border-indigo-100 rounded-xl text-xs text-indigo-900 leading-relaxed">
+                    <div className="mt-3 p-3 bg-[#F1F7F4]/60 border border-[#E9F3EE] rounded-xl text-xs text-[#0F3A2F] leading-relaxed">
                       <strong>설정은 자동으로 저장됩니다:</strong> 플랫폼 양식, 택배사 양식, 품목 대치 사전, 쇼핑몰 연동 설정은 로그인한 계정에 저장되어 다음에 접속해도 그대로 있습니다. <strong>엑셀 주문 데이터는 저장되지 않으며</strong>, 새로고침하면 사라집니다. API 키는 암호화되어 저장되고, 다른 컴퓨터에서는 다시 입력해야 합니다.
                     </div>
                   </div>
@@ -3145,11 +3152,11 @@ export default function App() {
                     {/* 1. 파일 가져오기 (복원/업로드) */}
                     <div className="p-0 md:px-8 first:md:pl-0 last:md:pr-0 flex flex-col justify-between space-y-4">
                       <div className="space-y-2">
-                        <span className="inline-block text-[10px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2.5 py-0.5 rounded-md">
+                        <span className="inline-block text-[10px] font-bold text-[#1E5B4A] bg-[#F1F7F4] border border-[#E9F3EE] px-2.5 py-0.5 rounded-md">
                           RESTORE & IMPORT
                         </span>
                         <h3 className="font-bold text-slate-800 text-sm flex items-center gap-1.5">
-                          <Upload className="w-4 h-4 text-indigo-600" />
+                          <Upload className="w-4 h-4 text-[#1E5B4A]" />
                           백업 / 사전 파일 가져오기
                         </h3>
                         <p className="text-xs text-slate-500 leading-relaxed">
@@ -3199,7 +3206,7 @@ export default function App() {
                             }}
                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                           />
-                          <button className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold transition shadow-sm cursor-pointer">
+                          <button className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1E5B4A] hover:bg-[#184A3C] text-white rounded-xl text-xs font-semibold transition shadow-sm cursor-pointer">
                             <Upload className="w-4 h-4" />
                             파일 선택하여 복원하기
                           </button>
@@ -3347,12 +3354,12 @@ export default function App() {
         >
           <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl border border-slate-100 space-y-4">
             <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
-              <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl">
+              <div className="p-2.5 bg-[#F1F7F4] text-[#1E5B4A] rounded-xl">
                 <Upload className="w-5 h-5" />
               </div>
               <div>
                 <h3 className="font-bold text-slate-800 text-sm">품목 대치 사전 가져오기</h3>
-                <p className="text-xs text-indigo-600 font-semibold">총 {mappingImportConfirm.parsed.length}개의 대치 규칙 탐지됨</p>
+                <p className="text-xs text-[#1E5B4A] font-semibold">총 {mappingImportConfirm.parsed.length}개의 대치 규칙 탐지됨</p>
               </div>
             </div>
 
@@ -3363,10 +3370,10 @@ export default function App() {
             <div className="space-y-2 pt-1">
               <button
                 onClick={() => handleApplyMappingImport(false)}
-                className="w-full text-left p-3.5 bg-indigo-50/80 hover:bg-indigo-100 border border-indigo-200 text-indigo-900 rounded-xl text-xs font-semibold transition flex flex-col gap-0.5 cursor-pointer"
+                className="w-full text-left p-3.5 bg-[#F1F7F4]/80 hover:bg-[#E9F3EE] border border-[#CFE3DA] text-[#0F3A2F] rounded-xl text-xs font-semibold transition flex flex-col gap-0.5 cursor-pointer"
               >
                 <span> 기존 사전에 추가 (병합) [Enter]</span>
-                <span className="text-[10px] text-indigo-600 font-normal">기존 목록을 유지하고 중복되지 않은 신규 항목만 추가합니다.</span>
+                <span className="text-[10px] text-[#1E5B4A] font-normal">기존 목록을 유지하고 중복되지 않은 신규 항목만 추가합니다.</span>
               </button>
 
               <button

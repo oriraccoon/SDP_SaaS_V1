@@ -241,7 +241,7 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification, co
     const colorClasses = [
       'bg-purple-600 text-white',
       'bg-teal-600 text-white',
-      'bg-indigo-600 text-white',
+      'bg-[#1E5B4A] text-white',
       'bg-pink-600 text-white',
       'bg-emerald-600 text-white',
       'bg-cyan-600 text-white'
@@ -475,7 +475,7 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification, co
           {/* 더보기 토글 버튼 및 플랫폼 추가 버튼 */}
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="px-3 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-xl text-xs transition flex items-center gap-1.5 cursor-pointer shadow-md"
+            className="px-3 py-2.5 bg-[#1E5B4A] hover:bg-[#184A3C] text-white font-extrabold rounded-xl text-xs transition flex items-center gap-1.5 cursor-pointer shadow-md"
           >
             <Plus className="w-4 h-4 text-white stroke-[3]" />
             <span>새 플랫폼 추가</span>
@@ -493,7 +493,7 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification, co
 
       {/* 동기화 프로그레스 진행바 */}
       {isSyncing && (
-        <div className="bg-indigo-900/80 border border-indigo-700 rounded-xl p-3.5 space-y-2 animate-fadeIn">
+        <div className="bg-[#0F3A2F]/80 border border-[#184A3C] rounded-xl p-3.5 space-y-2 animate-fadeIn">
           <div className="flex items-center justify-between text-xs font-bold text-amber-300">
             <span className="flex items-center gap-1.5">
               <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-300" />
@@ -539,9 +539,9 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification, co
       {/* 펼쳐졌을 때: 쇼핑몰 카드 리스트 및 셀러센터 바로가기 / API 키 설정 모듈 */}
       {isExpanded && (
         <div className="space-y-4 pt-2">
-          <div className="flex items-center justify-between text-xs border-b border-indigo-800/30 pb-2">
-            <span className="font-bold text-indigo-200 flex items-center gap-1.5">
-              <Settings className="w-4 h-4 text-indigo-400" />
+          <div className="flex items-center justify-between text-xs border-b border-[#123A30]/30 pb-2">
+            <span className="font-bold text-[#CFE3DA] flex items-center gap-1.5">
+              <Settings className="w-4 h-4 text-[#4F8A75]" />
               플랫폼별 API 키 등록 및 셀러센터 퀵링크 ({configs.length}개 지원)
             </span>
             <span className="text-slate-400 text-[11px]">
@@ -555,7 +555,7 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification, co
                 key={plat.id}
                 className={`bg-slate-900/90 border rounded-xl p-3.5 flex flex-col justify-between gap-3 transition relative group ${
                   plat.isEnabled 
-                    ? 'border-indigo-700/80 shadow-md' 
+                    ? 'border-[#184A3C]/80 shadow-md' 
                     : 'border-slate-800 opacity-70 hover:opacity-100'
                 }`}
               >
@@ -615,7 +615,7 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification, co
                 <div className="flex items-center gap-1.5 pt-1">
                   <button
                     onClick={() => setActiveConfigModal(plat)}
-                    className="flex-1 py-1.5 px-2 bg-slate-800 hover:bg-slate-700 text-indigo-300 hover:text-white border border-slate-700 rounded-lg text-[11px] font-bold transition flex items-center justify-center gap-1 cursor-pointer"
+                    className="flex-1 py-1.5 px-2 bg-slate-800 hover:bg-slate-700 text-[#9CC7B5] hover:text-white border border-slate-700 rounded-lg text-[11px] font-bold transition flex items-center justify-center gap-1 cursor-pointer"
                   >
                     <Key className="w-3.5 h-3.5 text-amber-300" />
                     <span>API Key 설정</span>
@@ -625,11 +625,11 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification, co
                     href={plat.sellerUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="py-1.5 px-2.5 bg-indigo-950 hover:bg-indigo-900 text-indigo-200 border border-indigo-800 rounded-lg text-[11px] font-semibold transition flex items-center gap-1 shrink-0"
+                    className="py-1.5 px-2.5 bg-[#0A2A22] hover:bg-[#0F3A2F] text-[#CFE3DA] border border-[#123A30] rounded-lg text-[11px] font-semibold transition flex items-center gap-1 shrink-0"
                     title={`${plat.name} 셀러센터로 바로 이동`}
                   >
                     <span>센터</span>
-                    <ExternalLink className="w-3 h-3 text-indigo-400" />
+                    <ExternalLink className="w-3 h-3 text-[#4F8A75]" />
                   </a>
                 </div>
               </div>
@@ -638,9 +638,9 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification, co
             {/* 카드 추가 클릭 버튼 */}
             <button
               onClick={() => setIsAddModalOpen(true)}
-              className="bg-slate-900/40 hover:bg-slate-900/80 border-2 border-dashed border-indigo-700/50 hover:border-amber-400 rounded-xl p-4 flex flex-col items-center justify-center gap-2 text-indigo-300 hover:text-amber-300 transition cursor-pointer group min-h-[140px]"
+              className="bg-slate-900/40 hover:bg-slate-900/80 border-2 border-dashed border-[#184A3C]/50 hover:border-amber-400 rounded-xl p-4 flex flex-col items-center justify-center gap-2 text-[#9CC7B5] hover:text-amber-300 transition cursor-pointer group min-h-[140px]"
             >
-              <div className="p-2.5 bg-indigo-950/80 group-hover:bg-amber-400/20 text-indigo-300 group-hover:text-amber-300 rounded-full border border-indigo-700/60 group-hover:border-amber-400/40 transition">
+              <div className="p-2.5 bg-[#0A2A22]/80 group-hover:bg-amber-400/20 text-[#9CC7B5] group-hover:text-amber-300 rounded-full border border-[#184A3C]/60 group-hover:border-amber-400/40 transition">
                 <Plus className="w-5 h-5" />
               </div>
               <span className="font-bold text-xs">새 쇼핑몰/플랫폼 추가</span>
@@ -649,7 +649,7 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification, co
           </div>
 
           {/* 하단 가이드 팁 */}
-          <div className="p-3 bg-indigo-950/60 rounded-xl border border-indigo-800/40 text-xs text-indigo-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="p-3 bg-[#0A2A22]/60 rounded-xl border border-[#123A30]/40 text-xs text-[#CFE3DA]/90 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <HelpCircle className="w-4 h-4 text-amber-300 shrink-0" />
               <span>
@@ -852,7 +852,7 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification, co
                 />
               </div>
 
-              <div className="p-3 bg-indigo-950/80 rounded-lg border border-indigo-800/80 text-[11px] text-indigo-200/90 leading-relaxed">
+              <div className="p-3 bg-[#0A2A22]/80 rounded-lg border border-[#123A30]/80 text-[11px] text-[#CFE3DA]/90 leading-relaxed">
                 플랫폼 이름을 입력하고 등록하시면, 언제든지 <strong>'원클릭 주문 수집'</strong> 버튼 하나로 해당 쇼핑몰의 신규 발주확인 데이터가 자동 수집됩니다.
               </div>
             </div>

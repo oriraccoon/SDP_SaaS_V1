@@ -103,19 +103,19 @@ export default function WaybillReportDashboard({
           onClick={() => setActiveTab('exact')}
           className={`p-3.5 rounded-xl border text-left transition flex flex-col justify-between cursor-pointer ${
             activeTab === 'exact'
-              ? 'bg-indigo-50/90 border-indigo-300 shadow-sm ring-2 ring-indigo-500/20'
-              : 'bg-white border-slate-200 shadow-sm hover:border-indigo-200'
+              ? 'bg-[#F1F7F4]/90 border-[#9CC7B5] shadow-sm ring-2 ring-[#1E5B4A]/20'
+              : 'bg-white border-slate-200 shadow-sm hover:border-[#CFE3DA]'
           }`}
         >
           <div className="flex items-center justify-between w-full">
             <span className="text-xs font-semibold text-slate-500">완전 매칭</span>
-            <div className="p-1.5 bg-indigo-100 text-indigo-600 rounded-md">
+            <div className="p-1.5 bg-[#E9F3EE] text-[#1E5B4A] rounded-md">
               <Package className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-2">
             <div className="text-lg font-bold text-slate-800">{displayExactCount}건</div>
-            <div className="text-[10px] text-indigo-600 font-medium mt-0.5">100% 일치 매칭 (합포장 포함)</div>
+            <div className="text-[10px] text-[#1E5B4A] font-medium mt-0.5">100% 일치 매칭 (합포장 포함)</div>
           </div>
         </button>
 
@@ -224,7 +224,7 @@ export default function WaybillReportDashboard({
             onClick={() => setActiveTab('exact')}
             className={`py-3 px-4 text-xs font-semibold text-center border-b-2 transition ${
               activeTab === 'exact'
-                ? 'border-indigo-600 text-indigo-700 bg-indigo-50/40'
+                ? 'border-[#1E5B4A] text-[#184A3C] bg-[#F1F7F4]/40'
                 : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
@@ -362,8 +362,8 @@ export default function WaybillReportDashboard({
           {/* 2. 일반 완전 매칭 탭 */}
           {activeTab === 'exact' && (
             <div className="space-y-4">
-              <p className="text-xs text-slate-600 flex items-center gap-1.5 bg-indigo-50/80 p-3 rounded-lg border border-indigo-150">
-                <Package className="w-4 h-4 text-indigo-600 shrink-0" />
+              <p className="text-xs text-slate-600 flex items-center gap-1.5 bg-[#F1F7F4]/80 p-3 rounded-lg border border-[#E0EFE8]">
+                <Package className="w-4 h-4 text-[#1E5B4A] shrink-0" />
                 <span>
                   <strong>일반 완전 매칭</strong>은 성명, 우편번호, 연락처, 품목명이 100% 교차 대조되어 완벽하게 송장이 매칭된 주문 목록입니다.
                 </span>
@@ -371,7 +371,7 @@ export default function WaybillReportDashboard({
 
               <div className="max-h-[520px] overflow-auto border border-slate-200 rounded-lg shadow-2xs bg-white">
                 <table className="w-full text-xs text-left text-slate-600 min-w-[980px]">
-                  <thead className="sticky top-0 z-10 bg-indigo-50 text-indigo-900 font-bold uppercase border-b border-indigo-200 shadow-2xs">
+                  <thead className="sticky top-0 z-10 bg-[#F1F7F4] text-[#0F3A2F] font-bold uppercase border-b border-[#CFE3DA] shadow-2xs">
                     <tr>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[100px]">플랫폼</th>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[120px]">수령인</th>
@@ -384,7 +384,7 @@ export default function WaybillReportDashboard({
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {exactMatchOrders.map((ord, i) => (
-                      <tr key={i} className="hover:bg-indigo-50/30 transition">
+                      <tr key={i} className="hover:bg-[#F1F7F4]/30 transition">
                         <td className="px-3 py-2.5 whitespace-nowrap">
                           <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-800 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200" title={ord.sourceFileName || ord.platformName}>
                             <FileText className="w-3 h-3 text-slate-500 shrink-0" />
@@ -397,7 +397,7 @@ export default function WaybillReportDashboard({
                         <td className="px-3 py-2.5 min-w-[280px] max-w-md truncate" title={ord.originalProductName || ord.상품명}>
                           {ord.originalProductName || ord.상품명}
                         </td>
-                        <td className="px-3 py-2.5 whitespace-nowrap font-mono font-bold text-indigo-800 bg-indigo-50/50 rounded">
+                        <td className="px-3 py-2.5 whitespace-nowrap font-mono font-bold text-[#123A30] bg-[#F1F7F4]/50 rounded">
                           {ord.trackingNumber || "-"}
                         </td>
                         <td className="px-3 py-2.5 whitespace-nowrap text-emerald-600 font-semibold flex items-center gap-1">

@@ -299,9 +299,9 @@ export default function ExcelValidationDashboard({
         {/* 전체 검사 리스트 팝업 버튼 */}
         <button
           onClick={() => setIsFullListModalOpen(true)}
-          className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg transition-colors mt-2 sm:mt-0"
+          className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-[#184A3C] bg-[#F1F7F4] hover:bg-[#E9F3EE] border border-[#CFE3DA] rounded-lg transition-colors mt-2 sm:mt-0"
         >
-          <ListFilter className="w-3.5 h-3.5 text-indigo-600" />
+          <ListFilter className="w-3.5 h-3.5 text-[#1E5B4A]" />
           <span>전체 검사 항목 ({currentStepChecks.length})</span>
         </button>
       </div>
@@ -381,7 +381,7 @@ export default function ExcelValidationDashboard({
               {/* 모달 헤더 */}
               <div className="px-5 py-3.5 border-b border-slate-200 flex items-center justify-between bg-slate-50">
                 <div className="flex items-center gap-2">
-                  <ListFilter className="w-4 h-4 text-indigo-600" />
+                  <ListFilter className="w-4 h-4 text-[#1E5B4A]" />
                   <h3 className="text-sm font-bold text-slate-800">
                     {stepTitle} 전체 항목 ({currentStepChecks.length}개)
                   </h3>
@@ -416,7 +416,7 @@ export default function ExcelValidationDashboard({
                         <tr
                           key={item.id}
                           onClick={() => setSelectedDetailCheck(item)}
-                          className={`hover:bg-indigo-50/50 cursor-pointer transition-colors ${
+                          className={`hover:bg-[#F1F7F4]/50 cursor-pointer transition-colors ${
                             item.status === 'FAIL'
                               ? 'bg-rose-50/30'
                               : item.status === 'WARNING'
@@ -485,7 +485,7 @@ export default function ExcelValidationDashboard({
               {/* 모달 헤더 */}
               <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
                 <div className="flex items-center gap-2">
-                  <Info className="w-5 h-5 text-indigo-600" />
+                  <Info className="w-5 h-5 text-[#1E5B4A]" />
                   <h4 className="text-sm font-bold text-slate-800">
                     검사 항목 세부 진단 결과 [{selectedDetailCheck.code}]
                   </h4>
@@ -541,7 +541,7 @@ export default function ExcelValidationDashboard({
                       <button
                         type="button"
                         onClick={() => handleAddAllToDict(selectedDetailCheck.details)}
-                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition shadow-xs flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
+                        className="px-3 py-1.5 bg-[#1E5B4A] hover:bg-[#184A3C] text-white rounded-xl text-xs font-bold transition shadow-xs flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
                       >
                         <PlusCircle className="w-3.5 h-3.5" />
                         Warning 매칭 전체 대치 리스트에 일괄 추가
@@ -572,8 +572,8 @@ export default function ExcelValidationDashboard({
                               isAdded
                                 ? 'bg-emerald-50/60 border-emerald-200'
                                 : hasCustomText
-                                ? 'bg-indigo-50/40 border-indigo-200 hover:border-indigo-300'
-                                : 'bg-white border-slate-200 hover:border-indigo-300'
+                                ? 'bg-[#F1F7F4]/40 border-[#CFE3DA] hover:border-[#9CC7B5]'
+                                : 'bg-white border-slate-200 hover:border-[#9CC7B5]'
                             }`}
                           >
                             <div className="flex items-center justify-between text-[11px] text-slate-500 border-b border-slate-100 pb-2">
@@ -586,7 +586,7 @@ export default function ExcelValidationDashboard({
                                   대치 리스트 반영 완료
                                 </span>
                               ) : hasCustomText ? (
-                                <span className="px-2.5 py-0.5 font-extrabold bg-indigo-600 text-white rounded-md text-[10px] flex items-center gap-1 shadow-2xs">
+                                <span className="px-2.5 py-0.5 font-extrabold bg-[#1E5B4A] text-white rounded-md text-[10px] flex items-center gap-1 shadow-2xs">
                                   글자 수정됨 (미반영)
                                 </span>
                               ) : (
@@ -609,15 +609,15 @@ export default function ExcelValidationDashboard({
                                 isAdded
                                   ? 'bg-emerald-100/60 border-emerald-300 text-emerald-950'
                                   : hasCustomText
-                                  ? 'bg-indigo-100/80 border-indigo-300 text-indigo-950 font-semibold'
-                                  : 'bg-indigo-50/50 border-indigo-150 text-indigo-900'
+                                  ? 'bg-[#E9F3EE]/80 border-[#9CC7B5] text-[#0A2A22] font-semibold'
+                                  : 'bg-[#F1F7F4]/50 border-[#E0EFE8] text-[#0F3A2F]'
                               }`}>
                                 <div className={`text-[10px] font-bold mb-0.5 flex items-center gap-1 ${
                                   isAdded
                                     ? 'text-emerald-700 font-extrabold'
                                     : hasCustomText
-                                    ? 'text-indigo-700 font-extrabold'
-                                    : 'text-indigo-500'
+                                    ? 'text-[#184A3C] font-extrabold'
+                                    : 'text-[#1E5B4A]'
                                 }`}>
                                   <span>{isAdded ? ' 반영된 대치 정제명' : hasCustomText ? ' 수정한 정제명' : ' 매칭된 정제명'}</span>
                                 </div>
@@ -646,13 +646,13 @@ export default function ExcelValidationDashboard({
                                     }
                                   }}
                                   placeholder="새로운 올바른 정제명 입력... (Enter: 저장, ESC: 취소)"
-                                  className="flex-1 text-xs border border-indigo-300 rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-white font-medium"
+                                  className="flex-1 text-xs border border-[#9CC7B5] rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#1E5B4A]/20 bg-white font-medium"
                                   autoFocus
                                 />
                                 <button
                                   type="button"
                                   onClick={() => handleSaveEdit(parsed.rawName)}
-                                  className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shrink-0 cursor-pointer shadow-2xs"
+                                  className="px-3 py-1.5 bg-[#1E5B4A] hover:bg-[#184A3C] text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shrink-0 cursor-pointer shadow-2xs"
                                 >
                                   <Check className="w-3.5 h-3.5" />
                                   저장
@@ -692,7 +692,7 @@ export default function ExcelValidationDashboard({
                                       onClick={() => handleAddToDict(parsed.rawName, currentMappedName)}
                                       className={`px-2.5 py-1 border rounded-lg text-xs font-bold transition shadow-2xs flex items-center gap-1 cursor-pointer ${
                                         hasCustomText
-                                          ? 'bg-indigo-600 hover:bg-indigo-700 text-white border-indigo-600'
+                                          ? 'bg-[#1E5B4A] hover:bg-[#184A3C] text-white border-[#1E5B4A]'
                                           : 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-300 hover:border-amber-400'
                                       }`}
                                       title="이 매칭 결과를 대치 사전에 추가하여 반영합니다."
@@ -706,7 +706,7 @@ export default function ExcelValidationDashboard({
                                         setEditingRawName(parsed.rawName);
                                         setEditingVal(currentMappedName);
                                       }}
-                                      className="px-2.5 py-1 bg-white hover:bg-indigo-50 text-indigo-600 border border-indigo-200 hover:border-indigo-400 rounded-lg text-xs font-bold transition shadow-2xs flex items-center gap-1 cursor-pointer"
+                                      className="px-2.5 py-1 bg-white hover:bg-[#F1F7F4] text-[#1E5B4A] border border-[#CFE3DA] hover:border-[#4F8A75] rounded-lg text-xs font-bold transition shadow-2xs flex items-center gap-1 cursor-pointer"
                                     >
                                       <Edit2 className="w-3 h-3" />
                                       직접 고치기

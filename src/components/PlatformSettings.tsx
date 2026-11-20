@@ -838,7 +838,7 @@ export default function PlatformSettings({
 
   // 주요 타겟 필드 정의 (10가지 정보 - 쇼핑몰용)
   const TARGET_FIELDS = [
-    { key: '상품명', label: '상품명', icon: '', badgeBg: 'bg-indigo-100 text-indigo-800 border-indigo-200', description: '주문 상품 이름' },
+    { key: '상품명', label: '상품명', icon: '', badgeBg: 'bg-[#E9F3EE] text-[#123A30] border-[#CFE3DA]', description: '주문 상품 이름' },
     { key: '용량', label: '용량 / 옵션명', icon: '', badgeBg: 'bg-blue-100 text-blue-800 border-blue-200', description: '상세 옵션 및 수량단위' },
     { key: '수량', label: '주문 수량', icon: '', badgeBg: 'bg-emerald-100 text-emerald-800 border-emerald-200', description: '구매 개수' },
     { key: '수령인', label: '수령인 (받는사람)', icon: '', badgeBg: 'bg-purple-100 text-purple-800 border-purple-200', description: '수취인 성명' },
@@ -852,12 +852,12 @@ export default function PlatformSettings({
 
   // 택배사 매트릭스 타겟 필드 정의 (9가지 정보 - 2단계 택배사용)
   const COURIER_TARGET_FIELDS = [
-    { key: 'tracking_col', label: '운송장번호 열', icon: '', badgeBg: 'bg-indigo-100 text-indigo-800 border-indigo-200', description: '운송장번호 위치 (필수)' },
+    { key: 'tracking_col', label: '운송장번호 열', icon: '', badgeBg: 'bg-[#E9F3EE] text-[#123A30] border-[#CFE3DA]', description: '운송장번호 위치 (필수)' },
     { key: 'name_col', label: '수령인 (받는사람)', icon: '', badgeBg: 'bg-purple-100 text-purple-800 border-purple-200', description: '수취인 성명 위치' },
     { key: 'phone_col', label: '연락처 (전화번호)', icon: '', badgeBg: 'bg-amber-100 text-amber-800 border-amber-200', description: '전화/휴대폰번호 위치' },
     { key: 'zip_col', label: '우편번호', icon: '', badgeBg: 'bg-cyan-100 text-cyan-800 border-cyan-200', description: '우편번호 5자리 위치' },
     { key: 'addr_col', label: '배송지 주소', icon: '', badgeBg: 'bg-rose-100 text-rose-800 border-rose-200', description: '배송지 주소 위치' },
-    { key: 'prod_col', label: '상품명', icon: '', badgeBg: 'bg-indigo-100 text-indigo-800 border-indigo-200', description: '상품/품목명 위치' },
+    { key: 'prod_col', label: '상품명', icon: '', badgeBg: 'bg-[#E9F3EE] text-[#123A30] border-[#CFE3DA]', description: '상품/품목명 위치' },
     { key: 'unit_col', label: '옵션 / 규격', icon: '', badgeBg: 'bg-blue-100 text-blue-800 border-blue-200', description: '옵션/용량/규격 위치' },
     { key: 'qty_col', label: '수량', icon: '', badgeBg: 'bg-emerald-100 text-emerald-800 border-emerald-200', description: '구매 개수 위치' },
     { key: 'courier_col', label: '택배사명 지정열', icon: '', badgeBg: 'bg-teal-100 text-teal-800 border-teal-200', description: '택배사명 표시열' },
@@ -1055,7 +1055,7 @@ export default function PlatformSettings({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <span className="p-1.5 bg-indigo-50 rounded-lg text-indigo-600">
+                <span className="p-1.5 bg-[#F1F7F4] rounded-lg text-[#1E5B4A]">
                   <Grid className="w-5 h-5" />
                 </span>
                 <h2 className="text-lg font-bold tracking-tight text-slate-900">
@@ -1085,7 +1085,7 @@ export default function PlatformSettings({
               {parsedFiles.length > 0 && onNavigateToProcessTab && (
                 <button
                   onClick={onNavigateToProcessTab}
-                  className="px-3.5 py-2 bg-indigo-500 hover:bg-indigo-400 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="px-3.5 py-2 bg-[#1E5B4A] hover:bg-[#4F8A75] text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <ArrowRight className="w-4 h-4" />
                   주문 가공으로 돌아가기
@@ -1101,7 +1101,7 @@ export default function PlatformSettings({
                 onClick={() => setMatrixType('platform')}
                 className={`px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
                   matrixType === 'platform'
-                    ? 'bg-indigo-600 text-white shadow-md font-extrabold'
+                    ? 'bg-[#1E5B4A] text-white shadow-md font-extrabold'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
                 }`}
               >
@@ -1109,7 +1109,7 @@ export default function PlatformSettings({
                 <span> 1단계 쇼핑몰 플랫폼 감지</span>
                 {parsedFiles.length > 0 && (
                   <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${
-                    matrixType === 'platform' ? 'bg-indigo-100 text-indigo-800 font-bold' : 'bg-slate-200 text-slate-600'
+                    matrixType === 'platform' ? 'bg-[#E9F3EE] text-[#123A30] font-bold' : 'bg-slate-200 text-slate-600'
                   }`}>
                     {parsedFiles.length}개 파일
                   </span>
@@ -1128,7 +1128,7 @@ export default function PlatformSettings({
                 <span> 2단계 택배사 송장 감지</span>
                 {parsedTrackingFiles.length > 0 && (
                   <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${
-                    matrixType === 'courier' ? 'bg-indigo-600 text-white font-bold' : 'bg-slate-200 text-slate-600'
+                    matrixType === 'courier' ? 'bg-[#1E5B4A] text-white font-bold' : 'bg-slate-200 text-slate-600'
                   }`}>
                     {parsedTrackingFiles.length}개 파일
                   </span>
@@ -1160,14 +1160,14 @@ export default function PlatformSettings({
                       onClick={() => setSelectedFileIdx(idx)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-2 border cursor-pointer ${
                         isSelected
-                          ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm font-bold'
+                          ? 'bg-[#1E5B4A] text-white border-[#1E5B4A] shadow-sm font-bold'
                           : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
                       }`}
                     >
                       <FileText className="w-3.5 h-3.5" />
                       <span className="max-w-[180px] truncate">{pf.fileName}</span>
                       <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${
-                        isSelected ? 'bg-indigo-100 text-indigo-800' : 'bg-slate-100 text-slate-600'
+                        isSelected ? 'bg-[#E9F3EE] text-[#123A30]' : 'bg-slate-100 text-slate-600'
                       }`}>
                         {platName}
                       </span>
@@ -1214,7 +1214,7 @@ export default function PlatformSettings({
                         <Truck className="w-3.5 h-3.5" />
                         <span className="max-w-[180px] truncate">{ptf.fileName}</span>
                         <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${
-                          isSelected ? 'bg-indigo-600 text-white font-bold' : 'bg-slate-100 text-slate-600'
+                          isSelected ? 'bg-[#1E5B4A] text-white font-bold' : 'bg-slate-100 text-slate-600'
                         }`}>
                           {ptf.detectedCourier}
                         </span>
@@ -1308,7 +1308,7 @@ export default function PlatformSettings({
                   setNewPlatformPatternInput(autoKey);
                   setShowSaveAsNewModal(true);
                 }}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition flex items-center gap-1.5 shadow-sm cursor-pointer hover:shadow-md"
+                className="px-4 py-2 bg-[#1E5B4A] hover:bg-[#184A3C] text-white font-bold text-xs rounded-xl transition flex items-center gap-1.5 shadow-sm cursor-pointer hover:shadow-md"
               >
                 <Plus className="w-4 h-4" />
                 새 쇼핑몰 양식으로 등록
@@ -1383,7 +1383,7 @@ export default function PlatformSettings({
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
                   <div>
                     <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
-                      <Search className="w-4 h-4 text-indigo-600" />
+                      <Search className="w-4 h-4 text-[#1E5B4A]" />
                       키워드로 원하는 열 찾기 (헤더 검색기)
                     </h3>
                     <p className="text-xs text-slate-500 mt-0.5">
@@ -1397,7 +1397,7 @@ export default function PlatformSettings({
                       <select
                         value={activePlatform.id}
                         onChange={(e) => onFilePlatformChange(activeFile.fileName, e.target.value)}
-                        className="bg-white border border-slate-200 rounded px-2 py-1 font-bold text-indigo-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+                        className="bg-white border border-slate-200 rounded px-2 py-1 font-bold text-[#184A3C] focus:outline-none focus:ring-1 focus:ring-[#1E5B4A] cursor-pointer"
                       >
                         {platforms.map(p => (
                           <option key={p.id} value={p.id}>{p.name}</option>
@@ -1415,7 +1415,7 @@ export default function PlatformSettings({
                     value={keywordSearch}
                     onChange={(e) => setKeywordSearch(e.target.value)}
                     placeholder="찾고 싶은 헤더 키워드를 입력하세요 (예: 받는사람, 수량, 옵션, 전화번호, 주소, E열, 5번째)..."
-                    className="w-full pl-10 pr-10 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition"
+                    className="w-full pl-10 pr-10 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#1E5B4A]/20 focus:border-[#1E5B4A] transition"
                   />
                   {keywordSearch && (
                     <button
@@ -1429,10 +1429,10 @@ export default function PlatformSettings({
 
                 {/* 검색어 입력 시 매칭된 열 타일 리스트 */}
                 {keywordSearch.trim() !== '' && (
-                  <div className="space-y-2 bg-indigo-50/40 border border-indigo-100 rounded-xl p-3.5">
-                    <div className="text-xs font-bold text-indigo-900 flex items-center justify-between">
+                  <div className="space-y-2 bg-[#F1F7F4]/40 border border-[#E9F3EE] rounded-xl p-3.5">
+                    <div className="text-xs font-bold text-[#0F3A2F] flex items-center justify-between">
                       <span> 키워드 "{keywordSearch}" 검색 결과 ({filteredColumns.length}개 열 찾음):</span>
-                      <span className="text-[10px] text-indigo-600 font-normal">버튼을 클릭하면 플랫폼 설정 항목에 즉시 지정됩니다</span>
+                      <span className="text-[10px] text-[#1E5B4A] font-normal">버튼을 클릭하면 플랫폼 설정 항목에 즉시 지정됩니다</span>
                     </div>
 
                     {filteredColumns.length > 0 ? (
@@ -1440,10 +1440,10 @@ export default function PlatformSettings({
                         {filteredColumns.map(col => (
                           <div
                             key={col.index}
-                            className="bg-white border border-indigo-200 hover:border-indigo-500 rounded-lg p-2 text-xs shadow-2xs space-y-1.5 transition"
+                            className="bg-white border border-[#CFE3DA] hover:border-[#1E5B4A] rounded-lg p-2 text-xs shadow-2xs space-y-1.5 transition"
                           >
                             <div className="flex items-center gap-1.5">
-                              <span className="font-mono font-bold bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded text-[10px]">
+                              <span className="font-mono font-bold bg-[#E9F3EE] text-[#123A30] px-1.5 py-0.5 rounded text-[10px]">
                                 {col.letter}열 ({col.index + 1}번째)
                               </span>
                               <span className="font-semibold text-slate-800">{col.headerText}</span>
@@ -1454,7 +1454,7 @@ export default function PlatformSettings({
                                 <button
                                   key={targetKey}
                                   onClick={() => handleUpdateColumnMapping(activePlatform.id, targetKey, col.index)}
-                                  className="text-[10px] bg-slate-100 hover:bg-indigo-600 hover:text-white text-slate-700 px-1.5 py-0.5 rounded transition font-medium cursor-pointer"
+                                  className="text-[10px] bg-slate-100 hover:bg-[#1E5B4A] hover:text-white text-slate-700 px-1.5 py-0.5 rounded transition font-medium cursor-pointer"
                                 >
                                   {targetKey}로 지정
                                 </button>
@@ -1478,7 +1478,7 @@ export default function PlatformSettings({
               <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <h3 className="font-bold text-slate-800 text-base flex items-center gap-2">
-                    <Table className="w-5 h-5 text-indigo-600" />
+                    <Table className="w-5 h-5 text-[#1E5B4A]" />
                     {activeFile ? `[${activePlatform?.name || '쇼핑몰'}] 감지된 열 매핑 현황 매트릭스` : '플랫폼 표준 열 매핑 구조'}
                   </h3>
                   <p className="text-xs text-slate-500 mt-0.5">
@@ -1505,7 +1505,7 @@ export default function PlatformSettings({
                         setToastMessage(" 현재 매칭 결과가 1단계 주문 가공 데이터에 즉시 적용되었습니다!");
                         setTimeout(() => setToastMessage(null), 3000);
                       }}
-                      className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer hover:shadow-md"
+                      className="px-3.5 py-1.5 bg-[#1E5B4A] hover:bg-[#1E5B4A] text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer hover:shadow-md"
                       title="현재 지정된 열 매핑을 바탕으로 1단계 주문 데이터를 즉시 재가공합니다"
                     >
                       <CheckCircle2 className="w-3.5 h-3.5" />
@@ -1525,7 +1525,7 @@ export default function PlatformSettings({
                     )}
 
                     <div className="text-xs text-slate-500 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 flex items-center gap-2">
-                      <FileText className="w-4 h-4 text-indigo-600" />
+                      <FileText className="w-4 h-4 text-[#1E5B4A]" />
                       <span>분석 파일: <strong>{activeFile.fileName}</strong> (헤더: {headerRowIndex + 1}행)</span>
                     </div>
                   </div>
@@ -1574,11 +1574,11 @@ export default function PlatformSettings({
                         statusBg = 'bg-amber-50 text-amber-700 border-amber-200';
                       } else if (detectedHeaderText.includes(field.key) || field.key.includes(detectedHeaderText)) {
                         statusLabel = `키워드 '${field.key}' 감지 완료`;
-                        statusBg = 'bg-indigo-50 text-indigo-700 border-indigo-200';
+                        statusBg = 'bg-[#F1F7F4] text-[#184A3C] border-[#CFE3DA]';
                       }
 
                       return (
-                        <tr key={field.key} className="hover:bg-indigo-50/20 transition">
+                        <tr key={field.key} className="hover:bg-[#F1F7F4]/20 transition">
                           <td className="py-3.5 px-4 font-bold text-slate-800">
                             <div className="flex items-center gap-2">
                               <span className="text-base">{field.icon}</span>
@@ -1622,7 +1622,7 @@ export default function PlatformSettings({
                           <td className="py-3.5 px-4">
                             {isAssigned ? (
                               <div className="flex items-center gap-1.5">
-                                <span className="font-mono font-extrabold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200 text-xs">
+                                <span className="font-mono font-extrabold text-[#184A3C] bg-[#F1F7F4] px-2 py-0.5 rounded border border-[#CFE3DA] text-xs">
                                   {colLetter}열
                                 </span>
                                 <span className="text-[11px] text-slate-500 font-mono">
@@ -1650,7 +1650,7 @@ export default function PlatformSettings({
                                     const newIdx = parseInt(e.target.value, 10);
                                     handleUpdateColumnMapping(activePlatform.id, field.key, newIdx);
                                   }}
-                                  className="w-full text-xs bg-white border border-slate-200 hover:border-indigo-500 rounded-lg p-2 font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition cursor-pointer"
+                                  className="w-full text-xs bg-white border border-slate-200 hover:border-[#1E5B4A] rounded-lg p-2 font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#1E5B4A]/20 focus:border-[#1E5B4A] transition cursor-pointer"
                                 >
                                   {allHeaderColumns.length > 0 ? (
                                     allHeaderColumns.map(col => (
@@ -1684,7 +1684,7 @@ export default function PlatformSettings({
               <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 space-y-3">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
                   <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
-                    <Eye className="w-4 h-4 text-indigo-600" />
+                    <Eye className="w-4 h-4 text-[#1E5B4A]" />
                     엑셀 원본 헤더 및 상위 5행 데이터 실시간 검증
                   </h3>
                   <span className="text-[11px] text-slate-400">
@@ -1695,8 +1695,8 @@ export default function PlatformSettings({
                 <div className="overflow-x-auto max-h-64 border border-slate-200 rounded-xl">
                   <table className="w-full text-left text-[11px] border-collapse font-mono">
                     <thead>
-                      <tr className="bg-indigo-900 text-white font-bold divide-x divide-indigo-800">
-                        <th className="p-2 w-12 text-center bg-indigo-950">행</th>
+                      <tr className="bg-[#0F3A2F] text-white font-bold divide-x divide-[#123A30]">
+                        <th className="p-2 w-12 text-center bg-[#0A2A22]">행</th>
                         {rawHeaders.map((_, cIdx) => {
                           const cLetter = colNumToLetter(cIdx + 1);
                           const mappedField = TARGET_FIELDS.find(f => {
@@ -1708,7 +1708,7 @@ export default function PlatformSettings({
 
                           return (
                             <th key={cIdx} className="p-2 min-w-[110px] max-w-[200px] truncate">
-                              <div className="text-[10px] text-indigo-200">{cLetter}열 ({cIdx + 1})</div>
+                              <div className="text-[10px] text-[#CFE3DA]">{cLetter}열 ({cIdx + 1})</div>
                               {mappedField && (
                                 <div className="text-[9px] bg-amber-400 text-slate-900 font-extrabold px-1 py-0.2 rounded mt-0.5 inline-block">
                                   {mappedField.icon} {mappedField.label.split(' ')[0]}
@@ -1723,7 +1723,7 @@ export default function PlatformSettings({
                       {previewRows.map((row, rIdx) => {
                         const isHeader = rIdx === 0;
                         return (
-                          <tr key={rIdx} className={isHeader ? 'bg-indigo-50/80 font-bold text-indigo-950' : 'hover:bg-slate-50'}>
+                          <tr key={rIdx} className={isHeader ? 'bg-[#F1F7F4]/80 font-bold text-[#0A2A22]' : 'hover:bg-slate-50'}>
                             <td className="p-2 text-center text-slate-400 bg-slate-50 font-bold border-r border-slate-200">
                               {headerRowIndex + rIdx + 1}
                             </td>
@@ -1932,7 +1932,7 @@ export default function PlatformSettings({
                         statusBg = 'bg-amber-50 text-amber-700 border-amber-200';
                       } else {
                         statusLabel = `키워드 감지 완료`;
-                        statusBg = 'bg-indigo-50 text-indigo-700 border-indigo-200';
+                        statusBg = 'bg-[#F1F7F4] text-[#184A3C] border-[#CFE3DA]';
                       }
 
                       return (
@@ -2092,12 +2092,12 @@ export default function PlatformSettings({
             {/* 팝업 헤더 */}
             <div className="p-5 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
               <div className="flex items-center gap-2.5">
-                <span className="p-2 bg-indigo-500/20 rounded-xl text-amber-300">
+                <span className="p-2 bg-[#1E5B4A]/20 rounded-xl text-amber-300">
                   <Settings className="w-5 h-5 animate-spin-slow" />
                 </span>
                 <div>
                   <h3 className="font-bold text-base text-white">쇼핑몰 양식 & 택배사 컬럼 상세 관리</h3>
-                  <p className="text-xs text-indigo-200/80 mt-0.5">
+                  <p className="text-xs text-[#CFE3DA]/80 mt-0.5">
                     연동 플랫폼 및 택배사의 시작 행, 컬럼 매핑 구조를 정밀 수정하고 추가합니다.
                   </p>
                 </div>
@@ -2117,7 +2117,7 @@ export default function PlatformSettings({
                 onClick={() => setModalTab('platform')}
                 className={`flex items-center gap-2 py-3 px-4 font-bold text-xs border-b-2 transition cursor-pointer ${
                   modalTab === 'platform'
-                    ? 'border-indigo-600 text-indigo-600 bg-white'
+                    ? 'border-[#1E5B4A] text-[#1E5B4A] bg-white'
                     : 'border-transparent text-slate-500 hover:text-slate-800'
                 }`}
               >
@@ -2129,7 +2129,7 @@ export default function PlatformSettings({
                 onClick={() => setModalTab('courier')}
                 className={`flex items-center gap-2 py-3 px-4 font-bold text-xs border-b-2 transition cursor-pointer ${
                   modalTab === 'courier'
-                    ? 'border-indigo-600 text-indigo-600 bg-white'
+                    ? 'border-[#1E5B4A] text-[#1E5B4A] bg-white'
                     : 'border-transparent text-slate-500 hover:text-slate-800'
                 }`}
               >
@@ -2150,7 +2150,7 @@ export default function PlatformSettings({
                     </p>
                     <button
                       onClick={() => setShowPresetModal(true)}
-                      className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+                      className="px-3.5 py-1.5 bg-[#1E5B4A] hover:bg-[#184A3C] text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       쇼핑몰 추가하기
@@ -2166,7 +2166,7 @@ export default function PlatformSettings({
                           key={p.id}
                           className={`p-4 rounded-xl border transition space-y-2 ${
                             isEditing 
-                              ? 'bg-indigo-50/50 border-indigo-500 ring-1 ring-indigo-500' 
+                              ? 'bg-[#F1F7F4]/50 border-[#1E5B4A] ring-1 ring-[#1E5B4A]' 
                               : 'bg-white border-slate-200 hover:border-slate-300'
                           }`}
                         >
@@ -2175,7 +2175,7 @@ export default function PlatformSettings({
                             <div className="flex items-center gap-1">
                               <button
                                 onClick={() => setEditingPlatform(p)}
-                                className="px-2 py-1 text-[11px] bg-slate-100 hover:bg-indigo-100 text-slate-700 hover:text-indigo-700 rounded font-medium transition cursor-pointer"
+                                className="px-2 py-1 text-[11px] bg-slate-100 hover:bg-[#E9F3EE] text-slate-700 hover:text-[#184A3C] rounded font-medium transition cursor-pointer"
                               >
                                 수정
                               </button>
@@ -2189,7 +2189,7 @@ export default function PlatformSettings({
                           </div>
 
                           <div className="text-[11px] text-slate-500 flex items-center justify-between border-t border-slate-100 pt-2 font-mono flex-wrap gap-1">
-                            <span>인식 키워드: <strong className="text-indigo-700">{p.filepath_pattern || p.identifier || '전체'}</strong></span>
+                            <span>인식 키워드: <strong className="text-[#184A3C]">{p.filepath_pattern || p.identifier || '전체'}</strong></span>
                             <span>시작 행: {p.start_row + 1}행</span>
                             <span>송장 기입: {colNumToLetter(p.tracking_col + 1)}열</span>
                           </div>
@@ -2200,10 +2200,10 @@ export default function PlatformSettings({
 
                   {/* 쇼핑몰 상세 편집 Form */}
                   {editingPlatform && (
-                    <div className="bg-slate-50 border border-indigo-200 rounded-xl p-5 space-y-4 animate-fade-in">
-                      <div className="flex items-center justify-between border-b border-indigo-100 pb-3">
-                        <h4 className="font-bold text-indigo-900 text-sm flex items-center gap-1.5">
-                          <Edit3 className="w-4 h-4 text-indigo-600" />
+                    <div className="bg-slate-50 border border-[#CFE3DA] rounded-xl p-5 space-y-4 animate-fade-in">
+                      <div className="flex items-center justify-between border-b border-[#E9F3EE] pb-3">
+                        <h4 className="font-bold text-[#0F3A2F] text-sm flex items-center gap-1.5">
+                          <Edit3 className="w-4 h-4 text-[#1E5B4A]" />
                           [{editingPlatform.name}] 세부 컬럼 편집
                         </h4>
                         <button
@@ -2221,7 +2221,7 @@ export default function PlatformSettings({
                             type="text"
                             value={editingPlatform.name}
                             onChange={(e) => setEditingPlatform({ ...editingPlatform, name: e.target.value })}
-                            className="w-full text-xs p-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                            className="w-full text-xs p-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#1E5B4A]"
                           />
                         </div>
 
@@ -2236,7 +2236,7 @@ export default function PlatformSettings({
                               identifier: e.target.value 
                             })}
                             placeholder="예: 쿠팡, coupang, smartstore..."
-                            className="w-full text-xs p-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono"
+                            className="w-full text-xs p-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#1E5B4A] font-mono"
                           />
                         </div>
 
@@ -2247,7 +2247,7 @@ export default function PlatformSettings({
                             min="1"
                             value={startRowInput}
                             onChange={(e) => handleStartRowChange(e.target.value)}
-                            className="w-full text-xs p-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono"
+                            className="w-full text-xs p-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#1E5B4A] font-mono"
                           />
                         </div>
                       </div>
@@ -2269,7 +2269,7 @@ export default function PlatformSettings({
                                       onChange={(e) => handleColMapChange(key, e.target.value)}
                                       className="w-full text-xs p-1 bg-slate-50 border border-slate-200 rounded font-mono uppercase"
                                     />
-                                    <span className="text-[10px] text-indigo-600 font-mono shrink-0">{displayPreview}</span>
+                                    <span className="text-[10px] text-[#1E5B4A] font-mono shrink-0">{displayPreview}</span>
                                   </div>
                                 </div>
                               );
@@ -2279,35 +2279,35 @@ export default function PlatformSettings({
 
                         {/* 송장기입열 & 택배사열 지정 필드 복구 */}
                         <div className="pt-3 border-t border-slate-200">
-                          <label className="block text-xs font-bold text-indigo-900 mb-2">
+                          <label className="block text-xs font-bold text-[#0F3A2F] mb-2">
                             송장번호 & 택배사 기입열 지정 (송장 입력 엑셀 다운로드용)
                           </label>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                            <div className="bg-indigo-50/70 p-3 rounded-xl border border-indigo-200 space-y-1">
-                              <span className="block text-[11px] font-bold text-indigo-900">운송장번호 기입열 (tracking_col)</span>
+                            <div className="bg-[#F1F7F4]/70 p-3 rounded-xl border border-[#CFE3DA] space-y-1">
+                              <span className="block text-[11px] font-bold text-[#0F3A2F]">운송장번호 기입열 (tracking_col)</span>
                               <div className="flex items-center gap-2">
                                 <input
                                   type="text"
                                   value={trackingColInput}
                                   onChange={(e) => handleTrackingColChange(e.target.value)}
                                   placeholder="예: I 또는 9"
-                                  className="w-full text-xs p-2 bg-white border border-indigo-200 rounded-lg font-mono uppercase font-bold text-indigo-900 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                  className="w-full text-xs p-2 bg-white border border-[#CFE3DA] rounded-lg font-mono uppercase font-bold text-[#0F3A2F] focus:outline-none focus:ring-1 focus:ring-[#1E5B4A]"
                                 />
-                                <span className="text-xs text-indigo-700 font-mono font-bold shrink-0">{getColumnPreview(trackingColInput).displayPreview}</span>
+                                <span className="text-xs text-[#184A3C] font-mono font-bold shrink-0">{getColumnPreview(trackingColInput).displayPreview}</span>
                               </div>
                             </div>
 
-                            <div className="bg-indigo-50/70 p-3 rounded-xl border border-indigo-200 space-y-1">
-                              <span className="block text-[11px] font-bold text-indigo-900">택배사명 기입열 (courier_col)</span>
+                            <div className="bg-[#F1F7F4]/70 p-3 rounded-xl border border-[#CFE3DA] space-y-1">
+                              <span className="block text-[11px] font-bold text-[#0F3A2F]">택배사명 기입열 (courier_col)</span>
                               <div className="flex items-center gap-2">
                                 <input
                                   type="text"
                                   value={courierColInput}
                                   onChange={(e) => handleCourierColChange(e.target.value)}
                                   placeholder="예: J 또는 10 (미입력 시 사용 안 함)"
-                                  className="w-full text-xs p-2 bg-white border border-indigo-200 rounded-lg font-mono uppercase font-bold text-indigo-900 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                  className="w-full text-xs p-2 bg-white border border-[#CFE3DA] rounded-lg font-mono uppercase font-bold text-[#0F3A2F] focus:outline-none focus:ring-1 focus:ring-[#1E5B4A]"
                                 />
-                                <span className="text-xs text-indigo-700 font-mono font-bold shrink-0">{getColumnPreview(courierColInput).displayPreview}</span>
+                                <span className="text-xs text-[#184A3C] font-mono font-bold shrink-0">{getColumnPreview(courierColInput).displayPreview}</span>
                               </div>
                             </div>
                           </div>
@@ -2323,7 +2323,7 @@ export default function PlatformSettings({
                         </button>
                         <button
                           onClick={() => savePlatform(editingPlatform)}
-                          className="px-4 py-1.5 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition cursor-pointer"
+                          className="px-4 py-1.5 text-xs font-bold bg-[#1E5B4A] hover:bg-[#184A3C] text-white rounded-lg transition cursor-pointer"
                         >
                           설정 저장하기
                         </button>
@@ -2342,7 +2342,7 @@ export default function PlatformSettings({
                     </p>
                     <button
                       onClick={() => setShowCourierPresetModal(true)}
-                      className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+                      className="px-3.5 py-1.5 bg-[#1E5B4A] hover:bg-[#184A3C] text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       택배사 추가하기
@@ -2358,7 +2358,7 @@ export default function PlatformSettings({
                           key={c.id}
                           className={`p-4 rounded-xl border transition space-y-2 ${
                             isEditing 
-                              ? 'bg-indigo-50/50 border-indigo-500 ring-1 ring-indigo-500' 
+                              ? 'bg-[#F1F7F4]/50 border-[#1E5B4A] ring-1 ring-[#1E5B4A]' 
                               : 'bg-white border-slate-200 hover:border-slate-300'
                           }`}
                         >
@@ -2367,7 +2367,7 @@ export default function PlatformSettings({
                             <div className="flex items-center gap-1">
                               <button
                                 onClick={() => setEditingCourier(c)}
-                                className="px-2 py-1 text-[11px] bg-slate-100 hover:bg-indigo-100 text-slate-700 hover:text-indigo-700 rounded font-medium transition cursor-pointer"
+                                className="px-2 py-1 text-[11px] bg-slate-100 hover:bg-[#E9F3EE] text-slate-700 hover:text-[#184A3C] rounded font-medium transition cursor-pointer"
                               >
                                 수정
                               </button>
@@ -2391,10 +2391,10 @@ export default function PlatformSettings({
 
                   {/* 택배사 상세 편집 Form */}
                   {editingCourier && (
-                    <div className="bg-slate-50 border border-indigo-200 rounded-xl p-5 space-y-4 animate-fade-in">
-                      <div className="flex items-center justify-between border-b border-indigo-100 pb-3">
-                        <h4 className="font-bold text-indigo-900 text-sm flex items-center gap-1.5">
-                          <Edit3 className="w-4 h-4 text-indigo-600" />
+                    <div className="bg-slate-50 border border-[#CFE3DA] rounded-xl p-5 space-y-4 animate-fade-in">
+                      <div className="flex items-center justify-between border-b border-[#E9F3EE] pb-3">
+                        <h4 className="font-bold text-[#0F3A2F] text-sm flex items-center gap-1.5">
+                          <Edit3 className="w-4 h-4 text-[#1E5B4A]" />
                           [{editingCourier.name}] 컬럼 편집
                         </h4>
                         <button
@@ -2412,7 +2412,7 @@ export default function PlatformSettings({
                             type="text"
                             value={editingCourier.name}
                             onChange={(e) => setEditingCourier({ ...editingCourier, name: e.target.value })}
-                            className="w-full text-xs p-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 font-bold text-slate-800"
+                            className="w-full text-xs p-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#1E5B4A] font-bold text-slate-800"
                           />
                         </div>
 
@@ -2423,24 +2423,24 @@ export default function PlatformSettings({
                             min="1"
                             value={courierStartRowInput}
                             onChange={(e) => handleCourierStartRowChange(e.target.value)}
-                            className="w-full text-xs p-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono font-bold"
+                            className="w-full text-xs p-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#1E5B4A] font-mono font-bold"
                           />
                         </div>
                       </div>
 
                       {/* 택배사 엑셀 컬럼 지정 영역 (운송장번호 지정 포함) */}
-                      <div className="space-y-3 pt-3 border-t border-indigo-100">
-                        <label className="block text-xs font-bold text-indigo-900 flex items-center gap-1.5">
-                          <Truck className="w-3.5 h-3.5 text-indigo-600" />
+                      <div className="space-y-3 pt-3 border-t border-[#E9F3EE]">
+                        <label className="block text-xs font-bold text-[#0F3A2F] flex items-center gap-1.5">
+                          <Truck className="w-3.5 h-3.5 text-[#1E5B4A]" />
                           택배사 엑셀 항목별 열 위치 (A, B, C 또는 1, 2, 3...)
                         </label>
 
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                           {/* 1. 운송장번호 지정 (핵심 요청) */}
-                          <div className="bg-indigo-50/80 p-2.5 rounded-xl border border-indigo-200 space-y-1">
-                            <span className="block text-[11px] font-bold text-indigo-900 flex items-center justify-between">
+                          <div className="bg-[#F1F7F4]/80 p-2.5 rounded-xl border border-[#CFE3DA] space-y-1">
+                            <span className="block text-[11px] font-bold text-[#0F3A2F] flex items-center justify-between">
                               <span> 운송장번호 열</span>
-                              <span className="text-[9px] text-indigo-600 bg-indigo-100 px-1 rounded">필수</span>
+                              <span className="text-[9px] text-[#1E5B4A] bg-[#E9F3EE] px-1 rounded">필수</span>
                             </span>
                             <div className="flex items-center gap-1">
                               <input
@@ -2448,9 +2448,9 @@ export default function PlatformSettings({
                                 value={courierColInputs['tracking_col'] || ''}
                                 onChange={(e) => handleCourierFieldChange('tracking_col', e.target.value)}
                                 placeholder="예: B 또는 2"
-                                className="w-full text-xs p-1.5 bg-white border border-indigo-200 rounded-lg font-mono uppercase font-bold text-indigo-900 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                className="w-full text-xs p-1.5 bg-white border border-[#CFE3DA] rounded-lg font-mono uppercase font-bold text-[#0F3A2F] focus:outline-none focus:ring-1 focus:ring-[#1E5B4A]"
                               />
-                              <span className="text-[10px] text-indigo-700 font-mono font-bold shrink-0">{getColumnPreview(courierColInputs['tracking_col'] || '').displayPreview}</span>
+                              <span className="text-[10px] text-[#184A3C] font-mono font-bold shrink-0">{getColumnPreview(courierColInputs['tracking_col'] || '').displayPreview}</span>
                             </div>
                           </div>
 
@@ -2463,9 +2463,9 @@ export default function PlatformSettings({
                                 value={courierColInputs['name_col'] || ''}
                                 onChange={(e) => handleCourierFieldChange('name_col', e.target.value)}
                                 placeholder="예: C 또는 3"
-                                className="w-full text-xs p-1.5 bg-slate-50 border border-slate-200 rounded-lg font-mono uppercase font-bold focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                className="w-full text-xs p-1.5 bg-slate-50 border border-slate-200 rounded-lg font-mono uppercase font-bold focus:outline-none focus:ring-1 focus:ring-[#1E5B4A]"
                               />
-                              <span className="text-[10px] text-indigo-600 font-mono shrink-0">{getColumnPreview(courierColInputs['name_col'] || '').displayPreview}</span>
+                              <span className="text-[10px] text-[#1E5B4A] font-mono shrink-0">{getColumnPreview(courierColInputs['name_col'] || '').displayPreview}</span>
                             </div>
                           </div>
 
@@ -2478,9 +2478,9 @@ export default function PlatformSettings({
                                 value={courierColInputs['phone_col'] || ''}
                                 onChange={(e) => handleCourierFieldChange('phone_col', e.target.value)}
                                 placeholder="예: D 또는 4"
-                                className="w-full text-xs p-1.5 bg-slate-50 border border-slate-200 rounded-lg font-mono uppercase font-bold focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                className="w-full text-xs p-1.5 bg-slate-50 border border-slate-200 rounded-lg font-mono uppercase font-bold focus:outline-none focus:ring-1 focus:ring-[#1E5B4A]"
                               />
-                              <span className="text-[10px] text-indigo-600 font-mono shrink-0">{getColumnPreview(courierColInputs['phone_col'] || '').displayPreview}</span>
+                              <span className="text-[10px] text-[#1E5B4A] font-mono shrink-0">{getColumnPreview(courierColInputs['phone_col'] || '').displayPreview}</span>
                             </div>
                           </div>
 
@@ -2493,9 +2493,9 @@ export default function PlatformSettings({
                                 value={courierColInputs['zip_col'] || ''}
                                 onChange={(e) => handleCourierFieldChange('zip_col', e.target.value)}
                                 placeholder="예: E 또는 5"
-                                className="w-full text-xs p-1.5 bg-slate-50 border border-slate-200 rounded-lg font-mono uppercase font-bold focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                className="w-full text-xs p-1.5 bg-slate-50 border border-slate-200 rounded-lg font-mono uppercase font-bold focus:outline-none focus:ring-1 focus:ring-[#1E5B4A]"
                               />
-                              <span className="text-[10px] text-indigo-600 font-mono shrink-0">{getColumnPreview(courierColInputs['zip_col'] || '').displayPreview}</span>
+                              <span className="text-[10px] text-[#1E5B4A] font-mono shrink-0">{getColumnPreview(courierColInputs['zip_col'] || '').displayPreview}</span>
                             </div>
                           </div>
 
@@ -2508,9 +2508,9 @@ export default function PlatformSettings({
                                 value={courierColInputs['addr_col'] || ''}
                                 onChange={(e) => handleCourierFieldChange('addr_col', e.target.value)}
                                 placeholder="예: F 또는 6"
-                                className="w-full text-xs p-1.5 bg-slate-50 border border-slate-200 rounded-lg font-mono uppercase font-bold focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                className="w-full text-xs p-1.5 bg-slate-50 border border-slate-200 rounded-lg font-mono uppercase font-bold focus:outline-none focus:ring-1 focus:ring-[#1E5B4A]"
                               />
-                              <span className="text-[10px] text-indigo-600 font-mono shrink-0">{getColumnPreview(courierColInputs['addr_col'] || '').displayPreview}</span>
+                              <span className="text-[10px] text-[#1E5B4A] font-mono shrink-0">{getColumnPreview(courierColInputs['addr_col'] || '').displayPreview}</span>
                             </div>
                           </div>
 
@@ -2523,9 +2523,9 @@ export default function PlatformSettings({
                                 value={courierColInputs['prod_col'] || ''}
                                 onChange={(e) => handleCourierFieldChange('prod_col', e.target.value)}
                                 placeholder="예: G 또는 7"
-                                className="w-full text-xs p-1.5 bg-slate-50 border border-slate-200 rounded-lg font-mono uppercase font-bold focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                className="w-full text-xs p-1.5 bg-slate-50 border border-slate-200 rounded-lg font-mono uppercase font-bold focus:outline-none focus:ring-1 focus:ring-[#1E5B4A]"
                               />
-                              <span className="text-[10px] text-indigo-600 font-mono shrink-0">{getColumnPreview(courierColInputs['prod_col'] || '').displayPreview}</span>
+                              <span className="text-[10px] text-[#1E5B4A] font-mono shrink-0">{getColumnPreview(courierColInputs['prod_col'] || '').displayPreview}</span>
                             </div>
                           </div>
 
@@ -2538,9 +2538,9 @@ export default function PlatformSettings({
                                 value={courierColInputs['unit_col'] || ''}
                                 onChange={(e) => handleCourierFieldChange('unit_col', e.target.value)}
                                 placeholder="예: H 또는 8"
-                                className="w-full text-xs p-1.5 bg-slate-50 border border-slate-200 rounded-lg font-mono uppercase font-bold focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                className="w-full text-xs p-1.5 bg-slate-50 border border-slate-200 rounded-lg font-mono uppercase font-bold focus:outline-none focus:ring-1 focus:ring-[#1E5B4A]"
                               />
-                              <span className="text-[10px] text-indigo-600 font-mono shrink-0">{getColumnPreview(courierColInputs['unit_col'] || '').displayPreview}</span>
+                              <span className="text-[10px] text-[#1E5B4A] font-mono shrink-0">{getColumnPreview(courierColInputs['unit_col'] || '').displayPreview}</span>
                             </div>
                           </div>
 
@@ -2553,9 +2553,9 @@ export default function PlatformSettings({
                                 value={courierColInputs['qty_col'] || ''}
                                 onChange={(e) => handleCourierFieldChange('qty_col', e.target.value)}
                                 placeholder="예: I 또는 9"
-                                className="w-full text-xs p-1.5 bg-slate-50 border border-slate-200 rounded-lg font-mono uppercase font-bold focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                className="w-full text-xs p-1.5 bg-slate-50 border border-slate-200 rounded-lg font-mono uppercase font-bold focus:outline-none focus:ring-1 focus:ring-[#1E5B4A]"
                               />
-                              <span className="text-[10px] text-indigo-600 font-mono shrink-0">{getColumnPreview(courierColInputs['qty_col'] || '').displayPreview}</span>
+                              <span className="text-[10px] text-[#1E5B4A] font-mono shrink-0">{getColumnPreview(courierColInputs['qty_col'] || '').displayPreview}</span>
                             </div>
                           </div>
 
@@ -2568,9 +2568,9 @@ export default function PlatformSettings({
                                 value={courierColInputs['courier_col'] || ''}
                                 onChange={(e) => handleCourierFieldChange('courier_col', e.target.value)}
                                 placeholder="선택 (예: A 또는 1)"
-                                className="w-full text-xs p-1.5 bg-slate-50 border border-slate-200 rounded-lg font-mono uppercase font-bold focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                className="w-full text-xs p-1.5 bg-slate-50 border border-slate-200 rounded-lg font-mono uppercase font-bold focus:outline-none focus:ring-1 focus:ring-[#1E5B4A]"
                               />
-                              <span className="text-[10px] text-indigo-600 font-mono shrink-0">{getColumnPreview(courierColInputs['courier_col'] || '').displayPreview}</span>
+                              <span className="text-[10px] text-[#1E5B4A] font-mono shrink-0">{getColumnPreview(courierColInputs['courier_col'] || '').displayPreview}</span>
                             </div>
                           </div>
                         </div>
@@ -2585,7 +2585,7 @@ export default function PlatformSettings({
                         </button>
                         <button
                           onClick={() => saveCourier(editingCourier)}
-                          className="px-4 py-1.5 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition cursor-pointer"
+                          className="px-4 py-1.5 text-xs font-bold bg-[#1E5B4A] hover:bg-[#184A3C] text-white rounded-lg transition cursor-pointer"
                         >
                           택배사 설정 저장하기
                         </button>
@@ -2634,10 +2634,10 @@ export default function PlatformSettings({
                   <button
                     key={preset.id}
                     onClick={() => applyPreset(preset)}
-                    className="flex items-center justify-between p-3.5 border border-slate-200 hover:border-indigo-500 hover:bg-indigo-50/40 rounded-xl text-left transition cursor-pointer"
+                    className="flex items-center justify-between p-3.5 border border-slate-200 hover:border-[#1E5B4A] hover:bg-[#F1F7F4]/40 rounded-xl text-left transition cursor-pointer"
                   >
                     <div className="font-semibold text-slate-800 text-xs">{preset.name}</div>
-                    <span className="text-[10px] text-indigo-600 bg-indigo-50 px-2 py-1 rounded font-bold">불러오기</span>
+                    <span className="text-[10px] text-[#1E5B4A] bg-[#F1F7F4] px-2 py-1 rounded font-bold">불러오기</span>
                   </button>
                 ))}
               </div>
@@ -2684,10 +2684,10 @@ export default function PlatformSettings({
                   <button
                     key={preset.id}
                     onClick={() => applyCourierPreset(preset)}
-                    className="flex items-center justify-between p-3.5 border border-slate-200 hover:border-indigo-500 hover:bg-indigo-50/40 rounded-xl text-left transition cursor-pointer"
+                    className="flex items-center justify-between p-3.5 border border-slate-200 hover:border-[#1E5B4A] hover:bg-[#F1F7F4]/40 rounded-xl text-left transition cursor-pointer"
                   >
                     <div className="font-semibold text-slate-800 text-xs">{preset.name}</div>
-                    <span className="text-[10px] text-indigo-600 bg-indigo-50 px-2 py-1 rounded font-bold">불러오기</span>
+                    <span className="text-[10px] text-[#1E5B4A] bg-[#F1F7F4] px-2 py-1 rounded font-bold">불러오기</span>
                   </button>
                 ))}
               </div>
@@ -2752,7 +2752,7 @@ export default function PlatformSettings({
           >
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
-                <Plus className="w-4 h-4 text-indigo-600" />
+                <Plus className="w-4 h-4 text-[#1E5B4A]" />
                 신규 쇼핑몰 양식으로 내 설정에 저장
               </h3>
               <button type="button" onClick={() => setShowSaveAsNewModal(false)} className="text-slate-500 hover:text-slate-700 font-bold cursor-pointer">✕</button>
@@ -2773,7 +2773,7 @@ export default function PlatformSettings({
                   onChange={(e) => setNewPlatformNameInput(e.target.value)}
                   placeholder="예: 11번가, 지마켓, 카페24, 자사몰"
                   autoFocus
-                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-medium"
+                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#1E5B4A]/20 focus:border-[#1E5B4A] font-medium"
                 />
               </div>
 
@@ -2786,7 +2786,7 @@ export default function PlatformSettings({
                   value={newPlatformPatternInput}
                   onChange={(e) => setNewPlatformPatternInput(e.target.value)}
                   placeholder="예: 11st, order, coupang (파일명에 이 단어가 들어있으면 자동 매칭)"
-                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-medium"
+                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#1E5B4A]/20 focus:border-[#1E5B4A] font-medium"
                 />
                 <p className="text-[10px] text-slate-400 mt-1">
                   이 키워드가 들어간 엑셀 파일을 올리면 방금 설정한 양식으로 자동 인식됩니다.
@@ -2804,7 +2804,7 @@ export default function PlatformSettings({
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm cursor-pointer"
+                className="px-4 py-2 text-xs font-bold text-white bg-[#1E5B4A] hover:bg-[#184A3C] rounded-xl shadow-sm cursor-pointer"
               >
                 새 쇼핑몰 양식으로 추가 저장 (Enter)
               </button>

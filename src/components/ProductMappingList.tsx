@@ -3,7 +3,8 @@ import { ProductMapping } from '../types';
 import { 
   Search, Plus, Trash2, Edit2, Check, X, FileText, ClipboardList, Database,
   Filter, AlertTriangle, Download, Upload, FileSpreadsheet, 
-  FileCode, ArrowLeft, CheckCircle2, Copy, Layers, List, Lightbulb, Zap, Info
+  FileCode, ArrowLeft, CheckCircle2, Copy, Layers, List, Lightbulb, Zap, Info,
+  ArrowRight
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { findBestIntelligentMatch, calculateSmartSimilarity, extractCleanProductRecommendation } from '../utils/excelProcessor';
@@ -93,7 +94,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
     const existingMappedNames = Array.from(new Set(mappings.map(m => m.mappedName).filter(Boolean)));
     
     if (existingMappedNames.length === 0) {
-      showNotification('error', "자동 맞춤을 실행하려면 최소 1개 이상의 정제 분류명이 필요합니다.");
+      showNotification('error', "자동으로 맞추려면 바꿀 이름이 하나 이상 있어야 해요.");
       return;
     }
 
@@ -107,10 +108,10 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
         if (result.score >= 0.55) {
           candidates.push({
             rawName: item.rawName,
-            currentMapped: item.mappedName || '(미지정/동일)',
+            currentMapped: item.mappedName || '(그대로)',
             suggestedMapped: result.bestMapping.mappedName,
             confidence: Math.round(result.score * 100),
-            reason: result.matchType === 'smart_mapped' ? '정제 분류명 키워드 감지' : '유사 품목 정제 패턴',
+            reason: result.matchType === 'smart_mapped' ? '이미 있는 이름과 비슷해요' : '비슷한 상품이 있어요',
             selected: true
           });
         }
@@ -124,7 +125,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
           if (result.bestMapping && result.bestMapping.mappedName && result.score >= 0.55) {
             candidates.push({
               rawName: raw,
-              currentMapped: '(신규 주문 품목)',
+              currentMapped: '(새 상품)',
               suggestedMapped: result.bestMapping.mappedName,
               confidence: Math.round(result.score * 100),
               reason: '자동 추천',
@@ -136,7 +137,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
     }
 
     if (candidates.length === 0) {
-      showNotification('success', "자동 맞춤 가능한 신규 품목이 없습니다. 모든 데이터가 정제되어 있습니다.");
+      showNotification('success', "자동으로 맞출 새 상품이 없어요.");
       return;
     }
 
@@ -147,7 +148,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
   const applySmartCandidates = () => {
     const selectedToApply = smartCandidates.filter(c => c.selected);
     if (selectedToApply.length === 0) {
-      showNotification('error', "선택된 매칭 항목이 없습니다.");
+      showNotification('error', "고른 항목이 없어요.");
       return;
     }
 
@@ -165,7 +166,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
 
     onChange(nextMappings);
     setShowSmartMatchModal(false);
-    showNotification('success', ` 총 ${selectedToApply.length}개 품목에 자동 맞춤 결과가 적용되었습니다.`);
+    showNotification('success', `${selectedToApply.length}개 상품에 바꿀 이름을 넣었어요.`);
   };
 
   // 대치 목록 필터링
@@ -192,7 +193,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
 
     const exists = mappings.some(m => m.rawName.trim() === trimmedRaw);
     if (exists) {
-      showNotification('error', "이미 등록된 대치 대상 품목명입니다.");
+      showNotification('error', "이미 품목사전에 있는 상품명이에요.");
       return;
     }
 
@@ -203,7 +204,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
     setRecentlyAdded(prev => [newItem, ...prev].slice(0, 5));
     setNewRawName('');
     setNewMappedName('');
-    showNotification('success', `'${trimmedRaw}' 대치 규칙이 추가되었습니다.`);
+    showNotification('success', `'${trimmedRaw}'을(를) 품목사전에 넣었어요.`);
   };
 
   // 단일 항목 삭제
@@ -214,7 +215,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
 
     onChange(mappings.filter(m => m.rawName !== rawName));
     setSingleDeleteTarget(null);
-    showNotification('success', `'${rawName}' 규칙이 삭제되었습니다.`);
+    showNotification('success', `'${rawName}'을(를) 지웠어요.`);
   };
 
   // 다중 선택 처리
@@ -239,14 +240,14 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
     onChange(nextMappings);
     setSelectedRawNames(new Set());
     setShowDeleteModal(null);
-    showNotification('success', `${selectedRawNames.size}개의 규칙이 삭제되었습니다.`);
+    showNotification('success', `${selectedRawNames.size}개를 지웠어요.`);
   };
 
   const executeDeleteAll = () => {
     onChange([]);
     setSelectedRawNames(new Set());
     setShowDeleteModal(null);
-    showNotification('success', "전체 대치 규칙이 삭제되었습니다.");
+    showNotification('success', "품목사전을 모두 지웠어요.");
   };
 
   // ESC 키로 모달 닫기
@@ -297,7 +298,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
     };
     onChange(updated);
     setEditingIndex(null);
-    showNotification('success', "대치 규칙이 수정되었습니다.");
+    showNotification('success', "고쳤어요.");
   };
 
   // --- 텍스트 / 파일 파싱 로직 ---
@@ -341,13 +342,13 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
   // 대량 텍스트 파싱 적용 버튼
   const handleApplyBulkText = () => {
     if (!bulkText.trim()) {
-      showNotification('error', "입력된 텍스트가 없습니다.");
+      showNotification('error', "넣을 내용이 없어요.");
       return;
     }
 
     const parsed = parseRawText(bulkText);
     if (parsed.length === 0) {
-      showNotification('error', "넣을 수 있는 규칙을 찾지 못했어요. 형식을 확인해 주세요.");
+      showNotification('error', "넣을 내용을 찾지 못했어요. 한 줄에 '원래 상품명, 바꿀 이름'으로 적어 주세요.");
       return;
     }
 
@@ -378,10 +379,10 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
           if (parsed.length > 0) {
             setBulkImportConfirm({ isOpen: true, parsed });
           } else {
-            showNotification('error', "JSON 파일에 유효한 대치 데이터가 없습니다.");
+            showNotification('error', "JSON 파일에서 넣을 내용을 찾지 못했어요.");
           }
         } catch {
-          showNotification('error', "JSON 파일 형식이 올바르지 않습니다.");
+          showNotification('error', "JSON 파일 모양이 맞지 않아요.");
         }
       };
       reader.readAsText(file);
@@ -416,10 +417,10 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
           if (parsed.length > 0) {
             setBulkImportConfirm({ isOpen: true, parsed });
           } else {
-            showNotification('error', "엑셀/CSV 파일에서 대치 규칙을 읽지 못했습니다.");
+            showNotification('error', "엑셀·CSV 파일에서 넣을 내용을 찾지 못했어요. 첫 칸에 상품명, 둘째 칸에 바꿀 이름이 있는지 확인해 주세요.");
           }
         } catch {
-          showNotification('error', "파일을 읽는 중 오류가 발생했습니다.");
+          showNotification('error', "파일을 읽지 못했어요.");
         }
       };
       reader.readAsArrayBuffer(file);
@@ -432,7 +433,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
         if (parsed.length > 0) {
           setBulkImportConfirm({ isOpen: true, parsed });
         } else {
-          showNotification('error', "텍스트 파일에서 대치 규칙을 읽지 못했습니다.");
+          showNotification('error', "텍스트 파일에서 넣을 내용을 찾지 못했어요.");
         }
       };
       reader.readAsText(file);
@@ -448,7 +449,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
 
     if (overwrite) {
       onChange(parsed);
-      showNotification('success', `총 ${parsed.length}개 대치 규칙으로 전체 교체되었습니다.`);
+      showNotification('success', `품목사전을 ${parsed.length}개로 바꿨어요.`);
     } else {
       const merged = [...mappings];
       let addedCount = 0;
@@ -459,7 +460,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
         }
       });
       onChange(merged);
-      showNotification('success', `신규 ${addedCount}개 대치 규칙이 추가되었습니다.`);
+      showNotification('success', `${addedCount}개를 새로 넣었어요.`);
     }
 
     setBulkImportConfirm(null);
@@ -470,7 +471,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
   // --- 내보내기 (Export) 핸들러 ---
   const handleExportExcel = () => {
     if (mappings.length === 0) {
-      showNotification('error', "내보낼 대치 규칙이 존재하지 않습니다.");
+      showNotification('error', "내보낼 내용이 없어요.");
       return;
     }
     const data = mappings.map(m => ({
@@ -479,15 +480,15 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
     }));
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "품목대치사전");
-    XLSX.writeFile(wb, `품목_대치_사전_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    XLSX.utils.book_append_sheet(wb, ws, "품목사전");
+    XLSX.writeFile(wb, `품목사전_${new Date().toISOString().slice(0, 10)}.xlsx`);
     setShowExportMenu(false);
-    showNotification('success', "엑셀 파일(.xlsx) 내보내기가 완료되었습니다.");
+    showNotification('success', "엑셀 파일로 내보냈어요.");
   };
 
   const handleExportCSV = () => {
     if (mappings.length === 0) {
-      showNotification('error', "내보낼 대치 규칙이 존재하지 않습니다.");
+      showNotification('error', "내보낼 내용이 없어요.");
       return;
     }
     const data = mappings.map(m => ({
@@ -500,16 +501,16 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `품목_대치_사전_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `품목사전_${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
     setShowExportMenu(false);
-    showNotification('success', "CSV 파일 내보내기가 완료되었습니다.");
+    showNotification('success', "CSV 파일로 내보냈어요.");
   };
 
   const handleExportJSON = () => {
     if (mappings.length === 0) {
-      showNotification('error', "내보낼 대치 규칙이 존재하지 않습니다.");
+      showNotification('error', "내보낼 내용이 없어요.");
       return;
     }
     const jsonStr = JSON.stringify(mappings, null, 2);
@@ -517,21 +518,21 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `품목_대치_사전_${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `품목사전_${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
     setShowExportMenu(false);
-    showNotification('success', "JSON 파일 내보내기가 완료되었습니다.");
+    showNotification('success', "JSON 파일로 내보냈어요.");
   };
 
   const handleCopyClipboardText = () => {
     if (mappings.length === 0) {
-      showNotification('error', "복사할 대치 규칙이 없습니다.");
+      showNotification('error', "복사할 내용이 없어요.");
       return;
     }
     const text = mappings.map(m => `'${m.rawName}' : '${m.mappedName}',`).join('\n');
     navigator.clipboard.writeText(text).then(() => {
-      showNotification('success', "전체 대치 규칙이 텍스트로 클립보드에 복사되었습니다.");
+      showNotification('success', "모두 글자로 복사했어요.");
       setShowExportMenu(false);
     });
   };
@@ -573,24 +574,24 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-100">
             <h3 className="font-bold text-slate-800 text-base flex items-center gap-2">
               <Layers className="w-5 h-5 text-brand-600" />
-              품목 대치 사전 대량 등록 확인
+              여러 개 한 번에 넣기
             </h3>
             <p className="text-xs text-slate-600 leading-relaxed">
-              분석 결과 <strong className="text-brand-600 font-bold">{bulkImportConfirm.parsed.length}개</strong>의 대치 규칙을 읽었습니다. 
-              기존 목록에 어떻게 반영하시겠습니까?
+              분석 결과 <strong className="text-brand-600 font-bold">{bulkImportConfirm.parsed.length}개</strong>를 읽었어요. 
+              지금 목록에 어떻게 넣을까요?
             </p>
             <div className="grid grid-cols-2 gap-3 pt-2">
               <button
                 onClick={() => handleBulkConfirmDecision(false)}
                 className="px-4 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition"
               >
-                기존 목록에 추가
+                지금 목록에 더하기
               </button>
               <button
                 onClick={() => handleBulkConfirmDecision(true)}
                 className="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-semibold transition shadow-md"
               >
-                전체 덮어쓰기
+                지금 목록을 지우고 바꾸기
               </button>
             </div>
             <div className="flex justify-end pt-1">
@@ -611,10 +612,10 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
           <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 space-y-4 border border-slate-100">
             <h3 className="font-bold text-slate-800 text-base flex items-center gap-1.5 text-rose-600">
               <AlertTriangle className="w-5 h-5 shrink-0" />
-              대치 규칙 삭제
+              지우기
             </h3>
             <p className="text-xs text-slate-600 leading-relaxed">
-              '<strong className="text-slate-800">{singleDeleteTarget}</strong>' 규칙을 삭제하시겠습니까?
+              '<strong className="text-slate-800">{singleDeleteTarget}</strong>'을(를) 지울까요?
             </p>
             <div className="flex justify-end gap-2 pt-2">
               <button
@@ -640,12 +641,12 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
           <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 space-y-4 border border-slate-100">
             <h3 className="font-bold text-slate-800 text-base flex items-center gap-1.5 text-rose-600">
               <AlertTriangle className="w-5 h-5 shrink-0" />
-              {showDeleteModal.type === 'all' ? '전체 규칙 삭제' : '선택 규칙 삭제'}
+              {showDeleteModal.type === 'all' ? '모두 지우기' : '고른 것 지우기'}
             </h3>
             <p className="text-xs text-slate-600 leading-relaxed">
               {showDeleteModal.type === 'all' 
-                ? `주의. 현재 등록된 전체 ${mappings.length}개의 대치 규칙을 삭제하시겠습니까?`
-                : `선택한 ${showDeleteModal.count}개의 대치 규칙을 삭제하시겠습니까?`
+                ? `품목사전 ${mappings.length}개를 모두 지울까요? 되돌릴 수 없어요.`
+                : `고른 ${showDeleteModal.count}개를 지울까요?`
               }
             </p>
             <div className="flex justify-end gap-2 pt-2">
@@ -659,7 +660,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
                 onClick={showDeleteModal.type === 'all' ? executeDeleteAll : executeDeleteSelected}
                 className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-semibold transition shadow-md"
               >
-                삭제 진행
+                지우기
               </button>
             </div>
           </div>
@@ -674,10 +675,10 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
               <div>
                 <h3 className="font-bold text-slate-800 text-base flex items-center gap-2">
                   <Lightbulb className="w-5 h-5 text-amber-500" />
-                  자동 맞춤 추천 ({smartCandidates.length}건)
+                  바꿀 이름 추천 ({smartCandidates.length}건)
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  기존 정제 분류명 및 문자열 유사도를 분석하여 탐색된 추천 대치 목록입니다.
+                  이미 있는 이름과 비슷한 상품을 찾아 바꿀 이름을 골라 두었어요. 맞는 것만 체크하세요.
                 </p>
               </div>
               <button
@@ -691,7 +692,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
             <div className="flex items-center justify-between text-xs text-slate-600 bg-amber-50/70 border border-amber-200/80 p-3 rounded-xl">
               <div className="flex items-center gap-2">
                 <Info className="w-4 h-4 text-amber-600 shrink-0" />
-                <span>체크된 항목에 대해 표준 정제명이 자동으로 채워집니다.</span>
+                <span>체크한 상품에 바꿀 이름이 들어가요.</span>
               </div>
               <div className="flex gap-2 shrink-0">
                 <button
@@ -772,7 +773,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
                 className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition shadow-md flex items-center gap-1.5"
               >
                 <Lightbulb className="w-4 h-4 text-amber-300" />
-                선택 항목 일괄 적용 ({smartCandidates.filter(c => c.selected).length}건)
+                체크한 것 넣기 ({smartCandidates.filter(c => c.selected).length}건)
               </button>
             </div>
           </div>
@@ -783,12 +784,15 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
       <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-              <ClipboardList className="w-5 h-5 text-brand-600" />
-              품목 대치 사전 관리
-            </h2>
-            <p className="text-xs text-slate-500 mt-1">
-              원본 상품명의 긴 키워드를 정제하고, 요약 보고서에 표시할 심플한 표준 상품명으로 자동 대치합니다.
+            <h2 className="text-xl font-semibold tracking-tight text-slate-900">품목사전</h2>
+            <p className="text-sm text-slate-600 mt-1.5 leading-relaxed max-w-[64ch]">
+              쇼핑몰마다 다른 긴 상품명을 내가 쓰는 짧은 이름으로 바꿔요. 정리된 주문 파일과 보고서에 이 짧은 이름이 쓰여요.
+            </p>
+            <p className="mt-2 inline-flex flex-wrap items-center gap-x-2 rounded-lg bg-slate-50 px-3 py-1.5 text-[13px] text-slate-700">
+              <span className="text-slate-500">예</span>
+              <span>국내제조 비린맛 없는 절단 돌산 간장 꽃게장</span>
+              <ArrowRight className="w-3.5 h-3.5 text-slate-400" aria-label="바꾸면" />
+              <span className="font-semibold text-brand-700">게장</span>
             </p>
           </div>
 
@@ -796,41 +800,47 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
         </div>
 
         {/* 메인 탭 모드 전환 버튼 (목록 보기 / 개별 추가 / 대량 추가) */}
-        <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+        <div role="tablist" aria-label="품목사전 보기" className="inline-flex flex-wrap items-center gap-1 rounded-xl bg-slate-100 p-1">
           <button
             onClick={() => setViewMode('list')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
+            role="tab"
+            aria-selected={viewMode === 'list'}
+            className={`flex min-h-[40px] items-center gap-2 px-3.5 rounded-lg text-sm font-semibold transition ${
               viewMode === 'list'
-                ? 'bg-brand-600 text-white shadow-sm'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                ? 'bg-white text-slate-900 shadow-sm'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <List className="w-4 h-4" />
-            대치 사전 목록 ({mappings.length}개)
+            목록 <span className="font-mono tabular-nums text-xs opacity-80">{mappings.length}</span>
           </button>
 
           <button
             onClick={() => setViewMode('single_add')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
+            role="tab"
+            aria-selected={viewMode === 'single_add'}
+            className={`flex min-h-[40px] items-center gap-2 px-3.5 rounded-lg text-sm font-semibold transition ${
               viewMode === 'single_add'
-                ? 'bg-brand-600 text-white shadow-sm'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                ? 'bg-white text-slate-900 shadow-sm'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <Plus className="w-4 h-4" />
-            개별 규칙 추가
+            하나 넣기
           </button>
 
           <button
             onClick={() => setViewMode('bulk_add')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
+            role="tab"
+            aria-selected={viewMode === 'bulk_add'}
+            className={`flex min-h-[40px] items-center gap-2 px-3.5 rounded-lg text-sm font-semibold transition ${
               viewMode === 'bulk_add'
-                ? 'bg-brand-600 text-white shadow-sm'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                ? 'bg-white text-slate-900 shadow-sm'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <Layers className="w-4 h-4" />
-            대량 텍스트 추가
+            여러 개 한 번에 넣기
           </button>
         </div>
       </div>
@@ -844,9 +854,9 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
             <div>
               <h3 className="font-bold text-slate-800 text-base flex items-center gap-2">
                 <Plus className="w-5 h-5 text-brand-600" />
-                개별 대치 규칙 추가
+                하나 넣기
               </h3>
-              <p className="text-xs text-slate-500 mt-0.5">단일 상품명 키워드를 등록합니다.</p>
+              <p className="text-sm text-slate-600 mt-0.5">상품명에 들어 있는 말과 바꿀 이름을 적어요.</p>
             </div>
             <button
               onClick={() => setViewMode('list')}
@@ -860,7 +870,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
           <form onSubmit={handleSingleAdd} className="space-y-4">
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                대치 대상 원본 상품명 (검색 키워드) <span className="text-rose-500">*</span>
+                상품명에 들어 있는 말 <span className="text-rose-500">*</span>
               </label>
               <input
                 type="text"
@@ -883,16 +893,16 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
                 >
                   <Lightbulb className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                   <span> 추천: <strong className="text-brand-700">'{getSmartSuggestion(newRawName)?.suggestedName}'</strong> (유사도 {getSmartSuggestion(newRawName)?.confidence}%)</span>
-                  <span className="ml-1 text-xs text-brand-600 underline font-normal group-hover:font-bold">[클릭하여 표준명 입력]</span>
+                  <span className="ml-1 text-xs text-brand-600 underline font-normal group-hover:font-bold">[눌러서 넣기]</span>
                 </button>
               )}
 
-              <p className="text-xs text-slate-400 mt-1">※ 엑셀 업로드 시 이 단어가 포함된 상품명을 감지합니다.</p>
+              <p className="text-xs text-slate-400 mt-1">상품명에 이 말이 들어 있으면 오른쪽 이름으로 바꿔요. 상품명을 통째로 넣어도 돼요.</p>
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                대치 후 표준 상품명 (보고서 정제명)
+                바꿀 이름
               </label>
               <input
                 type="text"
@@ -908,7 +918,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
                   className="mt-1 text-xs font-semibold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg px-2.5 py-1 flex items-center gap-1 transition"
                 >
                   <Lightbulb className="w-3 h-3 text-amber-500" />
-                  자동 정제 추천 단어 적용: <strong>'{extractCleanProductRecommendation(newRawName)}'</strong>
+                  추천 이름 넣기: <strong>'{extractCleanProductRecommendation(newRawName)}'</strong>
                 </button>
               )}
             </div>
@@ -918,7 +928,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
                 type="submit"
                 className="flex-1 py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition shadow-md"
               >
-                사전에 규칙 추가
+                품목사전에 넣기
               </button>
               <button
                 type="button"
@@ -933,12 +943,12 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
           {/* 이번 세션에서 새로 추가된 항목 내역 */}
           {recentlyAdded.length > 0 && (
             <div className="pt-4 border-t border-slate-100">
-              <h4 className="text-xs font-bold text-slate-600 mb-2">최근 추가된 규칙</h4>
+              <h4 className="text-xs font-bold text-slate-600 mb-2">방금 넣은 것</h4>
               <div className="space-y-1.5">
                 {recentlyAdded.map((item, idx) => (
                   <div key={idx} className="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl text-xs border border-slate-100">
                     <span className="font-semibold text-slate-800">{item.rawName}</span>
-                    <span className="text-brand-600 font-bold">→ {item.mappedName || '(동일)'}</span>
+                    <span className="text-brand-600 font-bold">→ {item.mappedName || '(그대로)'}</span>
                   </div>
                 ))}
               </div>
@@ -956,10 +966,10 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
             <div>
               <h3 className="font-bold text-slate-800 text-base flex items-center gap-2">
                 <Layers className="w-5 h-5 text-brand-600" />
-                대량 추가 (텍스트 / 파일)
+                여러 개 한 번에 넣기
               </h3>
               <p className="text-xs text-slate-500 mt-0.5">
-                여러 대치 규칙을 한 번에 텍스트로 붙여넣거나 파일(.xlsx, .csv, .json, .txt)을 드래그해 업로드하세요.
+                엑셀 첫 칸에 원래 상품명, 둘째 칸에 바꿀 이름을 적은 파일을 올리거나, 아래 칸에 붙여 넣으세요.
               </p>
             </div>
             <button
@@ -978,21 +988,21 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
           >
             <Upload className="w-8 h-8 text-brand-600 group-hover:scale-110 transition-transform mx-auto mb-2" />
             <p className="text-xs font-bold text-slate-700">
-              이곳을 클릭하여 엑셀(.xlsx), CSV(.csv), JSON(.json), TXT 파일을 선택하세요.
+              눌러서 파일 고르기 (엑셀, CSV, JSON, TXT)
             </p>
-            <p className="text-xs text-slate-400 mt-1">첫 번째 열: 원본 상품명 / 두 번째 열: 대치 후 표준 상품명</p>
+            <p className="text-xs text-slate-400 mt-1">첫 칸: 원래 상품명 · 둘째 칸: 바꿀 이름</p>
           </div>
 
           {/* 텍스트 직접 입력 라벨 */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs font-bold text-slate-700">텍스트 직접 붙여넣기</label>
-              <span className="text-xs text-slate-400">형식 예시: '원본상품명' : '대치상품명', 또는 원본,대치</span>
+              <label className="text-xs font-bold text-slate-700">직접 붙여 넣기</label>
+              <span className="text-xs text-slate-400">한 줄에 하나씩 '원래 상품명, 바꿀 이름'. 엑셀에서 두 칸을 복사해 붙여 넣어도 돼요.</span>
             </div>
             <textarea
               value={bulkText}
               onChange={(e) => setBulkText(e.target.value)}
-              placeholder={`'국내제조 비린맛 없는 절단 돌산 간장 꽃게장' : '게장',\n'명태품은 백명란' : '명란',`}
+              placeholder={`국내제조 비린맛 없는 절단 돌산 간장 꽃게장, 게장\n명태품은 백명란, 명란`}
               rows={12}
               className="w-full text-xs font-mono p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-600/20 focus:border-brand-600"
             />
@@ -1013,7 +1023,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
               className="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition shadow-md flex items-center gap-1.5"
             >
               <Check className="w-4 h-4" />
-              한꺼번에 읽어서 목록에 넣기
+              읽어서 넣기
             </button>
           </div>
         </div>
@@ -1033,7 +1043,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
               <Search className="w-4 h-4 text-slate-400 shrink-0" />
               <input
                 type="text"
-                placeholder="대치 규칙 검색 (원본 또는 대치명)..."
+                placeholder="상품명이나 바꿀 이름으로 찾기"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full text-xs border-none outline-none bg-transparent text-slate-700"
@@ -1058,8 +1068,8 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
                   className="text-xs border-none bg-transparent focus:ring-0 text-slate-700 font-semibold py-0 pl-0 pr-6 outline-none"
                 >
                   <option value="all">전체 ({mappings.length}개)</option>
-                  <option value="hasMapped">대치어 지정됨 ({mappings.filter(m => m.mappedName).length})</option>
-                  <option value="noMapped">동일 정제 ({mappings.filter(m => !m.mappedName).length})</option>
+                  <option value="hasMapped">바꿀 이름 있음 ({mappings.filter(m => m.mappedName).length})</option>
+                  <option value="noMapped">비어 있음 ({mappings.filter(m => !m.mappedName).length})</option>
                 </select>
               </div>
 
@@ -1069,7 +1079,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
                   className="flex items-center gap-1.5 px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-150 rounded-xl text-xs font-semibold transition cursor-pointer"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
-                  선택 삭제 ({selectedRawNames.size})
+                  고른 것 지우기 ({selectedRawNames.size})
                 </button>
               )}
 
@@ -1089,7 +1099,10 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
           <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left text-slate-600">
-                <thead className="bg-slate-50/80 text-slate-400 text-xs font-semibold uppercase border-b border-slate-150">
+                <caption className="caption-top border-b border-slate-100 px-4 py-2.5 text-left text-sm text-slate-600">
+                  왼쪽 말이 상품명에 들어 있으면 오른쪽 이름으로 바꿔요. 바꿀 이름이 비어 있으면 상품명을 그대로 써요.
+                </caption>
+                <thead className="bg-slate-50/80 text-slate-600 text-[13px] font-semibold border-b border-slate-150">
                   <tr>
                     <th className="px-4 py-3.5 w-10 text-center">
                       <input
@@ -1100,8 +1113,8 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
                         title="전체 선택 / 해제"
                       />
                     </th>
-                    <th className="px-4 py-3.5">원본 상품명 키워드 (검색용)</th>
-                    <th className="px-4 py-3.5">정제 후 표준 상품명</th>
+                    <th className="px-4 py-3.5">상품명에 들어 있는 말</th>
+                    <th className="px-4 py-3.5">바꿀 이름</th>
                     <th className="px-4 py-3.5 text-right w-28">작업</th>
                   </tr>
                 </thead>
@@ -1109,7 +1122,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
                   {filteredMappings.length === 0 ? (
                     <tr>
                       <td colSpan={4} className="px-4 py-12 text-center text-xs text-slate-400 italic">
-                        {searchQuery ? "검색 조건과 일치하는 대치 규칙이 존재하지 않습니다." : "등록된 대치 규칙이 없습니다. [개별 추가] 또는 [대량 추가] 버튼으로 등록해보세요."}
+                        {searchQuery ? "찾는 말이 들어간 항목이 없어요." : "아직 비어 있어요. 위에서 '하나 넣기'나 '여러 개 한 번에 넣기'를 눌러 보세요."}
                       </td>
                     </tr>
                   ) : (
@@ -1164,7 +1177,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
                               item.mappedName ? (
                                 <span className="font-semibold text-brand-600">{item.mappedName}</span>
                               ) : (
-                                <span className="text-slate-400 italic text-xs">동일 (입력 안 됨)</span>
+                                <span className="text-slate-400 italic text-xs">그대로 써요</span>
                               )
                             )}
                           </td>
@@ -1214,9 +1227,9 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
             </div>
 
             <div className="px-4 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 font-medium">
-              <span>총 {mappings.length}개의 대치 규칙 등록됨</span>
+              <span>모두 {mappings.length}개</span>
               {filteredMappings.length !== mappings.length && (
-                <span>(검색 필터링 {filteredMappings.length}개 노출 중)</span>
+                <span>· 지금 {filteredMappings.length}개 보는 중</span>
               )}
             </div>
           </div>

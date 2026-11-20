@@ -168,6 +168,8 @@ export default function PlatformSettings({
   const [selectedCourierId, setSelectedCourierId] = useState<string>('');
   const [keywordSearch, setKeywordSearch] = useState<string>('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  // 처음 보는 양식을 고칠 때 자동으로 만든 쇼핑몰 양식 id (안내 문구용)
+  const [autoCreatedPlatformId, setAutoCreatedPlatformId] = useState<string | null>(null);
 
   // --- 2. 쇼핑몰 플랫폼 편집 상태 ---
   const [editingPlatform, setEditingPlatform] = useState<PlatformConfig | null>(null);
@@ -440,7 +442,7 @@ export default function PlatformSettings({
     return rawHeaders.map((h: any, colIdx: number) => ({
       index: colIdx,
       letter: colNumToLetter(colIdx + 1),
-      displayLabel: `[${colNumToLetter(colIdx + 1)}열] ${String(h || '').trim() || '(헤더명 없음)'}`,
+      displayLabel: `[${colNumToLetter(colIdx + 1)}열] ${String(h || '').trim() || '(칸 이름 없음)'}`,
       headerText: String(h || '').trim()
     }));
   }, [rawHeaders]);
@@ -456,8 +458,49 @@ export default function PlatformSettings({
     );
   }, [keywordSearch, allHeaderColumns]);
 
+  // 기본 양식이나 미등록 양식은 파일을 읽을 때 저장된 칸을 쓰지 않습니다.
+  // 그래서 이런 파일에서 칸을 고치면, 지금 모양 그대로 새 쇼핑몰 양식을 만들어 그 파일에 연결합니다.
+  const isGenericPlatform = (p: PlatformConfig | null | undefined) =>
+    !!p && (p.id === 'default_platform' || p.id.startsWith('unregistered'));
+
+  const buildPlatformFromActiveFile = (): PlatformConfig | null => {
+    if (!activeFile || !activePlatform) return null;
+    const base = activeFile.fileName.replace(/\.[^/.]+$/, "");
+    const name = base.replace(/[0-9_\-\s]/g, " ").replace(/\s+/g, " ").trim() || "새 쇼핑몰";
+    const key = base.split(/[_ -]/)[0] || "";
+    return {
+      id: 'custom_plat_' + Date.now(),
+      name,
+      identifier: '',
+      start_row: activePlatform.start_row ?? 1,
+      col_map: { ...activePlatform.col_map },
+      tracking_col: activePlatform.tracking_col ?? 8,
+      courier_col: activePlatform.courier_col,
+      filepath_pattern: key
+    };
+  };
+
+  const saveAsAutoCreatedPlatform = (cfg: PlatformConfig) => {
+    const updated = [...platforms, cfg];
+    onChange(updated);
+    if (activeFile && onFilePlatformChange) {
+      onFilePlatformChange(activeFile.fileName, cfg.id, updated);
+    }
+    setAutoCreatedPlatformId(cfg.id);
+  };
+
   // 열 세팅 일괄 변경 처리 함수
   const handleUpdateColumnMapping = (targetPlatformId: string, fieldKey: string, newColIndex: number) => {
+    if (activePlatform && isGenericPlatform(activePlatform) && targetPlatformId === activePlatform.id && activeFile) {
+      const created = buildPlatformFromActiveFile();
+      if (created) {
+        if (fieldKey === 'tracking_col') created.tracking_col = newColIndex;
+        else if (fieldKey === 'courier_col') created.courier_col = newColIndex;
+        else created.col_map = { ...created.col_map, [fieldKey]: newColIndex };
+        saveAsAutoCreatedPlatform(created);
+        return;
+      }
+    }
     const updatedPlatforms = platforms.map(p => {
       if (p.id !== targetPlatformId) return p;
       if (fieldKey === 'tracking_col') {
@@ -495,7 +538,7 @@ export default function PlatformSettings({
     }
 
     const colLetter = colNumToLetter(newColIndex + 1);
-    setToastMessage(`[${fieldKey}] 필드가 ${colLetter}열(${newColIndex + 1}번째)로 저장되어 가공이 재적용되었습니다.`);
+    setToastMessage(`${colLetter}열로 바꿨어요. 주문도 다시 정리했어요.`);
     setTimeout(() => setToastMessage(null), 3500);
   };
 
@@ -552,7 +595,7 @@ export default function PlatformSettings({
   // 현재 스마트 감지된 헤더를 신규 쇼핑몰 양식으로 등록 처리
   const handleSaveAsNewPlatformSubmit = () => {
     if (!newPlatformNameInput.trim()) {
-      alert('등록할 쇼핑몰 이름을 입력해주세요.');
+      alert('쇼핑몰 이름을 적어 주세요.');
       return;
     }
 
@@ -576,14 +619,14 @@ export default function PlatformSettings({
     }
 
     setShowSaveAsNewModal(false);
-    setToastMessage(` [${newConfig.name}] 쇼핑몰 양식이 추가되어 연동되었습니다.`);
+    setToastMessage(`'${newConfig.name}' 양식을 만들고 이 파일에 연결했어요.`);
     setTimeout(() => setToastMessage(null), 3500);
   };
 
   // 엑셀 헤더를 읽어서 목적 정보(상품명, 수량, 수령인, 연락처, 주소, 송장, 택배사 등) 자동 매칭 실행
   const handleAutoMatchHeaders = () => {
     if (!activeFile || !rawHeaders || rawHeaders.length === 0 || !activePlatform) {
-      alert('분석할 엑셀 파일이 없거나 헤더를 읽어오지 못했습니다.');
+      alert('엑셀 파일이 없거나 칸 이름을 읽지 못했어요.');
       return;
     }
 
@@ -632,6 +675,16 @@ export default function PlatformSettings({
     const newTrackingCol = trackingIdx !== -1 ? trackingIdx : activePlatform.tracking_col;
     const newCourierCol = courierIdx !== -1 ? courierIdx : activePlatform.courier_col;
 
+    if (isGenericPlatform(activePlatform)) {
+      const created = buildPlatformFromActiveFile();
+      if (created) {
+        saveAsAutoCreatedPlatform({ ...created, col_map: updatedColMap, tracking_col: newTrackingCol, courier_col: newCourierCol });
+        setToastMessage(`칸 이름으로 ${matchedCount}개를 다시 찾아 '${created.name}' 양식으로 저장했어요.`);
+        setTimeout(() => setToastMessage(null), 3500);
+        return;
+      }
+    }
+
     const updatedPlatforms = platforms.map(p => {
       if (p.id !== activePlatform.id) return p;
       return {
@@ -668,7 +721,7 @@ export default function PlatformSettings({
 
     if (onReProcessOrders) onReProcessOrders();
 
-    setToastMessage(` 엑셀 헤더 스캔 완료. ${matchedCount}개 목적 컬럼이 헤더와 자동 매칭되었습니다.`);
+    setToastMessage(`칸 이름으로 ${matchedCount}개를 다시 찾았어요.`);
     setTimeout(() => setToastMessage(null), 3500);
   };
 
@@ -680,7 +733,7 @@ export default function PlatformSettings({
     }
 
     if (activePlatform.id.startsWith('unregistered')) {
-      alert('현재 선택된 양식은 미등록 양식입니다. "이 헤더 구조로 새 쇼핑몰 양식 등록" 버튼을 눌러 먼저 등록해주세요.');
+      alert('처음 보는 양식이에요. "새 쇼핑몰로 등록"을 먼저 눌러 주세요.');
       return;
     }
 
@@ -704,7 +757,7 @@ export default function PlatformSettings({
       onReProcessOrders();
     }
 
-    setToastMessage(` [${activePlatform.name}] 쇼핑몰 열 매핑 설정이 최신 상태로 덮어썼고 지금 주문에 반영했어요.`);
+    setToastMessage(`'${activePlatform.name}' 양식에 저장하고 주문을 다시 정리했어요.`);
     setTimeout(() => setToastMessage(null), 4000);
   };
 
@@ -838,29 +891,29 @@ export default function PlatformSettings({
 
   // 주요 타겟 필드 정의 (10가지 정보 - 쇼핑몰용)
   const TARGET_FIELDS = [
-    { key: '상품명', label: '상품명', icon: '', badgeBg: 'bg-brand-100 text-brand-800 border-brand-200', description: '주문 상품 이름' },
-    { key: '용량', label: '용량 / 옵션명', icon: '', badgeBg: 'bg-blue-100 text-blue-800 border-blue-200', description: '상세 옵션 및 수량단위' },
-    { key: '수량', label: '주문 수량', icon: '', badgeBg: 'bg-emerald-100 text-emerald-800 border-emerald-200', description: '구매 개수' },
-    { key: '수령인', label: '수령인 (받는사람)', icon: '', badgeBg: 'bg-purple-100 text-purple-800 border-purple-200', description: '수취인 성명' },
-    { key: '연락처', label: '연락처 (전화번호)', icon: '', badgeBg: 'bg-amber-100 text-amber-800 border-amber-200', description: '휴대폰 및 전화번호' },
-    { key: '우편번호', label: '우편번호', icon: '', badgeBg: 'bg-cyan-100 text-cyan-800 border-cyan-200', description: '배송지 5자리 우편번호' },
-    { key: '주소', label: '배송지 주소', icon: '', badgeBg: 'bg-rose-100 text-rose-800 border-rose-200', description: '기본 및 상세주소' },
-    { key: '배송메시지', label: '배송 메시지', icon: '', badgeBg: 'bg-slate-100 text-slate-800 border-slate-200', description: '배송요청 메모' },
-    { key: 'tracking_col', label: '운송장번호 기입열', icon: '', badgeBg: 'bg-violet-100 text-violet-800 border-violet-200', description: '송장 기입할 열' },
-    { key: 'courier_col', label: '택배사명 기입열', icon: '', badgeBg: 'bg-teal-100 text-teal-800 border-teal-200', description: '택배사 기입할 열' },
+    { key: '상품명', label: '상품명', icon: '', badgeBg: 'bg-brand-100 text-brand-800 border-brand-200', description: '주문한 상품 이름' },
+    { key: '용량', label: '옵션·용량', icon: '', badgeBg: 'bg-blue-100 text-blue-800 border-blue-200', description: '예: 5kg, 1박스' },
+    { key: '수량', label: '수량', icon: '', badgeBg: 'bg-emerald-100 text-emerald-800 border-emerald-200', description: '몇 개 샀는지' },
+    { key: '수령인', label: '받는 사람', icon: '', badgeBg: 'bg-purple-100 text-purple-800 border-purple-200', description: '받는 사람 이름' },
+    { key: '연락처', label: '전화번호', icon: '', badgeBg: 'bg-amber-100 text-amber-800 border-amber-200', description: '받는 사람 휴대폰' },
+    { key: '우편번호', label: '우편번호', icon: '', badgeBg: 'bg-cyan-100 text-cyan-800 border-cyan-200', description: '5자리 숫자' },
+    { key: '주소', label: '주소', icon: '', badgeBg: 'bg-rose-100 text-rose-800 border-rose-200', description: '받는 곳 주소' },
+    { key: '배송메시지', label: '배송 메시지', icon: '', badgeBg: 'bg-slate-100 text-slate-800 border-slate-200', description: '배송 요청 메모' },
+    { key: 'tracking_col', label: '송장 번호 넣을 칸', icon: '', badgeBg: 'bg-violet-100 text-violet-800 border-violet-200', description: '쇼핑몰에 올릴 파일에서' },
+    { key: 'courier_col', label: '택배사 이름 넣을 칸', icon: '', badgeBg: 'bg-teal-100 text-teal-800 border-teal-200', description: '쇼핑몰에 올릴 파일에서' },
   ] as const;
 
   // 택배사 매트릭스 타겟 필드 정의 (9가지 정보 - 2단계 택배사용)
   const COURIER_TARGET_FIELDS = [
-    { key: 'tracking_col', label: '운송장번호 열', icon: '', badgeBg: 'bg-brand-100 text-brand-800 border-brand-200', description: '운송장번호 위치 (필수)' },
-    { key: 'name_col', label: '수령인 (받는사람)', icon: '', badgeBg: 'bg-purple-100 text-purple-800 border-purple-200', description: '수취인 성명 위치' },
-    { key: 'phone_col', label: '연락처 (전화번호)', icon: '', badgeBg: 'bg-amber-100 text-amber-800 border-amber-200', description: '전화/휴대폰번호 위치' },
-    { key: 'zip_col', label: '우편번호', icon: '', badgeBg: 'bg-cyan-100 text-cyan-800 border-cyan-200', description: '우편번호 5자리 위치' },
-    { key: 'addr_col', label: '배송지 주소', icon: '', badgeBg: 'bg-rose-100 text-rose-800 border-rose-200', description: '배송지 주소 위치' },
-    { key: 'prod_col', label: '상품명', icon: '', badgeBg: 'bg-brand-100 text-brand-800 border-brand-200', description: '상품/품목명 위치' },
-    { key: 'unit_col', label: '옵션 / 규격', icon: '', badgeBg: 'bg-blue-100 text-blue-800 border-blue-200', description: '옵션/용량/규격 위치' },
-    { key: 'qty_col', label: '수량', icon: '', badgeBg: 'bg-emerald-100 text-emerald-800 border-emerald-200', description: '구매 개수 위치' },
-    { key: 'courier_col', label: '택배사명 지정열', icon: '', badgeBg: 'bg-teal-100 text-teal-800 border-teal-200', description: '택배사명 표시열' },
+    { key: 'tracking_col', label: '송장 번호', icon: '', badgeBg: 'bg-brand-100 text-brand-800 border-brand-200', description: '꼭 있어야 해요' },
+    { key: 'name_col', label: '받는 사람', icon: '', badgeBg: 'bg-purple-100 text-purple-800 border-purple-200', description: '받는 사람 이름' },
+    { key: 'phone_col', label: '전화번호', icon: '', badgeBg: 'bg-amber-100 text-amber-800 border-amber-200', description: '받는 사람 휴대폰' },
+    { key: 'zip_col', label: '우편번호', icon: '', badgeBg: 'bg-cyan-100 text-cyan-800 border-cyan-200', description: '5자리 숫자' },
+    { key: 'addr_col', label: '주소', icon: '', badgeBg: 'bg-rose-100 text-rose-800 border-rose-200', description: '받는 곳 주소' },
+    { key: 'prod_col', label: '상품명', icon: '', badgeBg: 'bg-brand-100 text-brand-800 border-brand-200', description: '보낸 상품 이름' },
+    { key: 'unit_col', label: '옵션·용량', icon: '', badgeBg: 'bg-blue-100 text-blue-800 border-blue-200', description: '예: 5kg, 1박스' },
+    { key: 'qty_col', label: '수량', icon: '', badgeBg: 'bg-emerald-100 text-emerald-800 border-emerald-200', description: '몇 개인지' },
+    { key: 'courier_col', label: '택배사 이름', icon: '', badgeBg: 'bg-teal-100 text-teal-800 border-teal-200', description: '없으면 안 써도 돼요' },
   ] as const;
 
   // 2단계 택배사 관련 활성 파일 및 택배사 설정
@@ -916,7 +969,7 @@ export default function PlatformSettings({
     }
 
     const colLetter = newColIndex >= 0 ? colNumToLetter(newColIndex + 1) : '미지정';
-    setToastMessage(`[${fieldKey}] 필드가 ${colLetter}열로 택배사 설정에 저장되었습니다.`);
+    setToastMessage(`${colLetter === '미지정' ? '안 쓰도록' : colLetter + '열로'} 바꿔 택배사 양식에 저장했어요.`);
     setTimeout(() => setToastMessage(null), 3500);
   };
 
@@ -948,14 +1001,14 @@ export default function PlatformSettings({
 
     onCouriersChange(updatedCouriers);
 
-    setToastMessage(` 택배사 헤더 자동 매칭 완료. [${activeCourier.name}] 택배사 컬럼 매핑이 갱신되었습니다.`);
+    setToastMessage(`칸 이름으로 다시 찾아 '${activeCourier.name}' 양식에 저장했어요.`);
     setTimeout(() => setToastMessage(null), 3500);
   };
 
   // 감지/선택된 택배사 양식에 최신 스마트 매칭/설정 덮어씌우기
   const handleOverwriteActiveCourier = () => {
     if (!activeCourier) {
-      alert('덮어씌울 택배사 양식이 선택되지 않았습니다.');
+      alert('저장할 택배사 양식을 골라 주세요.');
       return;
     }
 
@@ -984,14 +1037,14 @@ export default function PlatformSettings({
       onFileCourierChange(activeTrackingFile.fileName, activeCourier.name);
     }
 
-    setToastMessage(` [${activeCourier.name}] 택배사 열 매핑 설정이 최신 상태로 덮어씌워졌습니다.`);
+    setToastMessage(`'${activeCourier.name}' 양식에 저장했어요.`);
     setTimeout(() => setToastMessage(null), 4000);
   };
 
   // 현재 감지된 헤더 세팅으로 신규 택배사 양식 등록 처리
   const handleSaveAsNewCourierSubmit = () => {
     if (!newCourierNameInput.trim()) {
-      alert('등록할 택배사 이름을 입력해주세요.');
+      alert('택배사 이름을 적어 주세요.');
       return;
     }
 
@@ -1023,7 +1076,7 @@ export default function PlatformSettings({
     }
 
     setShowSaveAsNewCourierModal(false);
-    setToastMessage(` [${newConfig.name}] 택배사 양식이 추가되어 연동되었습니다.`);
+    setToastMessage(`'${newConfig.name}' 택배사 양식을 만들었어요.`);
     setTimeout(() => setToastMessage(null), 3500);
   };
 
@@ -1046,417 +1099,386 @@ export default function PlatformSettings({
       )}
 
       {/* ======================================================== */}
-      {/* 메인화면: 엑셀 열 감지 & 키워드 매핑 한눈에 보기 GUI        */}
+      {/* 메인화면: 쇼핑몰·택배사 엑셀의 칸 맞추기                     */}
       {/* ======================================================== */}
-      <div className="space-y-6 animate-fade-in">
-        
-        {/* 상단 메인 헤더 & 톱니바퀴 버튼 & 쇼핑몰/택배사 모드 전환 탭 */}
-        <div className="bg-white text-slate-900 rounded-2xl p-6 border border-slate-200 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="p-1.5 bg-brand-50 rounded-lg text-brand-600">
-                  <Grid className="w-5 h-5" />
-                </span>
-                <h2 className="text-lg font-bold tracking-tight text-slate-900">
-                  열 위치 맞추기
-                </h2>
-              </div>
-              <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
-                올린 엑셀의 각 열(A, B, C…)이 상품명인지, 받는 사람인지 맞춰요. 틀린 곳은 오른쪽에서 바로 고칠 수 있어요.
+      <div className="space-y-5 animate-fade-in">
+
+        {/* 머리: 제목, 등록된 양식 보기, 쇼핑몰/택배사 전환, 볼 파일 고르기 */}
+        <div className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+            <div className="min-w-0">
+              <h2 className="text-xl font-semibold tracking-tight text-slate-900">쇼핑몰·택배사 칸 맞추기</h2>
+              <p className="text-sm text-slate-600 mt-1.5 leading-relaxed max-w-[64ch]">
+                엑셀의 어느 칸이 상품명이고 어느 칸이 받는 사람인지 맞추는 곳이에요. 대부분은 자동으로 맞춰져요. 정리 결과가 이상할 때만 여기서 고치면 돼요.
               </p>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0">
-              {/* 톱니바퀴 고급 설정 버튼 (쇼핑몰 양식 & 택배사 송장 설정 팝업) */}
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              {/* 등록된 쇼핑몰·택배사 양식 창 열기 */}
               <button
                 id="btn-open-settings-modal"
                 onClick={() => {
                   setModalTab(matrixType === 'courier' ? 'courier' : 'platform');
                   setShowSettingsModal(true);
                 }}
-                className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer"
-                title="쇼핑몰 양식 및 택배사 컬럼 상세 관리"
+                className="pressable inline-flex min-h-[40px] items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3.5 text-sm font-semibold text-slate-800 hover:bg-slate-50 cursor-pointer"
               >
-                <Settings className="w-4 h-4 text-amber-700 animate-spin-slow" />
-                <span>쇼핑몰/택배사 상세 설정</span>
+                <Settings className="w-4 h-4" />
+                등록된 양식 보기
               </button>
 
               {parsedFiles.length > 0 && onNavigateToProcessTab && (
                 <button
                   onClick={onNavigateToProcessTab}
-                  className="px-3.5 py-2 bg-brand-600 hover:bg-brand-400 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="pressable inline-flex min-h-[40px] items-center gap-1.5 rounded-lg bg-brand-600 px-3.5 text-sm font-semibold text-white hover:bg-brand-700 cursor-pointer"
                 >
+                  주문정리로 돌아가기
                   <ArrowRight className="w-4 h-4" />
-                  주문 가공으로 돌아가기
                 </button>
               )}
             </div>
           </div>
 
-          {/* 쇼핑몰 플랫폼 vs 택배사 송장 매트릭스 전환 토글 스위치 */}
-          <div className="pt-3 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-xl border border-slate-200 shrink-0">
+          {/* 쇼핑몰 주문 엑셀 / 택배사 송장 엑셀 전환 */}
+          <div role="tablist" aria-label="엑셀 종류" className="grid grid-cols-2 rounded-xl bg-slate-100 p-1 sm:inline-grid">
+            {([
+              { key: 'platform', label: '쇼핑몰 주문 엑셀', icon: <ShoppingBag className="w-4 h-4 shrink-0" />, count: parsedFiles.length },
+              { key: 'courier', label: '택배사 송장 엑셀', icon: <Truck className="w-4 h-4 shrink-0" />, count: parsedTrackingFiles.length },
+            ] as const).map(t => (
               <button
-                onClick={() => setMatrixType('platform')}
-                className={`px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
-                  matrixType === 'platform'
-                    ? 'bg-brand-600 text-white shadow-md font-extrabold'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
+                key={t.key}
+                role="tab"
+                aria-selected={matrixType === t.key}
+                onClick={() => setMatrixType(t.key)}
+                className={`inline-flex min-h-[40px] items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 text-sm font-semibold cursor-pointer sm:px-3.5 ${
+                  matrixType === t.key ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                <ShoppingBag className="w-4 h-4 shrink-0" />
-                <span> 쇼핑몰 주문 양식</span>
-                {parsedFiles.length > 0 && (
-                  <span className={`text-xs px-1.5 py-0.2 rounded font-mono ${
-                    matrixType === 'platform' ? 'bg-brand-100 text-brand-800 font-bold' : 'bg-slate-200 text-slate-600'
-                  }`}>
-                    {parsedFiles.length}개 파일
-                  </span>
-                )}
+                {t.icon}
+                {t.label}
+                {t.count > 0 && <span className="font-mono text-xs tabular-nums text-slate-500">{t.count}</span>}
               </button>
-
-              <button
-                onClick={() => setMatrixType('courier')}
-                className={`px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
-                  matrixType === 'courier'
-                    ? 'bg-amber-400 text-slate-950 shadow-md font-extrabold'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
-                }`}
-              >
-                <Truck className="w-4 h-4 text-amber-600 shrink-0" />
-                <span> 택배사 송장 양식</span>
-                {parsedTrackingFiles.length > 0 && (
-                  <span className={`text-xs px-1.5 py-0.2 rounded font-mono ${
-                    matrixType === 'courier' ? 'bg-brand-600 text-white font-bold' : 'bg-slate-200 text-slate-600'
-                  }`}>
-                    {parsedTrackingFiles.length}개 파일
-                  </span>
-                )}
-              </button>
-            </div>
-
-            {/* 현재 선택 상태 서머리 텍스트 */}
-            <div className="text-xs text-slate-500 font-medium flex items-center gap-2">
-              {matrixType === 'platform' ? (
-                <span>주문 엑셀의 열 위치</span>
-              ) : (
-                <span>송장 엑셀의 열 위치</span>
-              )}
-            </div>
+            ))}
           </div>
 
-          {/* 1) 쇼핑몰 모드 파일 목록 선택 탭 */}
-          {matrixType === 'platform' && (
-            parsedFiles.length > 0 ? (
-              <div className="pt-3 border-t border-slate-200 flex flex-wrap items-center gap-2">
-                <span className="text-xs font-semibold text-slate-600 mr-1">업로드된 쇼핑몰 엑셀 파일:</span>
-                {parsedFiles.map((pf, idx) => {
-                  const isSelected = selectedFileIdx === idx;
-                  const platName = pf.detectedPlatform?.name || '기본 양식';
-                  return (
-                    <button
-                      key={idx}
-                      onClick={() => setSelectedFileIdx(idx)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-2 border cursor-pointer ${
-                        isSelected
-                          ? 'bg-brand-600 text-white border-brand-600 shadow-sm font-bold'
-                          : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
-                      }`}
-                    >
-                      <FileText className="w-3.5 h-3.5" />
-                      <span className="max-w-[180px] truncate">{pf.fileName}</span>
-                      <span className={`text-xs px-1.5 py-0.2 rounded font-mono ${
-                        isSelected ? 'bg-brand-100 text-brand-800' : 'bg-slate-100 text-slate-600'
-                      }`}>
-                        {platName}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="pt-2 border-t border-slate-200 flex items-center justify-between text-xs text-slate-600">
-                <span> 아직 올린 주문 엑셀이 없어요. 주문서를 올리거나, 아래에서 등록된 쇼핑몰의 기본 열 매핑 구조를 확인하세요.</span>
-                {onNavigateToProcessTab && (
+          {/* 쇼핑몰: 볼 파일 고르기 */}
+          {matrixType === 'platform' && parsedFiles.length > 1 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm text-slate-600 mr-1">볼 파일</span>
+              {parsedFiles.map((pf, idx) => {
+                const isSelected = selectedFileIdx === idx;
+                const generic = isGenericPlatform(pf.detectedPlatform);
+                return (
                   <button
-                    onClick={onNavigateToProcessTab}
-                    className="underline text-amber-700 hover:text-amber-800 font-bold ml-2 shrink-0 cursor-pointer"
+                    key={idx}
+                    onClick={() => setSelectedFileIdx(idx)}
+                    aria-pressed={isSelected}
+                    className={`inline-flex min-h-[36px] items-center gap-2 rounded-lg border px-3 text-[13px] cursor-pointer ${
+                      isSelected ? 'border-brand-600 bg-brand-50 text-slate-900 font-semibold' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+                    }`}
                   >
-                    주문서 올리러 가기 →
+                    {generic ? <AlertTriangle className="w-3.5 h-3.5 text-amber-600" /> : <CheckCircle2 className="w-3.5 h-3.5 text-brand-600" />}
+                    <span className="max-w-[200px] truncate">{pf.fileName}</span>
                   </button>
-                )}
-              </div>
-            )
+                );
+              })}
+            </div>
           )}
 
-          {/* 2) 택배사 모드 파일 목록 및 택배사 선택 드롭다운 */}
-          {matrixType === 'courier' && (
-            <div className="pt-3 border-t border-slate-200 space-y-2">
-              {parsedTrackingFiles.length > 0 ? (
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-xs font-semibold text-amber-800 mr-1">업로드된 택배사 엑셀 파일:</span>
-                  {parsedTrackingFiles.map((ptf, idx) => {
-                    const isSelected = selectedTrackingFileIdx === idx;
-                    return (
-                      <button
-                        key={idx}
-                        onClick={() => {
-                          setSelectedTrackingFileIdx(idx);
-                          setSelectedCourierId(ptf.detectedCourier);
-                        }}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-2 border cursor-pointer ${
-                          isSelected
-                            ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-sm font-bold'
-                            : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
-                        }`}
-                      >
-                        <Truck className="w-3.5 h-3.5" />
-                        <span className="max-w-[180px] truncate">{ptf.fileName}</span>
-                        <span className={`text-xs px-1.5 py-0.2 rounded font-mono ${
-                          isSelected ? 'bg-brand-600 text-white font-bold' : 'bg-slate-100 text-slate-600'
-                        }`}>
-                          {ptf.detectedCourier}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="flex items-center justify-between text-xs text-slate-600">
-                  <span> 업로드된 택배사 운송장 파일이 없습니다. 등록된 택배사 목록에서 직접 양식을 선택하여 미리 확인하고 설정할 수 있습니다.</span>
-                </div>
-              )}
-
-              {/* 택배사 수동 선택 드롭다운 */}
-              <div className="flex items-center gap-3 pt-1">
-                <span className="text-xs font-semibold text-slate-600 shrink-0">조회/설정할 택배사 양식 선택:</span>
-                <select
-                  value={activeCourier?.id || activeCourier?.name || ''}
-                  onChange={(e) => setSelectedCourierId(e.target.value)}
-                  className="bg-white text-slate-900 border border-slate-300 rounded-lg px-3 py-1.5 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer max-w-xs"
-                >
-                  {couriers.map(c => (
-                    <option key={c.id} value={c.id}>
-                      {c.name} (송장열: {colNumToLetter(c.tracking_col + 1)}열, 시작행: {c.start_row + 1}행)
-                    </option>
-                  ))}
-                </select>
-
-                {activeCourier && (
-                  <span className="text-xs text-amber-700 bg-amber-50 border border-amber-300 px-2.5 py-1 rounded-md font-semibold">
-                    선택된 택배사: <strong>{activeCourier.name}</strong>
-                  </span>
-                )}
-              </div>
+          {/* 택배사: 볼 파일 고르기 */}
+          {matrixType === 'courier' && parsedTrackingFiles.length > 1 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm text-slate-600 mr-1">볼 파일</span>
+              {parsedTrackingFiles.map((ptf, idx) => {
+                const isSelected = selectedTrackingFileIdx === idx;
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setSelectedTrackingFileIdx(idx);
+                      setSelectedCourierId(ptf.detectedCourier);
+                    }}
+                    aria-pressed={isSelected}
+                    className={`inline-flex min-h-[36px] items-center gap-2 rounded-lg border px-3 text-[13px] cursor-pointer ${
+                      isSelected ? 'border-brand-600 bg-brand-50 text-slate-900 font-semibold' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    <Truck className="w-3.5 h-3.5 text-slate-500" />
+                    <span className="max-w-[200px] truncate">{ptf.fileName}</span>
+                    <span className="text-slate-500">{ptf.detectedCourier}</span>
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
 
-        {/* 미등록 또는 자동 감지된 양식인 경우 새 쇼핑몰 양식 등록 안내 배너 */}
-        {matrixType === 'platform' && activeFile && activePlatform && (
-          <div className="bg-amber-50 border border-amber-500/30 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-start gap-3">
-              <span className="p-2 bg-amber-500/20 text-amber-600 rounded-xl shrink-0 mt-0.5">
-                <Lightbulb className="w-5 h-5" />
-              </span>
-              <div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h4 className="font-bold text-slate-800 text-sm">
-                    {activePlatform.id.startsWith('unregistered') ? ' 미등록 엑셀 양식 감지됨' : `지금 쓰는 양식: [${activePlatform.name}]`}
-                  </h4>
-                  {activePlatform.id.startsWith('unregistered') && (
-                    <span className="px-2 py-0.5 bg-amber-500 text-slate-950 font-extrabold text-xs rounded-md">
-                      열 이름으로 자동 맞춤
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                  {activePlatform.id.startsWith('unregistered')
-                    ? `[${activeFile.fileName}] 파일의 열 이름을 읽었어요. 이 헤더 구조를 내 쇼핑몰 설정으로 저장하시겠습니까?`
-                    : `현재 감지/선택된 [${activePlatform.name}] 컬럼 구조를 기반으로 새로운 쇼핑몰 양식 항목을 등록할 수 있습니다.`}
-                </p>
-
-                {secondaryColsInfo.length > 0 && (
-                  <div className="mt-2.5 flex items-center gap-2 bg-purple-50 border border-purple-200 text-purple-900 px-3 py-1.5 rounded-xl text-xs font-semibold">
-                    <Lightbulb className="w-3.5 h-3.5 text-purple-600 shrink-0" />
-                    <span>
-                      <strong>분리 확장 감지:</strong> {secondaryColsInfo.map(s => `${s.letter}열 [${s.headerName}]`).join(', ')} 이(가) 메인 용량/옵션열 뒤에 실시간으로 확장 결합되도록 감지되었습니다.
-                    </span>
-                  </div>
-                )}
-              </div>
+        {/* ======================================================== */}
+        {/* A. 쇼핑몰 주문 엑셀                                        */}
+        {/* ======================================================== */}
+        {matrixType === 'platform' && !activeFile && (
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 space-y-4">
+            <div>
+              <h3 className="text-base font-semibold text-slate-900">아직 올린 주문 엑셀이 없어요</h3>
+              <p className="mt-1 text-sm text-slate-600 leading-relaxed max-w-[64ch]">
+                주문정리에서 주문 엑셀을 올리면, 여기서 칸이 제대로 맞았는지 예시 값과 함께 볼 수 있어요.
+              </p>
             </div>
-
-            <div className="flex flex-wrap sm:flex-col md:flex-row items-center gap-2 shrink-0">
-              {activePlatform && !activePlatform.id.startsWith('unregistered') && (
-                <button
-                  onClick={handleOverwriteActivePlatform}
-                  className="px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs rounded-xl transition shadow-xs flex items-center gap-1.5 cursor-pointer hover:shadow-md"
-                  title={`지금 맞춘 열 위치를 [${activePlatform.name}] 쇼핑몰 설정에 덮어씌워 저장합니다`}
-                >
-                  <Save className="w-4 h-4" />
-                  [{activePlatform.name}] 양식에 덮어씌우기
-                </button>
-              )}
-
+            {onNavigateToProcessTab && (
               <button
-                onClick={() => {
-                  const autoName = activeFile.fileName.replace(/\.[^/.]+$/, "").replace(/[0-9_\-\s]/g, " ").trim() || "신규 쇼핑몰";
-                  const autoKey = activeFile.fileName.replace(/\.[^/.]+$/, "").split(/[_ -]/)[0] || "";
-                  setNewPlatformNameInput(autoName);
-                  setNewPlatformPatternInput(autoKey);
-                  setShowSaveAsNewModal(true);
-                }}
-                className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl transition flex items-center gap-1.5 shadow-sm cursor-pointer hover:shadow-md"
+                onClick={onNavigateToProcessTab}
+                className="pressable inline-flex min-h-[44px] items-center gap-1.5 rounded-lg bg-brand-600 px-4 text-sm font-semibold text-white hover:bg-brand-700 cursor-pointer"
               >
-                <Plus className="w-4 h-4" />
-                새 쇼핑몰 양식으로 등록
+                주문서 올리러 가기
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            )}
+            <div className="border-t border-slate-100 pt-4">
+              <p className="text-sm text-slate-600">등록된 쇼핑몰 양식 {platforms.length}개</p>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {platforms.map(p => (
+                  <span key={p.id} className="rounded-md bg-slate-100 px-2 py-1 text-[13px] text-slate-700">{p.name}</span>
+                ))}
+              </div>
+              <button
+                onClick={() => { setModalTab('platform'); setShowSettingsModal(true); }}
+                className="mt-3 inline-flex min-h-[40px] items-center text-sm font-semibold text-brand-700 underline-offset-4 hover:underline cursor-pointer"
+              >
+                등록된 양식 고치기
               </button>
             </div>
           </div>
         )}
 
-        {/* 2단계 택배사 송장 양식 덮어씌우기 및 새 택배사 양식 등록 안내 배너 */}
-        {matrixType === 'courier' && activeCourier && (
-          <div className="bg-amber-50 border border-amber-500/30 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-start gap-3">
-              <span className="p-2 bg-amber-500/20 text-amber-600 rounded-xl shrink-0 mt-0.5">
-                <Truck className="w-5 h-5" />
-              </span>
-              <div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h4 className="font-bold text-slate-800 text-sm">
-                    현재 택배사 설정: [{activeCourier.name}]
-                  </h4>
-                  <span className="px-2 py-0.5 bg-amber-500 text-slate-950 font-extrabold text-xs rounded-md">
-                    송장 양식 저장
-                  </span>
-                </div>
-                <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                  {activeTrackingFile
-                    ? `[${activeTrackingFile.fileName}] 송장 파일의 열 위치예요. 이 헤더 구조를 [${activeCourier.name}] 택배사 설정에 덮어씌우거나 새로운 택배사 양식으로 등록할 수 있습니다.`
-                    : `현재 선택된 [${activeCourier.name}] 택배사의 컬럼 구조를 기반으로 새로운 택배사 양식을 추가 등록하거나 기존 설정을 덮어씌울 수 있습니다.`}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap sm:flex-col md:flex-row items-center gap-2 shrink-0">
-              <button
-                onClick={handleOverwriteActiveCourier}
-                className="px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs rounded-xl transition shadow-xs flex items-center gap-1.5 cursor-pointer hover:shadow-md"
-                title={`지금 맞춘 열 위치를 [${activeCourier.name}] 택배사 설정에 덮어씌워 저장합니다`}
-              >
-                <Save className="w-4 h-4" />
-                [{activeCourier.name}] 양식에 덮어씌우기
-              </button>
-
-              <button
-                onClick={() => {
-                  const autoName = activeTrackingFile
-                    ? activeTrackingFile.fileName.replace(/\.[^/.]+$/, "").replace(/[0-9_\-\s]/g, " ").trim() || "신규 택배사"
-                    : "신규 택배사";
-                  const autoKey = activeTrackingFile
-                    ? activeTrackingFile.fileName.replace(/\.[^/.]+$/, "").split(/[_ -]/)[0] || ""
-                    : "";
-                  setNewCourierNameInput(autoName);
-                  setNewCourierPatternInput(autoKey);
-                  setShowSaveAsNewCourierModal(true);
-                }}
-                className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition flex items-center gap-1.5 shadow-sm cursor-pointer hover:shadow-md"
-              >
-                <Plus className="w-4 h-4" />
-                새 택배사 양식으로 등록
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* ======================================================== */}
-        {/* A. 쇼핑몰 감지 매트릭스 뷰                                */}
-        {/* ======================================================== */}
-        {matrixType === 'platform' && (
-          <>
-            {/* 1. 키워드로 원하는 열 찾기 패널 */}
-            {activeFile && activePlatform && (
-              <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
-                  <div>
-                    <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
-                      <Search className="w-4 h-4 text-brand-600" />
-                      키워드로 원하는 열 찾기 (헤더 검색기)
+        {matrixType === 'platform' && activeFile && activePlatform && (() => {
+          const generic = isGenericPlatform(activePlatform);
+          const justCreated = autoCreatedPlatformId !== null && activePlatform.id === autoCreatedPlatformId;
+          const sampleRow: any[] = previewRows[1] || [];
+          const colOf = (key: string): number => {
+            if (key === 'tracking_col') return activePlatform.tracking_col;
+            if (key === 'courier_col') return activePlatform.courier_col !== undefined ? activePlatform.courier_col : -1;
+            return (activePlatform.col_map as any)[key] !== undefined ? (activePlatform.col_map as any)[key] : 0;
+          };
+          const usedCount = new Map<number, number>();
+          TARGET_FIELDS.forEach(f => { const c = colOf(f.key); if (c >= 0) usedCount.set(c, (usedCount.get(c) || 0) + 1); });
+          const openNewPlatformModal = () => {
+            const autoName = activeFile.fileName.replace(/\.[^/.]+$/, "").replace(/[0-9_\-\s]/g, " ").trim() || "신규 쇼핑몰";
+            const autoKey = activeFile.fileName.replace(/\.[^/.]+$/, "").split(/[_ -]/)[0] || "";
+            setNewPlatformNameInput(autoName);
+            setNewPlatformPatternInput(autoKey);
+            setShowSaveAsNewModal(true);
+          };
+          return (
+            <>
+              {/* 이 파일을 어떻게 읽었는지 */}
+              <section className={`rounded-2xl border p-5 space-y-3 ${generic ? 'border-amber-300 bg-amber-50/60' : 'border-slate-200 bg-white'}`}>
+                <div className="flex items-start gap-3">
+                  {generic
+                    ? <AlertTriangle className="mt-0.5 w-5 h-5 shrink-0 text-amber-600" />
+                    : <CheckCircle2 className="mt-0.5 w-5 h-5 shrink-0 text-brand-600" />}
+                  <div className="min-w-0">
+                    <h3 className="text-base font-semibold text-slate-900">
+                      {generic ? '처음 보는 양식이에요' : justCreated ? `처음 보는 양식이라 '${activePlatform.name}'(으)로 저장했어요` : `'${activePlatform.name}' 양식으로 읽었어요`}
                     </h3>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      "{activeFile.fileName}" 파일의 전체 헤더({allHeaderColumns.length}개 열)에서 검색어로 원하는 열 위치를 신속하게 찾습니다.
+                    <p className="mt-1 text-sm text-slate-700 leading-relaxed max-w-[70ch]">
+                      {generic
+                        ? '칸 이름을 보고 자동으로 맞춰 봤어요. 아래 표의 예시 값을 보고 틀린 칸만 고르세요. 고르는 순간 이 파일 모양을 새 쇼핑몰 양식으로 저장하고, 주문도 다시 정리해요.'
+                        : '칸을 바꾸면 바로 저장되고, 올린 주문도 다시 정리돼요.'}
                     </p>
+                    {secondaryColsInfo.length > 0 && (
+                      <p className="mt-1 text-sm text-slate-700">
+                        {secondaryColsInfo.map(s => `${s.letter}열 [${s.headerName}]`).join(', ')}도 옵션에 함께 붙여요.
+                      </p>
+                    )}
                   </div>
+                </div>
 
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pl-8">
                   {onFilePlatformChange && (
-                    <div className="flex items-center gap-2 shrink-0 bg-slate-50 p-1.5 rounded-lg border border-slate-200 text-xs">
-                      <span className="text-slate-500 font-medium">연동 쇼핑몰:</span>
+                    <label className="inline-flex items-center gap-2 text-sm text-slate-700">
+                      이 파일을 읽을 양식
                       <select
                         value={activePlatform.id}
                         onChange={(e) => onFilePlatformChange(activeFile.fileName, e.target.value)}
-                        className="bg-white border border-slate-200 rounded px-2 py-1 font-bold text-brand-700 focus:outline-none focus:ring-1 focus:ring-brand-600 cursor-pointer"
+                        className="min-h-[36px] rounded-lg border border-slate-300 bg-white px-2 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600/30 cursor-pointer"
                       >
+                        {!platforms.some(p => p.id === activePlatform.id) && (
+                          <option value={activePlatform.id}>{activePlatform.name}</option>
+                        )}
                         {platforms.map(p => (
                           <option key={p.id} value={p.id}>{p.name}</option>
                         ))}
                       </select>
-                    </div>
+                    </label>
                   )}
-                </div>
-
-                {/* 검색 인풋 Box */}
-                <div className="relative">
-                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                  <input
-                    type="text"
-                    value={keywordSearch}
-                    onChange={(e) => setKeywordSearch(e.target.value)}
-                    placeholder="찾고 싶은 헤더 키워드를 입력하세요 (예: 받는사람, 수량, 옵션, 전화번호, 주소, E열, 5번째)..."
-                    className="w-full pl-10 pr-10 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-600/20 focus:border-brand-600 transition"
-                  />
-                  {keywordSearch && (
+                  {justCreated && (
                     <button
-                      onClick={() => setKeywordSearch('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500 hover:text-slate-700 font-bold cursor-pointer"
+                      onClick={() => { setModalTab('platform'); setEditingPlatform(activePlatform); setShowSettingsModal(true); }}
+                      className="inline-flex min-h-[36px] items-center text-sm font-semibold text-brand-700 underline-offset-4 hover:underline cursor-pointer"
                     >
-                      ✕
+                      이름 바꾸기
                     </button>
                   )}
+                  <button
+                    onClick={openNewPlatformModal}
+                    className="inline-flex min-h-[36px] items-center gap-1 text-sm font-semibold text-brand-700 underline-offset-4 hover:underline cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                    새 쇼핑몰로 등록
+                  </button>
+                </div>
+              </section>
+
+              {/* 칸 표: 항목 / 엑셀에서 찾은 칸 / 바꾸기 */}
+              <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+                <div className="p-5 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-base font-semibold text-slate-900">칸 확인하기</h3>
+                    <p className="text-sm text-slate-600 mt-0.5">
+                      예시 값은 <span className="font-medium text-slate-800">{activeFile.fileName}</span>의 첫 주문이에요. 예시가 이상하면 맞는 칸으로 바꾸세요.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      onClick={handleAutoMatchHeaders}
+                      className="pressable inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 text-[13px] font-semibold text-slate-800 hover:bg-slate-50 cursor-pointer"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      칸 이름으로 다시 찾기
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (onReProcessOrders) onReProcessOrders();
+                        setToastMessage("주문을 다시 정리했어요.");
+                        setTimeout(() => setToastMessage(null), 3000);
+                      }}
+                      className="pressable inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 text-[13px] font-semibold text-slate-800 hover:bg-slate-50 cursor-pointer"
+                    >
+                      주문 다시 정리
+                    </button>
+                    {!generic && (
+                      <button
+                        onClick={handleOverwriteActivePlatform}
+                        className="pressable inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 text-[13px] font-semibold text-slate-800 hover:bg-slate-50 cursor-pointer"
+                      >
+                        <Save className="w-3.5 h-3.5" />
+                        '{activePlatform.name}' 양식에 저장
+                      </button>
+                    )}
+                  </div>
                 </div>
 
-                {/* 검색어 입력 시 매칭된 열 타일 리스트 */}
-                {keywordSearch.trim() !== '' && (
-                  <div className="space-y-2 bg-brand-50/40 border border-brand-100 rounded-xl p-3.5">
-                    <div className="text-xs font-bold text-[#0F3A2F] flex items-center justify-between">
-                      <span> 키워드 "{keywordSearch}" 검색 결과 ({filteredColumns.length}개 열 찾음):</span>
-                      <span className="text-xs text-brand-600 font-normal">버튼을 클릭하면 플랫폼 설정 항목에 즉시 지정됩니다</span>
-                    </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm border-collapse sm:min-w-[640px]">
+                    <thead>
+                      <tr className="bg-slate-50 text-slate-600 border-b border-slate-200 text-[13px] max-sm:hidden">
+                        <th className="py-2.5 px-4 font-semibold w-48">항목</th>
+                        <th className="py-2.5 px-4 font-semibold">엑셀에서 찾은 칸</th>
+                        <th className="py-2.5 px-4 font-semibold w-72">바꾸기</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {TARGET_FIELDS.map((field) => {
+                        const idx = colOf(field.key);
+                        const assigned = idx >= 0;
+                        const headerText = assigned && rawHeaders[idx] !== undefined ? String(rawHeaders[idx]).trim() : '';
+                        const sample = assigned && sampleRow[idx] !== undefined ? String(sampleRow[idx]).trim() : '';
+                        const isWriteCol = field.key === 'tracking_col' || field.key === 'courier_col';
+                        const warn = !assigned ? '' : !headerText ? '칸 이름이 없어요' : (usedCount.get(idx) || 0) > 1 ? '다른 항목과 같은 칸이에요' : '';
+                        return (
+                          <tr key={field.key} className={`max-sm:grid max-sm:grid-cols-1 max-sm:gap-1.5 max-sm:px-4 max-sm:py-3 ${warn ? 'bg-amber-50/70' : ''}`}>
+                            <td className="py-3 px-4 align-top max-sm:p-0">
+                              <div className="font-semibold text-slate-900">{field.label}</div>
+                              <div className="text-[13px] text-slate-500">{field.description}</div>
+                            </td>
+                            <td className="py-3 px-4 align-top max-sm:p-0">
+                              {assigned ? (
+                                <div className="space-y-0.5">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <span className="font-mono text-[13px] font-medium text-slate-900 bg-slate-100 rounded px-1.5 py-0.5">{colNumToLetter(idx + 1)}열</span>
+                                    <span className="text-slate-800">{headerText || '(칸 이름 없음)'}</span>
+                                  </div>
+                                  {!isWriteCol && (
+                                    <div className="text-[13px] text-slate-600 truncate max-w-[360px]" title={sample}>
+                                      예: {sample || <span className="text-slate-400">비어 있음</span>}
+                                    </div>
+                                  )}
+                                  {warn && (
+                                    <div className="inline-flex items-center gap-1 text-[13px] font-semibold text-amber-800">
+                                      <AlertTriangle className="w-3.5 h-3.5" />{warn}
+                                    </div>
+                                  )}
+                                </div>
+                              ) : (
+                                <span className="text-slate-500">안 씀</span>
+                              )}
+                            </td>
+                            <td className="py-3 px-4 align-top max-sm:p-0">
+                              <select
+                                aria-label={`${field.label} 칸 바꾸기`}
+                                value={idx}
+                                onChange={(e) => handleUpdateColumnMapping(activePlatform.id, field.key, parseInt(e.target.value, 10))}
+                                className="w-full min-h-[40px] rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-600/30 focus:border-brand-600 cursor-pointer"
+                              >
+                                {allHeaderColumns.map(col => (
+                                  <option key={col.index} value={col.index}>
+                                    {col.letter}열 · {col.headerText || '(칸 이름 없음)'}
+                                  </option>
+                                ))}
+                              </select>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
 
-                    {filteredColumns.length > 0 ? (
-                      <div className="flex flex-wrap gap-2 pt-1 max-h-40 overflow-y-auto pr-1">
+              {/* 칸 이름으로 찾기 (접어 둠) */}
+              <details className="group bg-white border border-slate-200 rounded-2xl">
+                <summary className="flex min-h-[52px] cursor-pointer list-none items-center justify-between gap-3 px-5 text-sm font-semibold text-slate-800">
+                  <span className="inline-flex items-center gap-2"><Search className="w-4 h-4 text-slate-500" />칸 이름으로 찾기</span>
+                  <ChevronDown className="w-4 h-4 text-slate-500 transition-transform group-open:rotate-180" />
+                </summary>
+                <div className="space-y-3 px-5 pb-5">
+                  <p className="text-sm text-slate-600">이 파일의 칸 {allHeaderColumns.length}개 중에서 이름이나 열 글자(예: E)로 찾아요.</p>
+                  <div className="relative">
+                    <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <input
+                      type="text"
+                      value={keywordSearch}
+                      onChange={(e) => setKeywordSearch(e.target.value)}
+                      placeholder="예: 받는사람, 수량, 옵션, E"
+                      className="w-full min-h-[44px] pl-10 pr-10 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600/30 focus:border-brand-600"
+                    />
+                    {keywordSearch && (
+                      <button
+                        onClick={() => setKeywordSearch('')}
+                        aria-label="검색어 지우기"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded text-slate-500 hover:bg-slate-100 cursor-pointer"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                  {keywordSearch.trim() !== '' && (
+                    filteredColumns.length > 0 ? (
+                      <div className="flex flex-wrap gap-2 max-h-56 overflow-y-auto pr-1">
                         {filteredColumns.map(col => (
-                          <div
-                            key={col.index}
-                            className="bg-white border border-brand-200 hover:border-brand-600 rounded-lg p-2 text-xs space-y-1.5 transition"
-                          >
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-mono font-bold bg-brand-100 text-brand-800 px-1.5 py-0.5 rounded text-xs">
-                                {col.letter}열 ({col.index + 1}번째)
-                              </span>
-                              <span className="font-semibold text-slate-800">{col.headerText}</span>
+                          <div key={col.index} className="rounded-lg border border-slate-200 p-2.5 text-sm space-y-2">
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-[13px] bg-slate-100 rounded px-1.5 py-0.5">{col.letter}열</span>
+                              <span className="font-semibold text-slate-800">{col.headerText || '(칸 이름 없음)'}</span>
                             </div>
-
-                            <div className="flex flex-wrap gap-1 pt-1 border-t border-slate-100">
-                              {['상품명', '용량', '수량', '수령인', '연락처', '주소', '배송메시지'].map(targetKey => (
+                            <div className="flex flex-wrap gap-1">
+                              {TARGET_FIELDS.filter(f => !['tracking_col', 'courier_col', '우편번호'].includes(f.key)).map(f => (
                                 <button
-                                  key={targetKey}
-                                  onClick={() => handleUpdateColumnMapping(activePlatform.id, targetKey, col.index)}
-                                  className="text-xs bg-slate-100 hover:bg-brand-600 hover:text-white text-slate-700 px-1.5 py-0.5 rounded transition font-medium cursor-pointer"
+                                  key={f.key}
+                                  onClick={() => handleUpdateColumnMapping(activePlatform.id, f.key, col.index)}
+                                  className="min-h-[32px] rounded-md bg-slate-100 px-2 text-[13px] text-slate-700 hover:bg-brand-600 hover:text-white cursor-pointer"
                                 >
-                                  {targetKey}로 지정
+                                  {f.label}(으)로
                                 </button>
                               ))}
                             </div>
@@ -1464,621 +1486,339 @@ export default function PlatformSettings({
                         ))}
                       </div>
                     ) : (
-                      <div className="text-xs text-slate-400 p-2 text-center">
-                        "{keywordSearch}" 키워드와 일치하는 헤더 열이 엑셀 파일에 없습니다.
+                      <p className="text-sm text-slate-500">"{keywordSearch}"이(가) 들어간 칸이 없어요.</p>
+                    )
+                  )}
+                </div>
+              </details>
+
+              {/* 엑셀 첫 5줄 보기 (접어 둠) */}
+              {previewRows.length > 0 && (
+                <details className="group bg-white border border-slate-200 rounded-2xl">
+                  <summary className="flex min-h-[52px] cursor-pointer list-none items-center justify-between gap-3 px-5 text-sm font-semibold text-slate-800">
+                    <span className="inline-flex items-center gap-2"><Eye className="w-4 h-4 text-slate-500" />엑셀 첫 5줄 보기</span>
+                    <ChevronDown className="w-4 h-4 text-slate-500 transition-transform group-open:rotate-180" />
+                  </summary>
+                  <div className="px-5 pb-5 space-y-2">
+                    <p className="text-sm text-slate-600">{headerRowIndex + 1}번째 줄을 칸 이름으로 읽었어요. 칸 위의 표시는 그 칸을 어떤 항목으로 쓰는지예요.</p>
+                    <div className="overflow-x-auto max-h-72 border border-slate-200 rounded-lg">
+                      <table className="w-full text-left text-[13px] border-collapse">
+                        <thead>
+                          <tr className="bg-slate-50 text-slate-700">
+                            <th className="p-2 w-10 text-center font-semibold border-r border-slate-200">줄</th>
+                            {rawHeaders.map((_, cIdx) => {
+                              const mappedField = TARGET_FIELDS.find(f => colOf(f.key) === cIdx);
+                              return (
+                                <th key={cIdx} className="p-2 min-w-[110px] max-w-[200px] align-top border-r border-slate-100">
+                                  <div className="font-mono text-xs text-slate-500">{colNumToLetter(cIdx + 1)}</div>
+                                  {mappedField && <div className="mt-0.5 inline-block rounded bg-brand-100 px-1.5 text-xs font-semibold text-brand-800">{mappedField.label}</div>}
+                                </th>
+                              );
+                            })}
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {previewRows.map((row, rIdx) => (
+                            <tr key={rIdx} className={rIdx === 0 ? 'bg-slate-50 font-semibold text-slate-900' : ''}>
+                              <td className="p-2 text-center text-slate-500 border-r border-slate-200 tabular-nums">{headerRowIndex + rIdx + 1}</td>
+                              {rawHeaders.map((_, cIdx) => (
+                                <td key={cIdx} className="p-2 border-r border-slate-100 max-w-[200px] truncate" title={String(row[cIdx] || '')}>
+                                  {String(row[cIdx] || '')}
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </details>
+              )}
+            </>
+          );
+        })()}
+
+        {/* ======================================================== */}
+        {/* B. 택배사 송장 엑셀                                        */}
+        {/* ======================================================== */}
+        {matrixType === 'courier' && (() => {
+          const tHeaders: any[] = trackingHeaderInfo.rawHeaders || [];
+          const tSample: any[] = trackingHeaderInfo.previewRows[1] || [];
+          const cColOf = (key: string): number => activeCourier && (activeCourier as any)[key] !== undefined ? (activeCourier as any)[key] : -1;
+          const tUsed = new Map<number, number>();
+          COURIER_TARGET_FIELDS.forEach(f => { const c = cColOf(f.key); if (c >= 0) tUsed.set(c, (tUsed.get(c) || 0) + 1); });
+          const openNewCourierModal = () => {
+            const autoName = activeTrackingFile
+              ? activeTrackingFile.fileName.replace(/\.[^/.]+$/, "").replace(/[0-9_\-\s]/g, " ").trim() || "신규 택배사"
+              : "신규 택배사";
+            const autoKey = activeTrackingFile
+              ? activeTrackingFile.fileName.replace(/\.[^/.]+$/, "").split(/[_ -]/)[0] || ""
+              : "";
+            setNewCourierNameInput(autoName);
+            setNewCourierPatternInput(autoKey);
+            setShowSaveAsNewCourierModal(true);
+          };
+          return (
+            <>
+              <section className="rounded-2xl border border-slate-200 bg-white p-5 space-y-3">
+                <div className="flex items-start gap-3">
+                  {activeTrackingFile ? <CheckCircle2 className="mt-0.5 w-5 h-5 shrink-0 text-brand-600" /> : <Info className="mt-0.5 w-5 h-5 shrink-0 text-slate-500" />}
+                  <div className="min-w-0">
+                    <h3 className="text-base font-semibold text-slate-900">
+                      {activeTrackingFile
+                        ? `'${activeCourier?.name || '택배사'}' 양식으로 읽었어요`
+                        : '아직 올린 송장 엑셀이 없어요'}
+                    </h3>
+                    <p className="mt-1 text-sm text-slate-700 leading-relaxed max-w-[70ch]">
+                      {activeTrackingFile
+                        ? '칸을 바꾸면 이 택배사 양식에 바로 저장돼요.'
+                        : '등록된 택배사 양식을 골라 어느 칸을 읽는지 볼 수 있어요.'}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pl-8">
+                  {activeTrackingFile && onFileCourierChange ? (
+                    <label className="inline-flex items-center gap-2 text-sm text-slate-700">
+                      이 파일을 읽을 택배사
+                      <select
+                        value={activeCourier?.name || ''}
+                        onChange={(e) => onFileCourierChange(activeTrackingFile.fileName, e.target.value)}
+                        className="min-h-[36px] rounded-lg border border-slate-300 bg-white px-2 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600/30 cursor-pointer"
+                      >
+                        {couriers.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                      </select>
+                    </label>
+                  ) : (
+                    <label className="inline-flex items-center gap-2 text-sm text-slate-700">
+                      볼 택배사
+                      <select
+                        value={activeCourier?.id || activeCourier?.name || ''}
+                        onChange={(e) => setSelectedCourierId(e.target.value)}
+                        className="min-h-[36px] rounded-lg border border-slate-300 bg-white px-2 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600/30 cursor-pointer"
+                      >
+                        {couriers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                      </select>
+                    </label>
+                  )}
+                  <button
+                    onClick={openNewCourierModal}
+                    className="inline-flex min-h-[36px] items-center gap-1 text-sm font-semibold text-brand-700 underline-offset-4 hover:underline cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                    새 택배사로 등록
+                  </button>
+                </div>
+              </section>
+
+              <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+                <div className="p-5 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-base font-semibold text-slate-900">칸 확인하기</h3>
+                    <p className="text-sm text-slate-600 mt-0.5">
+                      {activeTrackingFile
+                        ? <>예시 값은 <span className="font-medium text-slate-800">{activeTrackingFile.fileName}</span>의 첫 줄이에요.</>
+                        : `'${activeCourier?.name || '택배사'}' 양식이 읽는 칸이에요.`}
+                    </p>
+                  </div>
+                  {activeTrackingFile && (
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        onClick={handleAutoMatchCourierHeaders}
+                        className="pressable inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 text-[13px] font-semibold text-slate-800 hover:bg-slate-50 cursor-pointer"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        칸 이름으로 다시 찾기
+                      </button>
+                      {activeCourier && (
+                        <button
+                          onClick={handleOverwriteActiveCourier}
+                          className="pressable inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 text-[13px] font-semibold text-slate-800 hover:bg-slate-50 cursor-pointer"
+                        >
+                          <Save className="w-3.5 h-3.5" />
+                          '{activeCourier.name}' 양식에 저장
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm border-collapse sm:min-w-[640px]">
+                    <thead>
+                      <tr className="bg-slate-50 text-slate-600 border-b border-slate-200 text-[13px] max-sm:hidden">
+                        <th className="py-2.5 px-4 font-semibold w-48">항목</th>
+                        <th className="py-2.5 px-4 font-semibold">엑셀에서 찾은 칸</th>
+                        <th className="py-2.5 px-4 font-semibold w-72">바꾸기</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {COURIER_TARGET_FIELDS.map((field) => {
+                        const idx = cColOf(field.key);
+                        const assigned = idx >= 0;
+                        const headerText = assigned && tHeaders[idx] !== undefined ? String(tHeaders[idx]).trim() : '';
+                        const sample = assigned && tSample[idx] !== undefined ? String(tSample[idx]).trim() : '';
+                        const warn = !activeTrackingFile || !assigned ? '' : !headerText ? '칸 이름이 없어요' : (tUsed.get(idx) || 0) > 1 ? '다른 항목과 같은 칸이에요' : '';
+                        return (
+                          <tr key={field.key} className={`max-sm:grid max-sm:grid-cols-1 max-sm:gap-1.5 max-sm:px-4 max-sm:py-3 ${warn ? 'bg-amber-50/70' : ''}`}>
+                            <td className="py-3 px-4 align-top max-sm:p-0">
+                              <div className="font-semibold text-slate-900">{field.label}</div>
+                              <div className="text-[13px] text-slate-500">{field.description}</div>
+                            </td>
+                            <td className="py-3 px-4 align-top max-sm:p-0">
+                              {assigned ? (
+                                <div className="space-y-0.5">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <span className="font-mono text-[13px] font-medium text-slate-900 bg-slate-100 rounded px-1.5 py-0.5">{colNumToLetter(idx + 1)}열</span>
+                                    {activeTrackingFile && <span className="text-slate-800">{headerText || '(칸 이름 없음)'}</span>}
+                                  </div>
+                                  {activeTrackingFile && (
+                                    <div className="text-[13px] text-slate-600 truncate max-w-[360px]" title={sample}>
+                                      예: {sample || <span className="text-slate-400">비어 있음</span>}
+                                    </div>
+                                  )}
+                                  {warn && (
+                                    <div className="inline-flex items-center gap-1 text-[13px] font-semibold text-amber-800">
+                                      <AlertTriangle className="w-3.5 h-3.5" />{warn}
+                                    </div>
+                                  )}
+                                </div>
+                              ) : (
+                                <span className="text-slate-500">안 씀</span>
+                              )}
+                            </td>
+                            <td className="py-3 px-4 align-top max-sm:p-0">
+                              {activeCourier ? (
+                                <select
+                                  aria-label={`${field.label} 칸 바꾸기`}
+                                  value={idx}
+                                  onChange={(e) => handleUpdateCourierColumnMapping(activeCourier.id, field.key, parseInt(e.target.value, 10))}
+                                  className="w-full min-h-[40px] rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-600/30 focus:border-brand-600 cursor-pointer"
+                                >
+                                  <option value={-1}>안 씀</option>
+                                  {tHeaders.length > 0 ? (
+                                    tHeaders.map((h: any, colIdx: number) => (
+                                      <option key={colIdx} value={colIdx}>
+                                        {colNumToLetter(colIdx + 1)}열 · {String(h || '').trim() || '(칸 이름 없음)'}
+                                      </option>
+                                    ))
+                                  ) : (
+                                    Array.from({ length: 20 }, (_, i) => (
+                                      <option key={i} value={i}>{colNumToLetter(i + 1)}열</option>
+                                    ))
+                                  )}
+                                </select>
+                              ) : (
+                                <span className="text-slate-500">-</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {activeTrackingFile && tHeaders.length > 0 && (
+                <details className="group bg-white border border-slate-200 rounded-2xl">
+                  <summary className="flex min-h-[52px] cursor-pointer list-none items-center justify-between gap-3 px-5 text-sm font-semibold text-slate-800">
+                    <span className="inline-flex items-center gap-2"><Search className="w-4 h-4 text-slate-500" />칸 이름으로 찾기</span>
+                    <ChevronDown className="w-4 h-4 text-slate-500 transition-transform group-open:rotate-180" />
+                  </summary>
+                  <div className="space-y-3 px-5 pb-5">
+                    <div className="relative">
+                      <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      <input
+                        type="text"
+                        value={keywordSearch}
+                        onChange={(e) => setKeywordSearch(e.target.value)}
+                        placeholder="예: 송장번호, 받는분, 주소, B"
+                        className="w-full min-h-[44px] pl-10 pr-10 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600/30 focus:border-brand-600"
+                      />
+                      {keywordSearch && (
+                        <button
+                          onClick={() => setKeywordSearch('')}
+                          aria-label="검색어 지우기"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded text-slate-500 hover:bg-slate-100 cursor-pointer"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                    {keywordSearch.trim() !== '' && (
+                      <div className="flex flex-wrap gap-2 max-h-56 overflow-y-auto pr-1">
+                        {tHeaders
+                          .map((h: any, i: number) => ({ index: i, letter: colNumToLetter(i + 1), text: String(h || '').trim() }))
+                          .filter(col => col.text.toLowerCase().includes(keywordSearch.trim().toLowerCase()) || col.letter.toLowerCase() === keywordSearch.trim().toLowerCase() || (col.index + 1).toString() === keywordSearch.trim())
+                          .map(col => (
+                            <div key={col.index} className="rounded-lg border border-slate-200 p-2.5 text-sm space-y-2">
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono text-[13px] bg-slate-100 rounded px-1.5 py-0.5">{col.letter}열</span>
+                                <span className="font-semibold text-slate-800">{col.text || '(칸 이름 없음)'}</span>
+                              </div>
+                              <div className="flex flex-wrap gap-1">
+                                {COURIER_TARGET_FIELDS.map(f => (
+                                  <button
+                                    key={f.key}
+                                    onClick={() => activeCourier && handleUpdateCourierColumnMapping(activeCourier.id, f.key, col.index)}
+                                    className="min-h-[32px] rounded-md bg-slate-100 px-2 text-[13px] text-slate-700 hover:bg-brand-600 hover:text-white cursor-pointer"
+                                  >
+                                    {f.label}(으)로
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
                       </div>
                     )}
                   </div>
-                )}
-              </div>
-            )}
-
-            {/* 2. 한눈에 보는 열 매핑 GUI 메인 테이블 */}
-            <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
-              <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                  <h3 className="font-bold text-slate-800 text-base flex items-center gap-2">
-                    <Table className="w-5 h-5 text-brand-600" />
-                    {activeFile ? `[${activePlatform?.name || '쇼핑몰'}] 열 위치` : '쇼핑몰 기본 열 위치'}
-                  </h3>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    상품명, 받는 사람, 주소 같은 항목이 엑셀의 몇 번째 열에 있는지 보여 줘요.
-                  </p>
-                </div>
-
-                {activeFile && (
-                  <div className="flex flex-wrap items-center gap-2">
-                    {/* 1. 스마트 매칭 버튼 */}
-                    <button
-                      onClick={handleAutoMatchHeaders}
-                      className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer hover:shadow-md"
-                      title="엑셀 파일의 헤더명을 재분석하여 목적 항목 열을 자동으로 탐색 및 매칭합니다"
-                    >
-                      <Lightbulb className="w-3.5 h-3.5" />
-                      스마트 매칭 실행
-                    </button>
-
-                    {/* 2. 1단계 주문서에 즉시 적용하기 버튼 */}
-                    <button
-                      onClick={() => {
-                        if (onReProcessOrders) onReProcessOrders();
-                        setToastMessage(" 지금 주문에 반영했어요.");
-                        setTimeout(() => setToastMessage(null), 3000);
-                      }}
-                      className="px-3.5 py-1.5 bg-brand-600 hover:bg-brand-600 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer hover:shadow-md"
-                      title="지금 맞춘 열 위치로 올린 주문을 다시 정리해요"
-                    >
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      지금 주문에 반영
-                    </button>
-
-                    {/* 3. 기존 쇼핑몰 설정에 덮어씌우기 버튼 */}
-                    {activePlatform && !activePlatform.id.startsWith('unregistered') && (
-                      <button
-                        onClick={handleOverwriteActivePlatform}
-                        className="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer hover:shadow-md"
-                        title={`현재 감지/매칭된 열 구성을 [${activePlatform.name}] 양식 설정에 저장(덮어쓰기)하고 지금 주문에 반영해요`}
-                      >
-                        <Save className="w-3.5 h-3.5" />
-                        [{activePlatform.name}] 설정에 덮어씌우기
-                      </button>
-                    )}
-
-                    <div className="text-xs text-slate-500 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 flex items-center gap-2">
-                      <FileText className="w-4 h-4 text-brand-600" />
-                      <span>분석 파일: <strong>{activeFile.fileName}</strong> (헤더: {headerRowIndex + 1}행)</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr className="bg-slate-50 text-slate-600 border-b border-slate-200 font-semibold">
-                      <th className="py-3 px-4 w-40">항목</th>
-                      <th className="py-3 px-4 w-52">감지된 엑셀 헤더명</th>
-                      <th className="py-3 px-4 w-36">선택된 열 위치</th>
-                      <th className="py-3 px-4 w-44">인식 상태 / 매칭 키워드</th>
-                      <th className="py-3 px-4 min-w-[220px]">열 선택 & 변경 (원하는 열 지정)</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {TARGET_FIELDS.map((field) => {
-                      let currentMappedColIdx = 0;
-                      if (activePlatform) {
-                        if (field.key === 'tracking_col') {
-                          currentMappedColIdx = activePlatform.tracking_col;
-                        } else if (field.key === 'courier_col') {
-                          currentMappedColIdx = activePlatform.courier_col !== undefined ? activePlatform.courier_col : -1;
-                        } else {
-                          currentMappedColIdx = (activePlatform.col_map as any)[field.key] !== undefined 
-                            ? (activePlatform.col_map as any)[field.key] 
-                            : 0;
-                        }
-                      }
-
-                      const isAssigned = currentMappedColIdx >= 0;
-                      const colLetter = isAssigned ? colNumToLetter(currentMappedColIdx + 1) : '-';
-                      const detectedHeaderText = (isAssigned && rawHeaders[currentMappedColIdx] !== undefined)
-                        ? String(rawHeaders[currentMappedColIdx]).trim()
-                        : '';
-
-                      let statusLabel = '자동 키워드 매칭됨';
-                      let statusBg = 'bg-emerald-50 text-emerald-700 border-emerald-200';
-                      if (!activeFile) {
-                        statusLabel = '설정값 기준';
-                        statusBg = 'bg-slate-100 text-slate-600 border-slate-200';
-                      } else if (!detectedHeaderText) {
-                        statusLabel = '헤더명 없음/미감지';
-                        statusBg = 'bg-amber-50 text-amber-700 border-amber-200';
-                      } else if (detectedHeaderText.includes(field.key) || field.key.includes(detectedHeaderText)) {
-                        statusLabel = `키워드 '${field.key}' 감지 완료`;
-                        statusBg = 'bg-brand-50 text-brand-700 border-brand-200';
-                      }
-
-                      return (
-                        <tr key={field.key} className="hover:bg-brand-50/20 transition">
-                          <td className="py-3.5 px-4 font-bold text-slate-800">
-                            <div className="flex items-center gap-2">
-                              <span className="text-base">{field.icon}</span>
-                              <div>
-                                <div>{field.label}</div>
-                                <div className="text-xs text-slate-400 font-normal">{field.description}</div>
-                              </div>
-                            </div>
-                          </td>
-
-                          <td className="py-3.5 px-4">
-                            {detectedHeaderText ? (
-                              <div>
-                                <span className={`inline-block px-2.5 py-1 rounded-md font-semibold text-xs border ${field.badgeBg}`}>
-                                  "{detectedHeaderText}"
-                                </span>
-
-                                {field.key === '용량' && secondaryColsInfo.length > 0 && (
-                                  <div className="mt-2 space-y-1">
-                                    <div className="text-xs text-purple-800 font-bold flex items-center gap-1">
-                                      <Lightbulb className="w-3 h-3 text-purple-600" />
-                                      보조 확장 감지된 규격/단위 열 ({secondaryColsInfo.length}개):
-                                    </div>
-                                    <div className="flex flex-wrap gap-1">
-                                      {secondaryColsInfo.map(s => (
-                                        <span key={s.index} className="inline-flex items-center gap-1 text-xs bg-purple-50 text-purple-800 border border-purple-200 px-2 py-0.5 rounded-md font-extrabold">
-                                          <span>{s.letter}열</span>
-                                          <span className="text-purple-600">[{s.headerName}]</span>
-                                          <span className="text-xs text-purple-500 font-normal">(용량에 자동 결합)</span>
-                                        </span>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            ) : (
-                              <span className="text-slate-400 italic text-xs">(파일 미업로드 또는 헤더 없음)</span>
-                            )}
-                          </td>
-
-                          <td className="py-3.5 px-4">
-                            {isAssigned ? (
-                              <div className="flex items-center gap-1.5">
-                                <span className="font-mono font-extrabold text-brand-700 bg-brand-50 px-2 py-0.5 rounded border border-brand-200 text-xs">
-                                  {colLetter}열
-                                </span>
-                                <span className="text-xs text-slate-500 font-mono">
-                                  ({currentMappedColIdx + 1}번째)
-                                </span>
-                              </div>
-                            ) : (
-                              <span className="text-slate-400 text-xs">미지정</span>
-                            )}
-                          </td>
-
-                          <td className="py-3.5 px-4">
-                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold border ${statusBg}`}>
-                              <CheckCircle2 className="w-3 h-3 shrink-0" />
-                              {statusLabel}
-                            </span>
-                          </td>
-
-                          <td className="py-3.5 px-4">
-                            {activePlatform ? (
-                              <div className="relative flex items-center max-w-xs">
-                                <select
-                                  value={currentMappedColIdx}
-                                  onChange={(e) => {
-                                    const newIdx = parseInt(e.target.value, 10);
-                                    handleUpdateColumnMapping(activePlatform.id, field.key, newIdx);
-                                  }}
-                                  className="w-full text-xs bg-white border border-slate-200 hover:border-brand-600 rounded-lg p-2 font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-600/20 focus:border-brand-600 transition cursor-pointer"
-                                >
-                                  {allHeaderColumns.length > 0 ? (
-                                    allHeaderColumns.map(col => (
-                                      <option key={col.index} value={col.index}>
-                                        {col.displayLabel}
-                                      </option>
-                                    ))
-                                  ) : (
-                                    Array.from({ length: 20 }, (_, i) => (
-                                      <option key={i} value={i}>
-                                        [{colNumToLetter(i + 1)}열 / {i + 1}번째] 기본 열
-                                      </option>
-                                    ))
-                                  )}
-                                </select>
-                              </div>
-                            ) : (
-                              <span className="text-slate-400 text-xs">-</span>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* 3. 엑셀 원본 데이터 5행 실시간 미리보기 */}
-            {activeFile && previewRows.length > 0 && (
-              <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-3">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-                  <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
-                    <Eye className="w-4 h-4 text-brand-600" />
-                    엑셀 원본 헤더 및 상위 5행 데이터 실시간 검증
-                  </h3>
-                  <span className="text-xs text-slate-400">
-                    헤더 행({headerRowIndex + 1}행)이 보라색으로 강조되고, 각 열에 세팅된 필드 태그가 표시됩니다.
-                  </span>
-                </div>
-
-                <div className="overflow-x-auto max-h-64 border border-slate-200 rounded-xl">
-                  <table className="w-full text-left text-xs border-collapse font-mono">
-                    <thead>
-                      <tr className="bg-[#0F3A2F] text-white font-bold divide-x divide-brand-800">
-                        <th className="p-2 w-12 text-center bg-[#0A2A22]">행</th>
-                        {rawHeaders.map((_, cIdx) => {
-                          const cLetter = colNumToLetter(cIdx + 1);
-                          const mappedField = TARGET_FIELDS.find(f => {
-                            if (!activePlatform) return false;
-                            if (f.key === 'tracking_col') return activePlatform.tracking_col === cIdx;
-                            if (f.key === 'courier_col') return activePlatform.courier_col === cIdx;
-                            return (activePlatform.col_map as any)[f.key] === cIdx;
-                          });
-
-                          return (
-                            <th key={cIdx} className="p-2 min-w-[110px] max-w-[200px] truncate">
-                              <div className="text-xs text-brand-200">{cLetter}열 ({cIdx + 1})</div>
-                              {mappedField && (
-                                <div className="text-xs bg-amber-400 text-slate-900 font-extrabold px-1 py-0.2 rounded mt-0.5 inline-block">
-                                  {mappedField.icon} {mappedField.label.split(' ')[0]}
-                                </div>
-                              )}
-                            </th>
-                          );
-                        })}
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200 bg-white">
-                      {previewRows.map((row, rIdx) => {
-                        const isHeader = rIdx === 0;
-                        return (
-                          <tr key={rIdx} className={isHeader ? 'bg-brand-50/80 font-bold text-[#0A2A22]' : 'hover:bg-slate-50'}>
-                            <td className="p-2 text-center text-slate-400 bg-slate-50 font-bold border-r border-slate-200">
-                              {headerRowIndex + rIdx + 1}
-                            </td>
-                            {rawHeaders.map((_, cIdx) => (
-                              <td key={cIdx} className="p-2 border-r border-slate-100 max-w-[200px] truncate" title={String(row[cIdx] || '')}>
-                                {String(row[cIdx] || '')}
-                              </td>
-                            ))}
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-          </>
-        )}
-
-        {/* ======================================================== */}
-        {/* B. 택배사 감지 매트릭스 뷰                                */}
-        {/* ======================================================== */}
-        {matrixType === 'courier' && (
-          <>
-            {/* 1. 키워드로 원하는 열 찾기 패널 (택배사 모드) */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
-                <div>
-                  <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
-                    <Search className="w-4 h-4 text-amber-600" />
-                    키워드로 원하는 열 찾기 (택배사 헤더 검색기)
-                  </h3>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    {activeTrackingFile 
-                      ? `"${activeTrackingFile.fileName}" 파일의 전체 헤더(${trackingHeaderInfo.rawHeaders.length}개 열)에서 검색어로 택배사 열 위치를 찾습니다.` 
-                      : `선택된 [${activeCourier?.name}] 택배사의 열 위치를 파악하고 설정에 반영합니다.`}
-                  </p>
-                </div>
-
-                {onFileCourierChange && activeTrackingFile && (
-                  <div className="flex items-center gap-2 shrink-0 bg-slate-50 p-1.5 rounded-lg border border-slate-200 text-xs">
-                    <span className="text-slate-500 font-medium">연동 택배사:</span>
-                    <select
-                      value={activeCourier?.name || ''}
-                      onChange={(e) => onFileCourierChange(activeTrackingFile.fileName, e.target.value)}
-                      className="bg-white border border-slate-200 rounded px-2 py-1 font-bold text-amber-700 focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer"
-                    >
-                      {couriers.map(c => (
-                        <option key={c.id} value={c.name}>{c.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-              </div>
-
-              {/* 검색 인풋 Box */}
-              <div className="relative">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                <input
-                  type="text"
-                  value={keywordSearch}
-                  onChange={(e) => setKeywordSearch(e.target.value)}
-                  placeholder="찾고 싶은 택배사 헤더 키워드를 입력하세요 (예: 송장번호, 받는분, 연락처, 주소, B열, 2번째)..."
-                  className="w-full pl-10 pr-10 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition"
-                />
-                {keywordSearch && (
-                  <button
-                    onClick={() => setKeywordSearch('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500 hover:text-slate-700 font-bold cursor-pointer"
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-
-              {/* 검색어 입력 시 매칭된 열 타일 리스트 */}
-              {keywordSearch.trim() !== '' && trackingHeaderInfo.rawHeaders.length > 0 && (
-                <div className="space-y-2 bg-amber-50/40 border border-amber-100 rounded-xl p-3.5">
-                  <div className="text-xs font-bold text-amber-900 flex items-center justify-between">
-                    <span> 택배사 키워드 "{keywordSearch}" 검색 결과:</span>
-                    <span className="text-xs text-amber-700 font-normal">버튼을 클릭하면 선택된 택배사 설정에 저장됩니다</span>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2 pt-1 max-h-40 overflow-y-auto pr-1">
-                    {trackingHeaderInfo.rawHeaders
-                      .map((h: any, idx: number) => ({ index: idx, letter: colNumToLetter(idx + 1), text: String(h || '').trim() }))
-                      .filter(col => col.text.toLowerCase().includes(keywordSearch.trim().toLowerCase()) || col.letter.toLowerCase() === keywordSearch.trim().toLowerCase() || (col.index + 1).toString() === keywordSearch.trim())
-                      .map(col => (
-                        <div key={col.index} className="bg-white border border-amber-200 hover:border-amber-500 rounded-lg p-2 text-xs space-y-1.5 transition">
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-mono font-bold bg-amber-100 text-amber-900 px-1.5 py-0.5 rounded text-xs">
-                              {col.letter}열 ({col.index + 1}번째)
-                            </span>
-                            <span className="font-semibold text-slate-800">{col.text || '(헤더명 없음)'}</span>
-                          </div>
-
-                          <div className="flex flex-wrap gap-1 pt-1 border-t border-slate-100">
-                            {COURIER_TARGET_FIELDS.map(f => (
-                              <button
-                                key={f.key}
-                                onClick={() => activeCourier && handleUpdateCourierColumnMapping(activeCourier.id, f.key, col.index)}
-                                className="text-xs bg-slate-100 hover:bg-amber-500 hover:text-slate-950 text-slate-700 px-1.5 py-0.5 rounded transition font-medium cursor-pointer"
-                              >
-                                {f.label.split(' ')[0]}로 지정
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                </div>
+                </details>
               )}
-            </div>
 
-            {/* 2. 한눈에 보는 택배사 열 매핑 GUI 메인 테이블 */}
-            <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
-              <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                  <h3 className="font-bold text-slate-800 text-base flex items-center gap-2">
-                    <Truck className="w-5 h-5 text-amber-600" />
-                    [{activeCourier?.name || '택배사'}] 송장 열 위치
-                  </h3>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    택배사 양식의 필수 열(운송장번호, 수령인, 주소 등)에 매핑된 엑셀 컬럼 위치를 한눈에 확인하고 손쉽게 조정합니다.
-                  </p>
-                </div>
-
-                {activeTrackingFile && (
-                  <div className="flex flex-wrap items-center gap-2">
-                    <button
-                      onClick={handleAutoMatchCourierHeaders}
-                      className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer hover:shadow-md"
-                    >
-                      <Lightbulb className="w-3.5 h-3.5" />
-                      스마트 매칭 실행
-                    </button>
-
-                    {activeCourier && (
-                      <button
-                        onClick={handleOverwriteActiveCourier}
-                        className="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer hover:shadow-md"
-                        title={`현재 감지/매칭된 열 구성을 [${activeCourier.name}] 택배사 설정에 저장(덮어쓰기)합니다`}
-                      >
-                        <Save className="w-3.5 h-3.5" />
-                        [{activeCourier.name}] 설정에 덮어씌우기
-                      </button>
-                    )}
-
-                    <button
-                      onClick={() => {
-                        const autoName = activeTrackingFile
-                          ? activeTrackingFile.fileName.replace(/\.[^/.]+$/, "").replace(/[0-9_\-\s]/g, " ").trim() || "신규 택배사"
-                          : "신규 택배사";
-                        const autoKey = activeTrackingFile
-                          ? activeTrackingFile.fileName.replace(/\.[^/.]+$/, "").split(/[_ -]/)[0] || ""
-                          : "";
-                        setNewCourierNameInput(autoName);
-                        setNewCourierPatternInput(autoKey);
-                        setShowSaveAsNewCourierModal(true);
-                      }}
-                      className="px-3.5 py-1.5 bg-amber-700 hover:bg-amber-600 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer hover:shadow-md"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      새 택배사 양식 등록
-                    </button>
-
-                    <div className="text-xs text-slate-500 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 flex items-center gap-2">
-                      <FileText className="w-4 h-4 text-amber-600" />
-                      <span>운송장 파일: <strong>{activeTrackingFile.fileName}</strong> (헤더: {trackingHeaderInfo.headerRowIndex + 1}행)</span>
+              {activeTrackingFile && trackingHeaderInfo.previewRows.length > 0 && (
+                <details className="group bg-white border border-slate-200 rounded-2xl">
+                  <summary className="flex min-h-[52px] cursor-pointer list-none items-center justify-between gap-3 px-5 text-sm font-semibold text-slate-800">
+                    <span className="inline-flex items-center gap-2"><Eye className="w-4 h-4 text-slate-500" />엑셀 첫 5줄 보기</span>
+                    <ChevronDown className="w-4 h-4 text-slate-500 transition-transform group-open:rotate-180" />
+                  </summary>
+                  <div className="px-5 pb-5 space-y-2">
+                    <p className="text-sm text-slate-600">{trackingHeaderInfo.headerRowIndex + 1}번째 줄을 칸 이름으로 읽었어요.</p>
+                    <div className="overflow-x-auto max-h-72 border border-slate-200 rounded-lg">
+                      <table className="w-full text-left text-[13px] border-collapse">
+                        <thead>
+                          <tr className="bg-slate-50 text-slate-700">
+                            <th className="p-2 w-10 text-center font-semibold border-r border-slate-200">줄</th>
+                            {tHeaders.map((_, cIdx) => {
+                              const mappedField = COURIER_TARGET_FIELDS.find(f => cColOf(f.key) === cIdx);
+                              return (
+                                <th key={cIdx} className="p-2 min-w-[110px] max-w-[200px] align-top border-r border-slate-100">
+                                  <div className="font-mono text-xs text-slate-500">{colNumToLetter(cIdx + 1)}</div>
+                                  {mappedField && <div className="mt-0.5 inline-block rounded bg-brand-100 px-1.5 text-xs font-semibold text-brand-800">{mappedField.label}</div>}
+                                </th>
+                              );
+                            })}
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {trackingHeaderInfo.previewRows.map((row, rIdx) => (
+                            <tr key={rIdx} className={rIdx === 0 ? 'bg-slate-50 font-semibold text-slate-900' : ''}>
+                              <td className="p-2 text-center text-slate-500 border-r border-slate-200 tabular-nums">{trackingHeaderInfo.headerRowIndex + rIdx + 1}</td>
+                              {tHeaders.map((_, cIdx) => (
+                                <td key={cIdx} className="p-2 border-r border-slate-100 max-w-[200px] truncate" title={String(row[cIdx] || '')}>
+                                  {String(row[cIdx] || '')}
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
                   </div>
-                )}
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr className="bg-slate-50 text-slate-600 border-b border-slate-200 font-semibold">
-                      <th className="py-3 px-4 w-44">택배사 타겟 필드</th>
-                      <th className="py-3 px-4 w-52">감지된 엑셀 헤더명</th>
-                      <th className="py-3 px-4 w-36">선택된 열 위치</th>
-                      <th className="py-3 px-4 w-44">인식 상태 / 매칭 키워드</th>
-                      <th className="py-3 px-4 min-w-[220px]">열 선택 & 변경 (원하는 열 지정)</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {COURIER_TARGET_FIELDS.map((field) => {
-                      let currentMappedColIdx = -1;
-                      if (activeCourier) {
-                        currentMappedColIdx = (activeCourier as any)[field.key] !== undefined ? (activeCourier as any)[field.key] : -1;
-                      }
-
-                      const isAssigned = currentMappedColIdx >= 0;
-                      const colLetter = isAssigned ? colNumToLetter(currentMappedColIdx + 1) : '미지정';
-                      const detectedHeaderText = (isAssigned && trackingHeaderInfo.rawHeaders[currentMappedColIdx] !== undefined)
-                        ? String(trackingHeaderInfo.rawHeaders[currentMappedColIdx]).trim()
-                        : '';
-
-                      let statusLabel = '자동 키워드 매칭됨';
-                      let statusBg = 'bg-emerald-50 text-emerald-700 border-emerald-200';
-                      if (!activeTrackingFile) {
-                        statusLabel = '택배사 설정값 기준';
-                        statusBg = 'bg-slate-100 text-slate-600 border-slate-200';
-                      } else if (!detectedHeaderText) {
-                        statusLabel = '헤더명 없음/미감지';
-                        statusBg = 'bg-amber-50 text-amber-700 border-amber-200';
-                      } else {
-                        statusLabel = `키워드 감지 완료`;
-                        statusBg = 'bg-brand-50 text-brand-700 border-brand-200';
-                      }
-
-                      return (
-                        <tr key={field.key} className="hover:bg-amber-50/20 transition">
-                          <td className="py-3.5 px-4 font-bold text-slate-800">
-                            <div className="flex items-center gap-2">
-                              <span className="text-base">{field.icon}</span>
-                              <div>
-                                <div>{field.label}</div>
-                                <div className="text-xs text-slate-400 font-normal">{field.description}</div>
-                              </div>
-                            </div>
-                          </td>
-
-                          <td className="py-3.5 px-4">
-                            {detectedHeaderText ? (
-                              <span className={`inline-block px-2.5 py-1 rounded-md font-semibold text-xs border ${field.badgeBg}`}>
-                                "{detectedHeaderText}"
-                              </span>
-                            ) : (
-                              <span className="text-slate-400 italic text-xs">(파일 미업로드 또는 헤더 없음)</span>
-                            )}
-                          </td>
-
-                          <td className="py-3.5 px-4">
-                            {isAssigned ? (
-                              <div className="flex items-center gap-1.5">
-                                <span className="font-mono font-extrabold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 text-xs">
-                                  {colLetter}열
-                                </span>
-                                <span className="text-xs text-slate-500 font-mono">
-                                  ({currentMappedColIdx + 1}번째)
-                                </span>
-                              </div>
-                            ) : (
-                              <span className="text-slate-400 text-xs">미지정</span>
-                            )}
-                          </td>
-
-                          <td className="py-3.5 px-4">
-                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold border ${statusBg}`}>
-                              <CheckCircle2 className="w-3 h-3 shrink-0" />
-                              {statusLabel}
-                            </span>
-                          </td>
-
-                          <td className="py-3.5 px-4">
-                            {activeCourier ? (
-                              <div className="relative flex items-center max-w-xs">
-                                <select
-                                  value={currentMappedColIdx}
-                                  onChange={(e) => {
-                                    const newIdx = parseInt(e.target.value, 10);
-                                    handleUpdateCourierColumnMapping(activeCourier.id, field.key, newIdx);
-                                  }}
-                                  className="w-full text-xs bg-white border border-slate-200 hover:border-amber-500 rounded-lg p-2 font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition cursor-pointer"
-                                >
-                                  <option value={-1}>[미지정] 사용 안함</option>
-                                  {trackingHeaderInfo.rawHeaders.length > 0 ? (
-                                    trackingHeaderInfo.rawHeaders.map((h: any, colIdx: number) => (
-                                      <option key={colIdx} value={colIdx}>
-                                        [{colNumToLetter(colIdx + 1)}열] {String(h || '').trim() || '(헤더명 없음)'}
-                                      </option>
-                                    ))
-                                  ) : (
-                                    Array.from({ length: 20 }, (_, i) => (
-                                      <option key={i} value={i}>
-                                        [{colNumToLetter(i + 1)}열 / {i + 1}번째] 기본 열
-                                      </option>
-                                    ))
-                                  )}
-                                </select>
-                              </div>
-                            ) : (
-                              <span className="text-slate-400 text-xs">-</span>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* 3. 택배사 엑셀 원본 데이터 5행 실시간 미리보기 */}
-            {activeTrackingFile && trackingHeaderInfo.previewRows.length > 0 && (
-              <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-3">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-                  <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
-                    <Eye className="w-4 h-4 text-amber-600" />
-                    택배사 엑셀 원본 헤더 및 상위 5행 데이터 실시간 검증
-                  </h3>
-                  <span className="text-xs text-slate-400">
-                    헤더 행({trackingHeaderInfo.headerRowIndex + 1}행)이 강조되고, 각 열에 세팅된 택배사 필드 태그가 표시됩니다.
-                  </span>
-                </div>
-
-                <div className="overflow-x-auto max-h-64 border border-slate-200 rounded-xl">
-                  <table className="w-full text-left text-xs border-collapse font-mono">
-                    <thead>
-                      <tr className="bg-slate-900 text-amber-300 font-bold divide-x divide-slate-800">
-                        <th className="p-2 w-12 text-center bg-slate-950">행</th>
-                        {trackingHeaderInfo.rawHeaders.map((_, cIdx) => {
-                          const cLetter = colNumToLetter(cIdx + 1);
-                          const mappedField = COURIER_TARGET_FIELDS.find(f => {
-                            if (!activeCourier) return false;
-                            return (activeCourier as any)[f.key] === cIdx;
-                          });
-
-                          return (
-                            <th key={cIdx} className="p-2 min-w-[110px] max-w-[200px] truncate">
-                              <div className="text-xs text-slate-300">{cLetter}열 ({cIdx + 1})</div>
-                              {mappedField && (
-                                <div className="text-xs bg-amber-400 text-slate-950 font-extrabold px-1 py-0.2 rounded mt-0.5 inline-block">
-                                  {mappedField.icon} {mappedField.label.split(' ')[0]}
-                                </div>
-                              )}
-                            </th>
-                          );
-                        })}
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200 bg-white">
-                      {trackingHeaderInfo.previewRows.map((row, rIdx) => {
-                        const isHeader = rIdx === 0;
-                        return (
-                          <tr key={rIdx} className={isHeader ? 'bg-amber-50/80 font-bold text-amber-950' : 'hover:bg-slate-50'}>
-                            <td className="p-2 text-center text-slate-400 bg-slate-50 font-bold border-r border-slate-200">
-                              {trackingHeaderInfo.headerRowIndex + rIdx + 1}
-                            </td>
-                            {trackingHeaderInfo.rawHeaders.map((_, cIdx) => (
-                              <td key={cIdx} className="p-2 border-r border-slate-100 max-w-[200px] truncate" title={String(row[cIdx] || '')}>
-                                {String(row[cIdx] || '')}
-                              </td>
-                            ))}
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-          </>
-        )}
+                </details>
+              )}
+            </>
+          );
+        })()}
 
       </div>
 
@@ -2096,9 +1836,9 @@ export default function PlatformSettings({
                   <Settings className="w-5 h-5 animate-spin-slow" />
                 </span>
                 <div>
-                  <h3 className="font-bold text-base text-white">쇼핑몰 양식 & 택배사 컬럼 상세 관리</h3>
+                  <h3 className="font-bold text-base text-white">등록된 쇼핑몰·택배사</h3>
                   <p className="text-xs text-brand-200/80 mt-0.5">
-                    연동 플랫폼 및 택배사의 시작 행, 컬럼 매핑 구조를 정밀 수정하고 추가합니다.
+                    양식마다 어느 칸을 읽을지 정해 두는 곳이에요. 올린 파일을 보면서 고치려면 창을 닫고 칸 확인하기 표를 쓰세요.
                   </p>
                 </div>
               </div>
@@ -2122,7 +1862,7 @@ export default function PlatformSettings({
                 }`}
               >
                 <ShoppingBag className="w-4 h-4" />
-                쇼핑몰 양식 설정 ({platforms.length}개)
+                쇼핑몰 ({platforms.length}개)
               </button>
 
               <button
@@ -2134,7 +1874,7 @@ export default function PlatformSettings({
                 }`}
               >
                 <Truck className="w-4 h-4" />
-                택배사 송장 컬럼 ({couriers.length}개)
+                택배사 ({couriers.length}개)
               </button>
             </div>
 
@@ -2146,7 +1886,7 @@ export default function PlatformSettings({
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
                     <p className="text-xs text-slate-600">
-                      등록된 쇼핑몰 양식을 선택해 수정하거나 새로운 양식을 등록하세요.
+                      고칠 쇼핑몰을 고르거나 새로 추가하세요.
                     </p>
                     <button
                       onClick={() => setShowPresetModal(true)}
@@ -2189,9 +1929,9 @@ export default function PlatformSettings({
                           </div>
 
                           <div className="text-xs text-slate-500 flex items-center justify-between border-t border-slate-100 pt-2 font-mono flex-wrap gap-1">
-                            <span>인식 키워드: <strong className="text-brand-700">{p.filepath_pattern || p.identifier || '전체'}</strong></span>
-                            <span>시작 행: {p.start_row + 1}행</span>
-                            <span>송장 기입: {colNumToLetter(p.tracking_col + 1)}열</span>
+                            <span>파일 이름에 있는 말: <strong className="text-brand-700">{p.filepath_pattern || p.identifier || '전체'}</strong></span>
+                            <span>주문 시작: {p.start_row + 1}번째 줄</span>
+                            <span>송장 번호 칸: {colNumToLetter(p.tracking_col + 1)}열</span>
                           </div>
                         </div>
                       );
@@ -2204,7 +1944,7 @@ export default function PlatformSettings({
                       <div className="flex items-center justify-between border-b border-brand-100 pb-3">
                         <h4 className="font-bold text-[#0F3A2F] text-sm flex items-center gap-1.5">
                           <Edit3 className="w-4 h-4 text-brand-600" />
-                          [{editingPlatform.name}] 세부 컬럼 편집
+                          '{editingPlatform.name}' 고치기
                         </h4>
                         <button
                           onClick={() => setEditingPlatform(null)}
@@ -2216,7 +1956,7 @@ export default function PlatformSettings({
 
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div>
-                          <label className="block text-xs font-bold text-slate-700 mb-1">플랫폼 이름</label>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">쇼핑몰 이름</label>
                           <input
                             type="text"
                             value={editingPlatform.name}
@@ -2226,7 +1966,7 @@ export default function PlatformSettings({
                         </div>
 
                         <div>
-                          <label className="block text-xs font-bold text-slate-700 mb-1">인식 파일명 키워드 (자동 매칭용)</label>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">파일 이름에 들어 있는 말 (이 말이 있으면 이 쇼핑몰로 읽어요)</label>
                           <input
                             type="text"
                             value={editingPlatform.filepath_pattern || editingPlatform.identifier || ''}
@@ -2241,7 +1981,7 @@ export default function PlatformSettings({
                         </div>
 
                         <div>
-                          <label className="block text-xs font-bold text-slate-700 mb-1">시작 행 번호 (1-based)</label>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">주문이 시작되는 줄 (칸 이름 바로 다음 줄)</label>
                           <input
                             type="number"
                             min="1"
@@ -2254,7 +1994,7 @@ export default function PlatformSettings({
 
                       <div className="border-t border-slate-200 pt-3 space-y-4">
                         <div>
-                          <label className="block text-xs font-bold text-slate-700 mb-2">기본 주문 필드별 열 지정 (알파벳 A, B, C... 또는 열 번호)</label>
+                          <label className="block text-xs font-bold text-slate-700 mb-2">항목별 칸 (A, B, C 같은 열 글자나 1, 2, 3 같은 번호)</label>
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                             {Object.entries(editingPlatform.col_map).map(([key]) => {
                               const valStr = colMapInputs[key] || '';
@@ -2280,11 +2020,11 @@ export default function PlatformSettings({
                         {/* 송장기입열 & 택배사열 지정 필드 복구 */}
                         <div className="pt-3 border-t border-slate-200">
                           <label className="block text-xs font-bold text-[#0F3A2F] mb-2">
-                            송장번호 & 택배사 기입열 지정 (송장 입력 엑셀 다운로드용)
+                            쇼핑몰에 올릴 파일에서 송장 번호와 택배사를 넣을 칸
                           </label>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                             <div className="bg-brand-50/70 p-3 rounded-xl border border-brand-200 space-y-1">
-                              <span className="block text-xs font-bold text-[#0F3A2F]">운송장번호 기입열 (tracking_col)</span>
+                              <span className="block text-xs font-bold text-[#0F3A2F]">송장 번호를 넣을 칸</span>
                               <div className="flex items-center gap-2">
                                 <input
                                   type="text"
@@ -2298,13 +2038,13 @@ export default function PlatformSettings({
                             </div>
 
                             <div className="bg-brand-50/70 p-3 rounded-xl border border-brand-200 space-y-1">
-                              <span className="block text-xs font-bold text-[#0F3A2F]">택배사명 기입열 (courier_col)</span>
+                              <span className="block text-xs font-bold text-[#0F3A2F]">택배사 이름을 넣을 칸</span>
                               <div className="flex items-center gap-2">
                                 <input
                                   type="text"
                                   value={courierColInput}
                                   onChange={(e) => handleCourierColChange(e.target.value)}
-                                  placeholder="예: J 또는 10 (미입력 시 사용 안 함)"
+                                  placeholder="예: J 또는 10 (비우면 안 써요)"
                                   className="w-full text-xs p-2 bg-white border border-brand-200 rounded-lg font-mono uppercase font-bold text-[#0F3A2F] focus:outline-none focus:ring-1 focus:ring-brand-600"
                                 />
                                 <span className="text-xs text-brand-700 font-mono font-bold shrink-0">{getColumnPreview(courierColInput).displayPreview}</span>
@@ -2325,7 +2065,7 @@ export default function PlatformSettings({
                           onClick={() => savePlatform(editingPlatform)}
                           className="px-4 py-1.5 text-xs font-bold bg-brand-600 hover:bg-brand-700 text-white rounded-lg transition cursor-pointer"
                         >
-                          설정 저장하기
+                          저장하기
                         </button>
                       </div>
                     </div>
@@ -2338,7 +2078,7 @@ export default function PlatformSettings({
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
                     <p className="text-xs text-slate-600">
-                      택배사별 송장 입력 엑셀 서식의 컬럼 매핑을 관리합니다.
+                      택배사 송장 엑셀에서 어느 칸을 읽을지 정해 두는 곳이에요.
                     </p>
                     <button
                       onClick={() => setShowCourierPresetModal(true)}
@@ -2381,8 +2121,8 @@ export default function PlatformSettings({
                           </div>
 
                           <div className="text-xs text-slate-500 flex items-center justify-between border-t border-slate-100 pt-2 font-mono">
-                            <span>시작 행: {c.start_row + 1}행</span>
-                            <span>송장열: {colNumToLetter(c.tracking_col + 1)}열</span>
+                            <span>송장 시작: {c.start_row + 1}번째 줄</span>
+                            <span>송장 번호 칸: {colNumToLetter(c.tracking_col + 1)}열</span>
                           </div>
                         </div>
                       );
@@ -2395,7 +2135,7 @@ export default function PlatformSettings({
                       <div className="flex items-center justify-between border-b border-brand-100 pb-3">
                         <h4 className="font-bold text-[#0F3A2F] text-sm flex items-center gap-1.5">
                           <Edit3 className="w-4 h-4 text-brand-600" />
-                          [{editingCourier.name}] 컬럼 편집
+                          '{editingCourier.name}' 고치기
                         </h4>
                         <button
                           onClick={() => setEditingCourier(null)}
@@ -2407,7 +2147,7 @@ export default function PlatformSettings({
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-xs font-bold text-slate-700 mb-1">택배사명</label>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">택배사 이름</label>
                           <input
                             type="text"
                             value={editingCourier.name}
@@ -2417,7 +2157,7 @@ export default function PlatformSettings({
                         </div>
 
                         <div>
-                          <label className="block text-xs font-bold text-slate-700 mb-1">시작 행 번호 (1-based)</label>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">송장이 시작되는 줄 (칸 이름 바로 다음 줄)</label>
                           <input
                             type="number"
                             min="1"
@@ -2432,14 +2172,14 @@ export default function PlatformSettings({
                       <div className="space-y-3 pt-3 border-t border-brand-100">
                         <label className="block text-xs font-bold text-[#0F3A2F] flex items-center gap-1.5">
                           <Truck className="w-3.5 h-3.5 text-brand-600" />
-                          택배사 엑셀 항목별 열 위치 (A, B, C 또는 1, 2, 3...)
+                          항목별 칸 (A, B, C 같은 열 글자나 1, 2, 3 같은 번호)
                         </label>
 
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                           {/* 1. 운송장번호 지정 (핵심 요청) */}
                           <div className="bg-brand-50/80 p-2.5 rounded-xl border border-brand-200 space-y-1">
                             <span className="block text-xs font-bold text-[#0F3A2F] flex items-center justify-between">
-                              <span> 운송장번호 열</span>
+                              <span> 송장 번호</span>
                               <span className="text-xs text-brand-600 bg-brand-100 px-1 rounded">필수</span>
                             </span>
                             <div className="flex items-center gap-1">
@@ -2456,7 +2196,7 @@ export default function PlatformSettings({
 
                           {/* 2. 받는사람/수령인 */}
                           <div className="bg-white p-2.5 rounded-xl border border-slate-200 space-y-1">
-                            <span className="block text-xs font-bold text-slate-700"> 수령인 (받는사람)</span>
+                            <span className="block text-xs font-bold text-slate-700"> 받는 사람</span>
                             <div className="flex items-center gap-1">
                               <input
                                 type="text"
@@ -2471,7 +2211,7 @@ export default function PlatformSettings({
 
                           {/* 3. 연락처 */}
                           <div className="bg-white p-2.5 rounded-xl border border-slate-200 space-y-1">
-                            <span className="block text-xs font-bold text-slate-700"> 연락처</span>
+                            <span className="block text-xs font-bold text-slate-700"> 전화번호</span>
                             <div className="flex items-center gap-1">
                               <input
                                 type="text"
@@ -2501,7 +2241,7 @@ export default function PlatformSettings({
 
                           {/* 5. 주소 */}
                           <div className="bg-white p-2.5 rounded-xl border border-slate-200 space-y-1">
-                            <span className="block text-xs font-bold text-slate-700"> 배송지 주소</span>
+                            <span className="block text-xs font-bold text-slate-700"> 주소</span>
                             <div className="flex items-center gap-1">
                               <input
                                 type="text"
@@ -2531,7 +2271,7 @@ export default function PlatformSettings({
 
                           {/* 7. 옵션/규격 */}
                           <div className="bg-white p-2.5 rounded-xl border border-slate-200 space-y-1">
-                            <span className="block text-xs font-bold text-slate-700"> 옵션 / 규격</span>
+                            <span className="block text-xs font-bold text-slate-700"> 옵션·용량</span>
                             <div className="flex items-center gap-1">
                               <input
                                 type="text"
@@ -2561,7 +2301,7 @@ export default function PlatformSettings({
 
                           {/* 9. 택배사명 지정열 */}
                           <div className="bg-white p-2.5 rounded-xl border border-slate-200 space-y-1">
-                            <span className="block text-xs font-bold text-slate-700"> 택배사명 지정열</span>
+                            <span className="block text-xs font-bold text-slate-700"> 택배사 이름</span>
                             <div className="flex items-center gap-1">
                               <input
                                 type="text"
@@ -2587,7 +2327,7 @@ export default function PlatformSettings({
                           onClick={() => saveCourier(editingCourier)}
                           className="px-4 py-1.5 text-xs font-bold bg-brand-600 hover:bg-brand-700 text-white rounded-lg transition cursor-pointer"
                         >
-                          택배사 설정 저장하기
+                          저장하기
                         </button>
                       </div>
                     </div>
@@ -2603,7 +2343,7 @@ export default function PlatformSettings({
                 onClick={() => setShowSettingsModal(false)}
                 className="px-5 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold transition shadow-sm cursor-pointer"
               >
-                닫기 & 적용
+                닫기
               </button>
             </div>
 
@@ -2616,7 +2356,7 @@ export default function PlatformSettings({
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fade-in">
           <div className="bg-white rounded-xl shadow-xl max-w-lg w-full overflow-hidden border border-slate-200">
             <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="font-bold text-slate-800 text-sm">새 쇼핑몰 추가 프리셋</h3>
+              <h3 className="font-bold text-slate-800 text-sm">자주 쓰는 쇼핑몰에서 고르기</h3>
               <button 
                 onClick={() => setShowPresetModal(false)}
                 className="text-slate-500 hover:text-slate-700 font-bold cursor-pointer"
@@ -2626,7 +2366,7 @@ export default function PlatformSettings({
             </div>
             <div className="p-5 space-y-4">
               <p className="text-xs text-slate-500">
-                자주 사용하는 쇼핑몰 템플릿(프리셋)을 선택하여 설정을 빠르게 시작하세요.
+                목록에 있는 쇼핑몰이면 골라서 바로 시작하세요.
               </p>
               
               <div className="grid grid-cols-1 gap-2 max-h-[280px] overflow-y-auto">
@@ -2637,7 +2377,7 @@ export default function PlatformSettings({
                     className="flex items-center justify-between p-3.5 border border-slate-200 hover:border-brand-600 hover:bg-brand-50/40 rounded-xl text-left transition cursor-pointer"
                   >
                     <div className="font-semibold text-slate-800 text-xs">{preset.name}</div>
-                    <span className="text-xs text-brand-600 bg-brand-50 px-2 py-1 rounded font-bold">불러오기</span>
+                    <span className="text-xs text-brand-600 bg-brand-50 px-2 py-1 rounded font-bold">고르기</span>
                   </button>
                 ))}
               </div>
@@ -2647,7 +2387,7 @@ export default function PlatformSettings({
                   onClick={createEmptyPlatform}
                   className="text-slate-600 hover:text-slate-900 border border-slate-200 px-3 py-1.5 rounded-lg cursor-pointer"
                 >
-                  템플릿 없이 새로 만들기
+                  빈 양식으로 만들기
                 </button>
                 <button
                   onClick={() => setShowPresetModal(false)}
@@ -2666,7 +2406,7 @@ export default function PlatformSettings({
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fade-in">
           <div className="bg-white rounded-xl shadow-xl max-w-lg w-full overflow-hidden border border-slate-200">
             <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="font-bold text-slate-800 text-sm">새 택배사 추가 프리셋</h3>
+              <h3 className="font-bold text-slate-800 text-sm">자주 쓰는 택배사에서 고르기</h3>
               <button 
                 onClick={() => setShowCourierPresetModal(false)}
                 className="text-slate-500 hover:text-slate-700 font-bold cursor-pointer"
@@ -2676,7 +2416,7 @@ export default function PlatformSettings({
             </div>
             <div className="p-5 space-y-4">
               <p className="text-xs text-slate-500">
-                주요 택배사 양식 템플릿을 선택하여 간편하게 등록하세요.
+                목록에 있는 택배사면 골라서 바로 시작하세요.
               </p>
               
               <div className="grid grid-cols-1 gap-2 max-h-[280px] overflow-y-auto">
@@ -2687,7 +2427,7 @@ export default function PlatformSettings({
                     className="flex items-center justify-between p-3.5 border border-slate-200 hover:border-brand-600 hover:bg-brand-50/40 rounded-xl text-left transition cursor-pointer"
                   >
                     <div className="font-semibold text-slate-800 text-xs">{preset.name}</div>
-                    <span className="text-xs text-brand-600 bg-brand-50 px-2 py-1 rounded font-bold">불러오기</span>
+                    <span className="text-xs text-brand-600 bg-brand-50 px-2 py-1 rounded font-bold">고르기</span>
                   </button>
                 ))}
               </div>
@@ -2697,7 +2437,7 @@ export default function PlatformSettings({
                   onClick={createEmptyCourier}
                   className="text-slate-600 hover:text-slate-900 border border-slate-200 px-3 py-1.5 rounded-lg cursor-pointer"
                 >
-                  템플릿 없이 새로 만들기
+                  빈 양식으로 만들기
                 </button>
                 <button
                   onClick={() => setShowCourierPresetModal(false)}
@@ -2717,10 +2457,10 @@ export default function PlatformSettings({
           <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4 border border-slate-100">
             <h3 className="font-bold text-slate-800 text-base flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-rose-500 shrink-0" />
-              연동 쇼핑몰 삭제 확인
+              쇼핑몰 양식 지우기
             </h3>
             <p className="text-xs text-slate-600 leading-relaxed">
-              <strong>"{deletingPlatform.name}"</strong> 설정을 목록에서 삭제하시겠습니까?
+              <strong>"{deletingPlatform.name}"</strong> 양식을 지울까요?
             </p>
             <div className="flex justify-end gap-2 pt-2">
               <button
@@ -2733,7 +2473,7 @@ export default function PlatformSettings({
                 onClick={() => executeDeletePlatform(deletingPlatform.id)}
                 className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold transition cursor-pointer"
               >
-                삭제하기
+                지우기
               </button>
             </div>
           </div>
@@ -2753,13 +2493,13 @@ export default function PlatformSettings({
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
                 <Plus className="w-4 h-4 text-brand-600" />
-                신규 쇼핑몰 양식으로 내 설정에 저장
+                새 쇼핑몰로 등록
               </h3>
               <button type="button" onClick={() => setShowSaveAsNewModal(false)} className="text-slate-500 hover:text-slate-700 font-bold cursor-pointer">✕</button>
             </div>
 
             <p className="text-xs text-slate-600 leading-relaxed">
-              현재 엑셀 파일(<strong>{activeFile?.fileName}</strong>)에서 자동 감지 및 설정된 헤더 매핑 구조로 신규 쇼핑몰 템플릿을 등록합니다.
+              엑셀 파일(<strong>{activeFile?.fileName}</strong>)의 지금 칸 그대로 새 쇼핑몰 양식을 만들어요.
             </p>
 
             <div className="space-y-3 pt-1">
@@ -2779,7 +2519,7 @@ export default function PlatformSettings({
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  파일명 식별 키워드 (선택)
+                  파일 이름에 들어 있는 말 (적지 않아도 돼요)
                 </label>
                 <input
                   type="text"
@@ -2789,7 +2529,7 @@ export default function PlatformSettings({
                   className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-600/20 focus:border-brand-600 font-medium"
                 />
                 <p className="text-xs text-slate-400 mt-1">
-                  이 키워드가 들어간 엑셀 파일을 올리면 방금 설정한 양식으로 자동 인식됩니다.
+                  이 말이 이름에 들어간 엑셀을 올리면 이 양식으로 읽어요.
                 </p>
               </div>
             </div>
@@ -2800,13 +2540,13 @@ export default function PlatformSettings({
                 onClick={() => setShowSaveAsNewModal(false)}
                 className="px-3.5 py-2 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl cursor-pointer"
               >
-                취소 (ESC)
+                취소
               </button>
               <button
                 type="submit"
                 className="px-4 py-2 text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-sm cursor-pointer"
               >
-                새 쇼핑몰 양식으로 추가 저장 (Enter)
+                등록하기
               </button>
             </div>
           </form>
@@ -2826,13 +2566,13 @@ export default function PlatformSettings({
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
                 <Plus className="w-4 h-4 text-amber-600" />
-                신규 택배사 양식으로 내 설정에 저장
+                새 택배사로 등록
               </h3>
               <button type="button" onClick={() => setShowSaveAsNewCourierModal(false)} className="text-slate-500 hover:text-slate-700 font-bold cursor-pointer">✕</button>
             </div>
 
             <p className="text-xs text-slate-600 leading-relaxed">
-              현재 운송장 엑셀 파일(<strong>{activeTrackingFile?.fileName || '운송장 파일'}</strong>)에서 자동 감지 및 설정된 헤더 매핑 구조로 신규 택배사 템플릿을 등록합니다.
+              송장 엑셀 파일(<strong>{activeTrackingFile?.fileName || '운송장 파일'}</strong>)의 지금 칸 그대로 새 택배사 양식을 만들어요.
             </p>
 
             <div className="space-y-3 pt-1">
@@ -2844,7 +2584,7 @@ export default function PlatformSettings({
                   type="text"
                   value={newCourierNameInput}
                   onChange={(e) => setNewCourierNameInput(e.target.value)}
-                  placeholder="예: CJ대한통운 (B타입), 한진택배 (특수양식), 우체국 (신규)"
+                  placeholder="예: CJ대한통운 (B형)"
                   autoFocus
                   className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-medium"
                 />
@@ -2852,7 +2592,7 @@ export default function PlatformSettings({
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  파일명 식별 키워드 (선택)
+                  파일 이름에 들어 있는 말 (적지 않아도 돼요)
                 </label>
                 <input
                   type="text"
@@ -2862,7 +2602,7 @@ export default function PlatformSettings({
                   className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-medium"
                 />
                 <p className="text-xs text-slate-400 mt-1">
-                  이 키워드가 들어간 운송장 파일을 업로드하면 방금 설정한 택배사 양식으로 자동 인식됩니다.
+                  이 말이 이름에 들어간 송장 엑셀을 올리면 이 택배사로 읽어요.
                 </p>
               </div>
             </div>
@@ -2873,13 +2613,13 @@ export default function PlatformSettings({
                 onClick={() => setShowSaveAsNewCourierModal(false)}
                 className="px-3.5 py-2 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl cursor-pointer"
               >
-                취소 (ESC)
+                취소
               </button>
               <button
                 type="submit"
                 className="px-4 py-2 text-xs font-bold text-slate-950 bg-amber-500 hover:bg-amber-400 rounded-xl shadow-sm cursor-pointer"
               >
-                새 택배사 양식으로 추가 저장 (Enter)
+                등록하기
               </button>
             </div>
           </form>
@@ -2892,10 +2632,10 @@ export default function PlatformSettings({
           <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4 border border-slate-100">
             <h3 className="font-bold text-slate-800 text-base flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-rose-500 shrink-0" />
-              택배사 설정 삭제 확인
+              택배사 양식 지우기
             </h3>
             <p className="text-xs text-slate-600 leading-relaxed">
-              <strong>"{deletingCourier.name}"</strong> 설정을 목록에서 삭제하시겠습니까?
+              <strong>"{deletingCourier.name}"</strong> 양식을 지울까요?
             </p>
             <div className="flex justify-end gap-2 pt-2">
               <button
@@ -2908,7 +2648,7 @@ export default function PlatformSettings({
                 onClick={() => executeDeleteCourier(deletingCourier.id)}
                 className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold transition cursor-pointer"
               >
-                삭제하기
+                지우기
               </button>
             </div>
           </div>

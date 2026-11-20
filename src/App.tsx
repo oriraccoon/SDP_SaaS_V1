@@ -656,7 +656,7 @@ export default function App() {
     setCustomFilePlatforms(updatedCustom);
     await processMultipleOrderFiles(orderFiles, updatedCustom, decryptedFilesCache, productMappings, activePlatforms);
     const platName = activePlatforms.find(p => p.id === platformId)?.name || '알 수 없음';
-    showNotification('success', `"${fileName}" 파일의 쇼핑몰 양식을 "${platName}"(으)로 지정했습니다.`);
+    showNotification('success', `"${fileName}" 파일을 '${platName}' 양식으로 읽었어요.`);
   };
 
   const processMultipleOrderFiles = async (
@@ -1930,7 +1930,7 @@ export default function App() {
     };
     const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json;charset=utf-8;' });
     triggerDownload(blob, `스마트운송장_설정백업_${new Date().toISOString().slice(0, 10)}.json`);
-    showNotification('success', `설정 백업 완료: 플랫폼, 택배사, 품목 사전(${productMappings.length}개)이 백업 파일에 저장되었습니다.`);
+    showNotification('success', `설정을 백업했어요. 쇼핑몰·택배사 양식과 품목사전(${productMappings.length}개)이 들어 있어요.`);
   };
 
   const handleImportBackup = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1944,7 +1944,7 @@ export default function App() {
         if (parsed.platforms || parsed.productMappings || parsed.couriers || parsed.analyticsOrders) {
           openConfirm(
             "통합 데이터 복원",
-            "기존의 플랫폼 설정, 택배사 설정, 품목 대치 리스트가 업로드한 파일의 내용으로 복원됩니다. 정말 계속할까요?",
+            "지금의 쇼핑몰·택배사 양식과 품목사전이 백업 파일 내용으로 바뀌어요. 계속할까요?",
             () => {
               if (parsed.platforms) setPlatforms(parsed.platforms);
               if (parsed.couriers) setCouriers(parsed.couriers);
@@ -1952,7 +1952,7 @@ export default function App() {
               if (parsed.analyticsOrders && Array.isArray(parsed.analyticsOrders)) {
                 setAnalyticsOrders(parsed.analyticsOrders);
               }
-              showNotification('success', "백업 파일로부터 플랫폼, 품목 사전 및 시각화 리포트 데이터를 성공적으로 복원했습니다.");
+              showNotification('success', "백업 파일로 쇼핑몰·택배사 양식, 품목사전, 리포트를 되돌렸어요.");
             }
           );
         } else {
@@ -1968,7 +1968,7 @@ export default function App() {
   const handleResetToDefault = () => {
     openConfirm(
       "전체 기본 설정 초기화",
-      "주의. 사용자가 임의로 추가하거나 수정한 플랫폼/택배사 설정, 품목 대치 사전 규칙, 시각화 데이터가 모두 영구 삭제되고 초기 설치 상태로 복원됩니다. 정말 초기화할까요?",
+      "직접 추가하거나 고친 쇼핑몰·택배사 양식, 품목사전, 리포트가 모두 지워지고 처음 상태로 돌아가요. 되돌릴 수 없어요. 초기화할까요?",
       () => {
         setPlatforms(DEFAULT_PLATFORMS);
         setCouriers(DEFAULT_COURIERS);
@@ -2240,7 +2240,7 @@ export default function App() {
             { key: 'process', label: '주문정리', icon: <Layers className="w-5 h-5 shrink-0" />, selected: activeTab === 'process' && !isSettingsOpen, show: true, action: () => setActiveTab('process') },
             { key: 'analytics', label: '리포트', icon: <BarChart3 className="w-5 h-5 shrink-0" />, selected: activeTab === 'analytics' && !isSettingsOpen, show: features.analytics, action: () => setActiveTab('analytics') },
             { key: 'products', label: '품목사전', icon: <ClipboardList className="w-5 h-5 shrink-0" />, selected: activeTab === 'products' && !isSettingsOpen, show: true, action: () => setActiveTab('products') },
-            { key: 'platforms', label: '플랫폼 설정', icon: <Grid className="w-5 h-5 shrink-0" />, selected: activeTab === 'platforms' && !isSettingsOpen, show: true, action: () => setActiveTab('platforms') },
+            { key: 'platforms', label: '쇼핑몰·택배사 칸 맞추기', icon: <Grid className="w-5 h-5 shrink-0" />, selected: activeTab === 'platforms' && !isSettingsOpen, show: true, action: () => setActiveTab('platforms') },
             { key: 'settings', label: '설정', icon: <Settings className="w-5 h-5 shrink-0" />, selected: isSettingsOpen, show: true, action: () => openSettings('backup') },
             { key: 'support', label: '문의하기', icon: <MessageSquare className="w-5 h-5 shrink-0" />, selected: false, show: true, action: () => setIsFeedbackOpen(true) },
           ]
@@ -2256,7 +2256,7 @@ export default function App() {
                   }}
                   title={item.label}
                   aria-current={item.selected ? 'page' : undefined}
-                  className={`pressable flex h-10 items-center gap-3 rounded-lg text-sm font-semibold ${
+                  className={`pressable flex min-h-10 items-center gap-3 rounded-lg py-1.5 text-left text-sm font-semibold leading-snug ${
                     isSidebarOpen ? 'w-full px-3' : 'w-10 justify-center'
                   } ${item.selected ? 'bg-brand-100 text-brand-800' : 'text-slate-600 hover:bg-slate-200/60 hover:text-slate-900'}`}
                 >
@@ -2636,7 +2636,7 @@ export default function App() {
                           className="text-xs bg-brand-50 hover:bg-brand-100 text-brand-700 font-bold px-2.5 py-1 rounded-lg border border-brand-200 transition flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
                         >
                           <Grid className="w-3.5 h-3.5 text-brand-600" />
-                          <span> 플랫폼 설정에서 감지된 열 매핑 한눈에 보기 →</span>
+                          <span>칸이 맞았는지 보기 →</span>
                         </button>
                       </div>
                       <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
@@ -2677,13 +2677,13 @@ export default function App() {
                               <div className="flex items-center gap-2 shrink-0">
                                 {!isApiSynced && (
                                   <div className="flex items-center gap-1.5">
-                                    <span className="text-xs text-slate-400 shrink-0">양식 보정:</span>
+                                    <span className="text-xs text-slate-500 shrink-0">읽을 양식</span>
                                     <select
                                       value={detectedPlat?.id || ""}
                                       onChange={(e) => handleFilePlatformChange(pf.fileName, e.target.value)}
                                       className="text-xs border border-slate-200 hover:border-slate-300 rounded px-1.5 py-0.5 bg-white font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-brand-600"
                                     >
-                                      <option value="" disabled>-- 플랫폼 선택 --</option>
+                                      <option value="" disabled>쇼핑몰 고르기</option>
                                       {platforms.map(p => (
                                         <option key={p.id} value={p.id}>{p.name}</option>
                                       ))}
@@ -2943,7 +2943,7 @@ export default function App() {
                           className="text-xs bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold px-2.5 py-1 rounded-lg border border-amber-200 transition flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
                         >
                           <Grid className="w-3.5 h-3.5 text-amber-600" />
-                          <span> 택배사 설정에서 감지된 열 매핑 한눈에 보기 →</span>
+                          <span>칸이 맞았는지 보기 →</span>
                         </button>
                       </div>
 
@@ -2971,7 +2971,7 @@ export default function App() {
 
                               <div className="flex items-center gap-2 shrink-0">
                                 <div className="flex items-center gap-1.5">
-                                  <span className="text-xs text-slate-400 shrink-0">택배사 보정:</span>
+                                  <span className="text-xs text-slate-500 shrink-0">읽을 택배사</span>
                                   <select
                                     value={currentCourier}
                                     onChange={(e) => handleTrackingFileCourierChange(ptf.fileName, e.target.value)}
@@ -3231,7 +3231,7 @@ export default function App() {
                           통합 백업 & 복원 (데이터 전체 관리)
                         </h2>
                         <p className="text-xs text-slate-500 mt-1">
-                          쇼핑몰 플랫폼 설정, 택배사 설정, 품목 대치 사전({productMappings.length}개 규칙)을 파일로 백업하거나 복원합니다.
+                          쇼핑몰·택배사 양식과 품목사전({productMappings.length}개)을 파일로 백업하거나 되돌려요.
                         </p>
                       </div>
                       <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-xs font-bold shrink-0">
@@ -3241,7 +3241,7 @@ export default function App() {
                     </div>
 
                     <div className="mt-3 p-3 bg-brand-50/60 border border-brand-100 rounded-xl text-xs text-[#0F3A2F] leading-relaxed">
-                      <strong>설정은 자동으로 저장됩니다:</strong> 플랫폼 양식, 택배사 양식, 품목 대치 사전, 쇼핑몰 연동 설정은 로그인한 계정에 저장되어 다음에 접속해도 그대로 있습니다. <strong>엑셀 주문 데이터는 저장되지 않으며</strong>, 새로고침하면 사라집니다. API 키는 암호화되어 저장되고, 다른 컴퓨터에서는 다시 입력해야 합니다.
+                      <strong>설정은 알아서 저장돼요.</strong> 쇼핑몰·택배사 양식, 품목사전, 쇼핑몰 연동 설정은 로그인한 계정에 저장되어 다음에 들어와도 그대로 있어요. <strong>주문 엑셀은 저장하지 않아요.</strong> 새로고침하면 사라져요. API 키는 암호화해 저장하고, 다른 컴퓨터에서는 다시 넣어야 해요.
                     </div>
                   </div>
 
@@ -3279,7 +3279,7 @@ export default function App() {
                                     if (json.platforms || json.productMappings || json.analyticsOrders) {
                                       openConfirm(
                                         "통합 데이터 복원",
-                                        "기존의 플랫폼 설정과 품목 대치 사전이 업로드한 백업 내용으로 복원됩니다. 진행할까요?",
+                                        "지금의 쇼핑몰·택배사 양식과 품목사전이 백업 파일 내용으로 바뀌어요. 계속할까요?",
                                         () => {
                                           if (json.platforms) setPlatforms(json.platforms);
                                           if (json.productMappings) setProductMappings(json.productMappings);
@@ -3287,7 +3287,7 @@ export default function App() {
                                           if (json.analyticsOrders && Array.isArray(json.analyticsOrders)) {
                                             setAnalyticsOrders(json.analyticsOrders);
                                           }
-                                          showNotification('success', "플랫폼, 품목 사전 및 시각화 데이터가 완벽 복원되었습니다.");
+                                          showNotification('success', "백업 파일로 쇼핑몰·택배사 양식, 품목사전, 리포트를 되돌렸어요.");
                                         }
                                       );
                                     } else if (Array.isArray(json)) {
@@ -3325,7 +3325,7 @@ export default function App() {
                           백업 / 사전 파일 내보내기
                         </h3>
                         <p className="text-sm text-slate-600 leading-relaxed max-w-[68ch]">
-                          현재 설정된 <strong>플랫폼 양식, 택배사 양식, 품목 정제 사전</strong>을 백업 파일(.json)로 저장합니다. 주문 데이터는 포함되지 않습니다.
+                          현재 설정된 <strong>쇼핑몰·택배사 양식, 품목사전</strong>을 백업 파일(.json)로 저장합니다. 주문 데이터는 포함되지 않습니다.
                         </p>
                       </div>
 
@@ -3363,7 +3363,7 @@ export default function App() {
                   <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                     <div>
                       <h4 className="text-xs font-bold text-slate-700">기본 설정으로 원복</h4>
-                      <p className="text-xs text-slate-400 mt-0.5">처음 설치 시 제공된 네이버/쿠팡 및 샘플 품목 매핑 사전 데이터로 전체 원복합니다.</p>
+                      <p className="text-xs text-slate-400 mt-0.5">처음 받은 상태(네이버·쿠팡 양식과 예시 품목사전)로 모두 되돌려요.</p>
                     </div>
                     <button
                       onClick={handleResetToDefault}
@@ -3588,7 +3588,7 @@ export default function App() {
           { key: 'process', label: '주문정리', icon: <Layers className="h-5 w-5" />, show: true },
           { key: 'analytics', label: '리포트', icon: <BarChart3 className="h-5 w-5" />, show: features.analytics },
           { key: 'products', label: '품목사전', icon: <ClipboardList className="h-5 w-5" />, show: true },
-          { key: 'platforms', label: '플랫폼 설정', icon: <Grid className="h-5 w-5" />, show: true },
+          { key: 'platforms', label: '칸 맞추기', icon: <Grid className="h-5 w-5" />, show: true },
         ]
           .filter((t) => t.show)
           .map((t) => {

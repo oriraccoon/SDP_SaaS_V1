@@ -19,6 +19,7 @@ import {
   Plus,
   Trash2
 } from 'lucide-react';
+import Modal, { btn } from './ui/Modal';
 import { ProcessedOrder } from '../types';
 
 export interface PlatformApiConfig {
@@ -643,211 +644,148 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification, co
 
       {/* 팝업 모달: 특정 플랫폼 API Key 입력 및 편집 */}
       {activeConfigModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <form 
+        <Modal
+          onClose={() => setActiveConfigModal(null)}
+          title={`${activeConfigModal.name} 연동 설정`}
+          description="쇼핑몰 셀러센터에서 받은 API 키를 넣어 주세요. 키는 암호화해서 저장해요."
+          icon={<Key className="w-4 h-4" />}
+          iconTone="brand"
+          size="md"
+          closeOnEsc={false}
+          footer={
+            <>
+              <button type="button" onClick={() => setActiveConfigModal(null)} className={btn.secondary}>취소</button>
+              <button type="submit" form="api-config-form" className={btn.primary}><Check className="w-4 h-4" />저장하기</button>
+            </>
+          }
+        >
+          <form
+            id="api-config-form"
             onSubmit={(e) => {
               e.preventDefault();
               handleSaveModalConfig(activeConfigModal);
             }}
-            className="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-5 space-y-4 text-white shadow-2xl"
+            className="space-y-4"
           >
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <div className="flex items-center gap-2">
-                <Key className="w-5 h-5 text-amber-400" />
-                <h3 className="font-bold text-sm text-white">
-                  {activeConfigModal.name} API 연동 설정
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setActiveConfigModal(null)}
-                className="p-1 text-slate-400 hover:text-white rounded"
+            <label className="block">
+              <span className="block text-sm font-semibold text-slate-800">Client ID / Vendor ID</span>
+              <input
+                type="text"
+                value={activeConfigModal.clientId}
+                onChange={(e) => setActiveConfigModal({ ...activeConfigModal, clientId: e.target.value })}
+                placeholder="예: na_client_12345"
+                autoFocus
+                className="mt-1.5 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600/30 focus:border-brand-600 font-mono"
+              />
+            </label>
+            <label className="block">
+              <span className="block text-sm font-semibold text-slate-800">Client Secret</span>
+              <input
+                type="password"
+                value={activeConfigModal.clientSecret}
+                onChange={(e) => setActiveConfigModal({ ...activeConfigModal, clientSecret: e.target.value })}
+                placeholder="••••••••••••••••"
+                className="mt-1.5 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600/30 focus:border-brand-600 font-mono"
+              />
+            </label>
+            <label className="block">
+              <span className="block text-sm font-semibold text-slate-800">Open API Key <span className="font-normal text-slate-500">(있을 때만)</span></span>
+              <input
+                type="text"
+                value={activeConfigModal.apiKey}
+                onChange={(e) => setActiveConfigModal({ ...activeConfigModal, apiKey: e.target.value })}
+                placeholder="예: 11st_open_api_key_xxx"
+                className="mt-1.5 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600/30 focus:border-brand-600 font-mono"
+              />
+            </label>
+            <div className="rounded-lg bg-slate-50 px-3 py-2.5 text-[13px] text-slate-600">
+              <div className="font-semibold text-slate-800">키 받는 곳</div>
+              <p className="mt-0.5 leading-relaxed">셀러센터의 [스토어 관리] → [API 연동] 메뉴에서 주문 조회 권한이 있는 키를 만드세요.</p>
+              <a
+                href={activeConfigModal.sellerUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-1 inline-flex items-center gap-1 font-semibold text-brand-700 hover:underline"
               >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="space-y-3 text-xs">
-              <div>
-                <label className="block text-slate-300 font-medium mb-1">
-                  Client ID / Vendor ID
-                </label>
-                <input
-                  type="text"
-                  value={activeConfigModal.clientId}
-                  onChange={(e) => setActiveConfigModal({ ...activeConfigModal, clientId: e.target.value })}
-                  placeholder="예: na_client_12345"
-                  autoFocus
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-mono focus:border-amber-400 outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-300 font-medium mb-1">
-                  Client Secret
-                </label>
-                <input
-                  type="password"
-                  value={activeConfigModal.clientSecret}
-                  onChange={(e) => setActiveConfigModal({ ...activeConfigModal, clientSecret: e.target.value })}
-                  placeholder="••••••••••••••••"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-mono focus:border-amber-400 outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-300 font-medium mb-1">
-                  Open API Key (선택/특수키)
-                </label>
-                <input
-                  type="text"
-                  value={activeConfigModal.apiKey}
-                  onChange={(e) => setActiveConfigModal({ ...activeConfigModal, apiKey: e.target.value })}
-                  placeholder="예: 11st_open_api_key_xxx"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-mono focus:border-amber-400 outline-none"
-                />
-              </div>
-
-              <div className="p-3 bg-slate-800/80 rounded-lg border border-slate-700 text-xs text-slate-300 space-y-1">
-                <div className="font-bold text-amber-300"> API 발급 방법 가이드</div>
-                <p className="text-slate-400 leading-relaxed">
-                  해당 쇼핑몰 셀러센터 접속 후 [스토어 관리] → [API 연동] 메뉴에서 주문 조회 권한이 부여된 API 키를 생성하세요.
-                </p>
-                <a
-                  href={activeConfigModal.sellerUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-sky-400 hover:underline font-bold mt-1"
-                >
-                  <span>{activeConfigModal.name} 셀러센터 접속하기</span>
-                  <ExternalLink className="w-3 h-3" />
-                </a>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
-              <button
-                type="button"
-                onClick={() => setActiveConfigModal(null)}
-                className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold cursor-pointer"
-              >
-                취소 (ESC)
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold rounded-lg text-xs cursor-pointer flex items-center gap-1 shadow-md"
-              >
-                <Check className="w-4 h-4" />
-                <span>저장 완료 (Enter)</span>
-              </button>
+                <span>{activeConfigModal.name} 셀러센터 열기</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
             </div>
           </form>
-        </div>
+        </Modal>
       )}
 
       {/* 팝업 모달: 새로운 쇼핑몰/플랫폼 등록 모달 */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <form 
+        <Modal
+          onClose={() => setIsAddModalOpen(false)}
+          title="연동할 쇼핑몰 추가"
+          description="목록에 없는 쇼핑몰을 더해요. 이름만 적어도 돼요."
+          icon={<Plus className="w-4 h-4" />}
+          iconTone="brand"
+          size="md"
+          closeOnEsc={false}
+          footer={
+            <>
+              <button type="button" onClick={() => setIsAddModalOpen(false)} className={btn.secondary}>취소</button>
+              <button type="submit" form="api-add-form" className={btn.primary}><Check className="w-4 h-4" />추가하기</button>
+            </>
+          }
+        >
+          <form
+            id="api-add-form"
             onSubmit={(e) => {
               e.preventDefault();
               handleCreateCustomPlatform();
             }}
-            className="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-5 space-y-4 text-white shadow-2xl"
+            className="space-y-4"
           >
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <div className="flex items-center gap-2">
-                <Plus className="w-5 h-5 text-amber-400" />
-                <h3 className="font-bold text-sm text-white">
-                  새 쇼핑몰/플랫폼 API 연동 추가
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsAddModalOpen(false)}
-                className="p-1 text-slate-400 hover:text-white rounded cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="space-y-3 text-xs">
-              <div>
-                <label className="block text-slate-300 font-medium mb-1">
-                  플랫폼/쇼핑몰 이름 <span className="text-amber-400">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={newPlatformName}
-                  onChange={(e) => setNewPlatformName(e.target.value)}
-                  placeholder="예: 무신사, 올리브영, 지그재그, 자사몰 등"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-white focus:border-amber-400 outline-none"
-                  autoFocus
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-300 font-medium mb-1">
-                  셀러센터 URL (선택)
-                </label>
-                <input
-                  type="text"
-                  value={newSellerUrl}
-                  onChange={(e) => setNewSellerUrl(e.target.value)}
-                  placeholder="예: https://partner.musinsa.com"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-white font-mono focus:border-amber-400 outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-300 font-medium mb-1">
-                  Client ID / Vendor ID (선택)
-                </label>
-                <input
-                  type="text"
-                  value={newClientId}
-                  onChange={(e) => setNewClientId(e.target.value)}
-                  placeholder="예: musinsa_partner_key"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-white font-mono focus:border-amber-400 outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-300 font-medium mb-1">
-                  Client Secret / API Key (선택)
-                </label>
-                <input
-                  type="password"
-                  value={newClientSecret}
-                  onChange={(e) => setNewClientSecret(e.target.value)}
-                  placeholder="••••••••••••••••"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-white font-mono focus:border-amber-400 outline-none"
-                />
-              </div>
-
-              <div className="p-3 bg-[#0A2A22]/80 rounded-lg border border-brand-800/80 text-xs text-brand-200/90 leading-relaxed">
-                플랫폼 이름을 입력하고 등록하시면, 언제든지 <strong>'원클릭 주문 수집'</strong> 버튼 하나로 해당 쇼핑몰의 신규 발주확인 데이터가 자동 수집됩니다.
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
-              <button
-                type="button"
-                onClick={() => setIsAddModalOpen(false)}
-                className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold cursor-pointer"
-              >
-                취소 (ESC)
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold rounded-lg text-xs cursor-pointer flex items-center gap-1 shadow-md"
-              >
-                <Check className="w-4 h-4" />
-                <span>플랫폼 추가하기 (Enter)</span>
-              </button>
-            </div>
+            <label className="block">
+              <span className="block text-sm font-semibold text-slate-800">쇼핑몰 이름 <span className="text-rose-600">*</span></span>
+              <input
+                type="text"
+                value={newPlatformName}
+                onChange={(e) => setNewPlatformName(e.target.value)}
+                placeholder="예: 무신사, 올리브영, 지그재그, 자사몰"
+                autoFocus
+                className="mt-1.5 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600/30 focus:border-brand-600"
+              />
+            </label>
+            <label className="block">
+              <span className="block text-sm font-semibold text-slate-800">셀러센터 주소 <span className="font-normal text-slate-500">(안 적어도 돼요)</span></span>
+              <input
+                type="text"
+                value={newSellerUrl}
+                onChange={(e) => setNewSellerUrl(e.target.value)}
+                placeholder="예: https://partner.musinsa.com"
+                className="mt-1.5 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600/30 focus:border-brand-600 font-mono"
+              />
+            </label>
+            <label className="block">
+              <span className="block text-sm font-semibold text-slate-800">Client ID / Vendor ID <span className="font-normal text-slate-500">(안 적어도 돼요)</span></span>
+              <input
+                type="text"
+                value={newClientId}
+                onChange={(e) => setNewClientId(e.target.value)}
+                placeholder="예: musinsa_partner_key"
+                className="mt-1.5 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600/30 focus:border-brand-600 font-mono"
+              />
+            </label>
+            <label className="block">
+              <span className="block text-sm font-semibold text-slate-800">Client Secret / API Key <span className="font-normal text-slate-500">(안 적어도 돼요)</span></span>
+              <input
+                type="password"
+                value={newClientSecret}
+                onChange={(e) => setNewClientSecret(e.target.value)}
+                placeholder="••••••••••••••••"
+                className="mt-1.5 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600/30 focus:border-brand-600 font-mono"
+              />
+            </label>
+            <p className="rounded-lg bg-brand-50 px-3 py-2 text-[13px] leading-relaxed text-brand-900">
+              쇼핑몰 자동 연동은 준비 중이에요. 지금 추가해 두면 준비되는 대로 바로 쓸 수 있어요.
+            </p>
           </form>
-        </div>
+        </Modal>
       )}
     </div>
   );

@@ -72,6 +72,7 @@ import { consumeUploads, uploadsLeft } from './lib/account';
 import { APP_NAME } from './config/brand';
 import { uploadsUsedThisMonth } from './lib/account';
 import FeedbackModal from './components/FeedbackModal';
+import Modal, { btn, ConfirmDialog } from './components/ui/Modal';
 import { LogOut, Menu, MessageSquare, ChevronDown, ShieldCheck } from 'lucide-react';
 
 // 2단계 운송장 소스 엑셀 파일 택배사/양식 자동 감지 헬퍼
@@ -1811,7 +1812,7 @@ export default function App() {
             showNotification('error', "JSON 파일에서 품목사전 내용을 찾지 못했어요.");
           }
         } catch {
-          showNotification('error', "JSON 파일 형식이 올바르지 않습니다.");
+          showNotification('error', "JSON 파일을 읽지 못했어요.");
         }
       };
       reader.readAsText(file);
@@ -1946,7 +1947,7 @@ export default function App() {
         const parsed = JSON.parse(event.target?.result as string);
         if (parsed.platforms || parsed.productMappings || parsed.couriers || parsed.analyticsOrders) {
           openConfirm(
-            "통합 데이터 복원",
+            "백업 파일로 되돌릴까요?",
             "지금의 쇼핑몰·택배사 양식과 품목사전이 백업 파일 내용으로 바뀌어요. 계속할까요?",
             () => {
               if (parsed.platforms) setPlatforms(parsed.platforms);
@@ -1970,7 +1971,7 @@ export default function App() {
 
   const handleResetToDefault = () => {
     openConfirm(
-      "전체 기본 설정 초기화",
+      "처음 상태로 초기화할까요?",
       "직접 추가하거나 고친 쇼핑몰·택배사 양식, 품목사전, 리포트가 모두 지워지고 처음 상태로 돌아가요. 되돌릴 수 없어요. 초기화할까요?",
       () => {
         setPlatforms(DEFAULT_PLATFORMS);
@@ -2038,45 +2039,28 @@ export default function App() {
       isSidebarOpen ? 'md:pl-56' : 'md:pl-14'
     }`}>
       
-      {/* 커스텀 전역 확인 모달 */}
-      {confirmModal?.isOpen && (
-        <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in"
-          onKeyDown={(e) => {
-            // 되돌릴 수 없는 작업만 묻는 창이라 Enter로는 확정하지 않습니다 (포커스가 '취소'에 있습니다)
-            if (e.key === 'Escape') {
-              setConfirmModal(null);
-            }
-          }}
-          role="alertdialog"
-          aria-modal="true"
-        >
-          <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4 border border-slate-100">
-            <h3 className="font-bold text-slate-800 text-base flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-brand-600 shrink-0" />
-              {confirmModal.title}
-            </h3>
-            <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-line">
-              {confirmModal.message}
-            </p>
-            <div className="flex justify-end gap-2 pt-3">
-              <button
-                onClick={() => setConfirmModal(null)}
-                autoFocus
-                className="pressable px-4 py-2 bg-white hover:bg-slate-50 border border-slate-300 text-slate-800 rounded-lg text-sm font-semibold cursor-pointer"
-              >
-                취소
-              </button>
-              <button
-                onClick={confirmModal.onConfirm}
-                className="pressable px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-sm font-semibold cursor-pointer"
-              >
-                확인
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* 공용 확인창 */}
+      {confirmModal?.isOpen && (() => {
+        // 제목으로 버튼 이름과 색을 정합니다 (되돌릴 수 없는 일은 빨간 버튼)
+        const t = confirmModal.title;
+        const [confirmLabel, tone]: [string, 'neutral' | 'danger'] =
+          t.includes('로그아웃') ? ['로그아웃', 'neutral']
+          : t.includes('비울') ? ['비우기', t.includes('리포트') ? 'danger' : 'neutral']
+          : t.includes('뺄까요') ? ['빼기', 'danger']
+          : t.includes('되돌릴') ? ['되돌리기', 'danger']
+          : t.includes('초기화') ? ['초기화', 'danger']
+          : ['확인', 'danger'];
+        return (
+          <ConfirmDialog
+            title={t}
+            message={<span className="whitespace-pre-line">{confirmModal.message}</span>}
+            confirmLabel={confirmLabel}
+            tone={tone}
+            onCancel={() => setConfirmModal(null)}
+            onConfirm={confirmModal.onConfirm}
+          />
+        );
+      })()}
 
       {/* 엑셀 비밀번호 입력 모달 */}
       {/* AI 도우미 (준비 중) */}
@@ -2091,37 +2075,36 @@ export default function App() {
       )}
 
       {passwordPrompt && (
-        <div 
-          id="decrypt-password-modal" 
-          className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in"
-          onKeyDown={(e) => {
-            if (e.key === 'Escape') {
-              handleCancelPasswordPrompt();
-            }
-          }}
+        <Modal
+          onClose={handleCancelPasswordPrompt}
+          title="엑셀 비밀번호를 넣어 주세요"
+          description={<><b className="font-semibold text-slate-800">{passwordPrompt.file.name}</b> 파일은 비밀번호로 잠겨 있어요. 비밀번호를 넣으면 열어서 정리해요.</>}
+          size="sm"
+          closeOnBackdrop={false}
+          footer={
+            <>
+              <button type="button" onClick={handleCancelPasswordPrompt} disabled={isDecrypting} className={btn.secondary}>취소</button>
+              <button type="submit" form="decrypt-password-form" disabled={isDecrypting || !promptPassword} className={btn.primary}>
+                {isDecrypting ? (<><RefreshCw className="w-4 h-4 animate-spin" />여는 중…</>) : (<><Check className="w-4 h-4" />열기</>)}
+              </button>
+            </>
+          }
         >
-          <form 
+          <form
+            id="decrypt-password-form"
             onSubmit={(e) => {
               e.preventDefault();
               if (!isDecrypting && promptPassword) {
                 handleDecryptFile();
               }
             }}
-            className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4 border border-slate-100"
           >
-            <h3 className="font-bold text-slate-800 text-base flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-brand-600 shrink-0" />
-              엑셀 비밀번호 입력 필요
-            </h3>
-            <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-line">
-              선택한 <strong>"{passwordPrompt.file.name}"</strong> 파일은 암호로 보호되어 있습니다. 
-              파일을 읽고 가공하기 위해 비밀번호를 입력해주세요.
-            </p>
-            <div>
+            <label className="block">
+              <span className="sr-only">비밀번호</span>
               <input
                 id="decrypt-password-input"
                 type="password"
-                placeholder="비밀번호를 입력 후 Enter 누르세요"
+                placeholder="비밀번호"
                 value={promptPassword}
                 onChange={(e) => setPromptPassword(e.target.value)}
                 onKeyDown={(e) => {
@@ -2130,44 +2113,15 @@ export default function App() {
                     if (!isDecrypting && promptPassword) {
                       handleDecryptFile();
                     }
-                  } else if (e.key === 'Escape') {
-                    handleCancelPasswordPrompt();
                   }
                 }}
                 disabled={isDecrypting}
                 autoFocus
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-brand-600 transition"
+                className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600/30 focus:border-brand-600"
               />
-            </div>
-            <div className="flex justify-end gap-2 pt-1">
-              <button
-                type="button"
-                onClick={handleCancelPasswordPrompt}
-                disabled={isDecrypting}
-                className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition cursor-pointer"
-              >
-                취소 (ESC)
-              </button>
-              <button
-                type="submit"
-                disabled={isDecrypting || !promptPassword}
-                className="px-3.5 py-1.5 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition shadow-md flex items-center gap-1.5 cursor-pointer"
-              >
-                {isDecrypting ? (
-                  <>
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    해제 중...
-                  </>
-                ) : (
-                  <>
-                    <Check className="w-3.5 h-3.5" />
-                    암호 해제 및 확인 (Enter)
-                  </>
-                )}
-              </button>
-            </div>
+            </label>
           </form>
-        </div>
+        </Modal>
       )}
 
       {/* 알림 배너 */}
@@ -2287,7 +2241,7 @@ export default function App() {
               </div>
             )}
             <button
-              onClick={() => openConfirm('로그아웃', '로그아웃 하시겠습니까? 저장되지 않은 작업은 사라집니다.', () => logout())}
+              onClick={() => openConfirm('로그아웃할까요?', '올려 둔 주문 파일과 정리 결과는 사라져요. 설정은 계정에 남아 있어요.', () => logout())}
               title="로그아웃"
               className={`pressable flex h-10 items-center gap-3 rounded-lg border border-slate-300 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-100 ${
                 isSidebarOpen ? 'w-full px-3' : 'w-10 justify-center'
@@ -2321,7 +2275,7 @@ export default function App() {
                 <span className="sp flex-1" />
                 {(orderParseResult || trackingFiles.length > 0) && (
                   <button
-                    onClick={() => openConfirm("작업 비우기", "올려 둔 주문 파일, 정리 결과, 송장 파일이 모두 지워져요. 처음부터 다시 할까요?", handleResetProcess)}
+                    onClick={() => openConfirm("작업을 비울까요?", "올려 둔 주문 파일, 정리 결과, 송장 파일이 모두 지워져요. 처음부터 다시 올려야 해요.", handleResetProcess)}
                     className="pressable inline-flex min-h-[44px] items-center gap-1.5 rounded-lg px-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 cursor-pointer"
                   >
                     <RotateCcw className="w-4 h-4" />
@@ -2694,7 +2648,7 @@ export default function App() {
                                   </div>
                                 )}
                                 <button
-                                  onClick={() => openConfirm("수집 데이터 삭제", `"${pf.fileName}" 수집 데이터(총 ${pf.orders?.length || 0}건)를 목록에서 삭제하시겠습니까?`, () => handleRemoveParsedFile(pf.fileName))}
+                                  onClick={() => openConfirm("이 주문 파일을 목록에서 뺄까요?", `"${pf.fileName}"의 주문 ${pf.orders?.length || 0}건이 정리 결과에서 빠져요.`, () => handleRemoveParsedFile(pf.fileName))}
                                   className="p-1 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded transition shrink-0 ml-1 cursor-pointer"
                                   title="데이터 삭제"
                                 >
@@ -2991,7 +2945,7 @@ export default function App() {
                                 </div>
 
                                 <button
-                                  onClick={() => openConfirm("운송장 데이터 삭제", `"${ptf.fileName}" 운송장 데이터를 삭제하시겠습니까?`, () => handleRemoveParsedTrackingFile(ptf.fileName))}
+                                  onClick={() => openConfirm("이 송장 파일을 목록에서 뺄까요?", `"${ptf.fileName}"의 송장 번호가 정리 결과에서 빠져요.`, () => handleRemoveParsedTrackingFile(ptf.fileName))}
                                   className="p-1 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded transition shrink-0 ml-1 cursor-pointer"
                                   title="데이터 삭제"
                                 >
@@ -3171,28 +3125,16 @@ export default function App() {
 
           {/* 설정 창 (팝업): 가운데에 하나의 창으로 열립니다 */}
           {isSettingsOpen && (
-            <div
-              className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/50 p-4"
-              onClick={() => setIsSettingsOpen(false)}
+            /* 확인창(z-50)이 이 창 위에 뜨도록 z-40으로 둡니다 */
+            <Modal
+              onClose={() => setIsSettingsOpen(false)}
+              title="설정"
+              size="xl"
+              flushBody
+              zIndex={40}
+              closeOnEsc={false}
             >
-              <motion.div
-                key="settings-modal"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 12 }}
-                className="flex h-[min(680px,88vh)] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-                  <h2 className="text-base font-bold text-slate-900">설정</h2>
-                  <button
-                    onClick={() => setIsSettingsOpen(false)}
-                    className="p-1 text-slate-500 hover:text-slate-800"
-                    aria-label="닫기"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
+              <div className="flex h-[min(600px,78vh)] flex-col border-t border-slate-200">
 
                 <div className="flex min-h-0 flex-1 flex-col md:flex-row">
                   <aside className="shrink-0 border-b border-slate-200 p-3 md:w-44 md:border-b-0 md:border-r">
@@ -3231,7 +3173,7 @@ export default function App() {
                       <div>
                         <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
                           <Database className="w-6 h-6 text-brand-600" />
-                          통합 백업 & 복원 (데이터 전체 관리)
+                          설정 백업과 되돌리기
                         </h2>
                         <p className="text-xs text-slate-500 mt-1">
                           쇼핑몰·택배사 양식과 품목사전({productMappings.length}개)을 파일로 백업하거나 되돌려요.
@@ -3262,7 +3204,7 @@ export default function App() {
                           백업 / 사전 파일 가져오기
                         </h3>
                         <p className="text-sm text-slate-600 leading-relaxed max-w-[68ch]">
-                          통합 백업 파일(<code>.json</code>) 또는 품목 사전(<code>.xlsx</code>, <code>.csv</code>, <code>.txt</code>)을 업로드하면 자동으로 형식을 감지해 복원합니다.
+                          백업 파일(<code>.json</code>)이나 품목사전 파일(<code>.xlsx</code>, <code>.csv</code>, <code>.txt</code>)을 올리면 알아서 알아보고 되돌려요.
                         </p>
                       </div>
 
@@ -3281,7 +3223,7 @@ export default function App() {
                                     const json = JSON.parse(ev.target?.result as string);
                                     if (json.platforms || json.productMappings || json.analyticsOrders) {
                                       openConfirm(
-                                        "통합 데이터 복원",
+                                        "백업 파일로 되돌릴까요?",
                                         "지금의 쇼핑몰·택배사 양식과 품목사전이 백업 파일 내용으로 바뀌어요. 계속할까요?",
                                         () => {
                                           if (json.platforms) setPlatforms(json.platforms);
@@ -3297,7 +3239,7 @@ export default function App() {
                                       handleImportProductMappingFile(e);
                                     }
                                   } catch {
-                                    showNotification('error', "JSON 파일 형식이 올바르지 않습니다.");
+                                    showNotification('error', "JSON 파일을 읽지 못했어요.");
                                   }
                                 };
                                 reader.readAsText(file);
@@ -3313,7 +3255,7 @@ export default function App() {
                             파일 선택하여 복원하기
                           </button>
                         </div>
-                        <p className="text-xs text-center text-slate-400">지원: .json (전체), .xlsx / .csv / .txt (품목사전)</p>
+                        <p className="text-xs text-center text-slate-400">올릴 수 있는 파일: .json (전체), .xlsx·.csv·.txt (품목사전)</p>
                       </div>
                     </div>
 
@@ -3328,7 +3270,7 @@ export default function App() {
                           백업 / 사전 파일 내보내기
                         </h3>
                         <p className="text-sm text-slate-600 leading-relaxed max-w-[68ch]">
-                          현재 설정된 <strong>쇼핑몰·택배사 양식, 품목사전</strong>을 백업 파일(.json)로 저장합니다. 주문 데이터는 포함되지 않습니다.
+                          현재 설정된 <strong>쇼핑몰·택배사 양식, 품목사전</strong>을 백업 파일(.json)로 받아요. 주문 엑셀은 들어가지 않아요.
                         </p>
                       </div>
 
@@ -3338,7 +3280,7 @@ export default function App() {
                           className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-semibold transition shadow-xs cursor-pointer"
                         >
                           <Database className="w-3.5 h-3.5" />
-                          전체 설정 통합 백업 (.json)
+                          설정 백업 받기 (.json)
                         </button>
 
                         <div className="grid grid-cols-2 gap-2 pt-0.5">
@@ -3365,7 +3307,7 @@ export default function App() {
                   {/* 하단 리셋 안내 */}
                   <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                     <div>
-                      <h4 className="text-xs font-bold text-slate-700">기본 설정으로 원복</h4>
+                      <h4 className="text-xs font-bold text-slate-700">처음 상태로 초기화</h4>
                       <p className="text-xs text-slate-400 mt-0.5">처음 받은 상태(네이버·쿠팡 양식과 예시 품목사전)로 모두 되돌려요.</p>
                     </div>
                     <button
@@ -3389,7 +3331,7 @@ export default function App() {
                       </div>
                       <div className="flex flex-wrap gap-2">
                         <button
-                          onClick={() => openConfirm('로그아웃', '로그아웃 하시겠습니까? 저장되지 않은 작업은 사라집니다.', () => logout())}
+                          onClick={() => openConfirm('로그아웃할까요?', '올려 둔 주문 파일과 정리 결과는 사라져요. 설정은 계정에 남아 있어요.', () => logout())}
                           className="px-4 py-2 rounded-lg border border-slate-300 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50"
                         >
                           로그아웃
@@ -3399,8 +3341,8 @@ export default function App() {
                   )}
                   </section>
                 </div>
-              </motion.div>
-            </div>
+              </div>
+            </Modal>
           )}
 
           {/* 탭 4: 시각화 리포트 탭 */}
@@ -3417,8 +3359,8 @@ export default function App() {
                 defaultCourierName={selectedCourier === 'custom' ? customCourier : selectedCourier}
                 onClearOrders={() => {
                   openConfirm(
-                    "시각화 데이터 전체 초기화",
-                    "지금 화면의 시각화 리포트 데이터를 모두 비우시겠습니까?",
+                    "리포트를 비울까요?",
+                    "지금 리포트에 쌓인 출고 기록이 모두 지워져요.",
                     () => {
                       setAnalyticsOrders([]);
                       showNotification('info', "시각화 데이터가 초기화되었습니다.");
@@ -3485,62 +3427,36 @@ export default function App() {
 
       {/* 품목 사전 불러오기 확인 모달 */}
       {mappingImportConfirm && (
-        <div 
-          className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in"
-          onKeyDown={(e) => {
-            if (e.key === 'Escape') {
-              setMappingImportConfirm(null);
-            } else if (e.key === 'Enter') {
-              e.preventDefault();
-              handleApplyMappingImport(false);
-            }
-          }}
-          tabIndex={-1}
-          ref={(node) => node?.focus()}
+        <Modal
+          onClose={() => setMappingImportConfirm(null)}
+          title={`파일에서 ${mappingImportConfirm.parsed.length}개를 찾았어요`}
+          description="지금 품목사전에 어떻게 넣을까요?"
+          icon={<Upload className="w-4 h-4" />}
+          iconTone="brand"
+          size="sm"
+          footer={<button type="button" onClick={() => setMappingImportConfirm(null)} className={btn.secondary}>취소</button>}
         >
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl border border-slate-100 space-y-4">
-            <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
-              <div className="p-2.5 bg-brand-50 text-brand-600 rounded-xl">
-                <Upload className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="font-bold text-slate-800 text-sm">품목사전 가져오기</h3>
-                <p className="text-xs text-brand-600 font-semibold">파일에서 {mappingImportConfirm.parsed.length}개를 찾았어요</p>
-              </div>
-            </div>
-
-            <p className="text-xs text-slate-600 leading-relaxed">
-              지금 품목사전에 어떻게 넣을까요?
-            </p>
-
-            <div className="space-y-2 pt-1">
-              <button
-                onClick={() => handleApplyMappingImport(false)}
-                className="w-full text-left p-3.5 bg-brand-50/80 hover:bg-brand-100 border border-brand-200 text-[#0F3A2F] rounded-xl text-xs font-semibold transition flex flex-col gap-0.5 cursor-pointer"
-              >
-                <span>지금 사전에 더하기 [Enter]</span>
-                <span className="text-xs text-brand-600 font-normal">지금 목록은 그대로 두고, 없던 것만 더해요.</span>
-              </button>
-
-              <button
-                onClick={() => handleApplyMappingImport(true)}
-                className="w-full text-left p-3.5 bg-rose-50/80 hover:bg-rose-100 border border-rose-200 text-rose-900 rounded-xl text-xs font-semibold transition flex flex-col gap-0.5 cursor-pointer"
-              >
-                <span>지금 사전을 모두 바꾸기</span>
-                <span className="text-xs text-rose-600 font-normal">지금 목록을 지우고 파일 내용으로 바꿔요.</span>
-              </button>
-            </div>
-
-            <div className="pt-2 text-right">
-              <button
-                onClick={() => setMappingImportConfirm(null)}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition cursor-pointer"
-              >
-                취소 (ESC)
-              </button>
-            </div>
+          <div className="space-y-2">
+            {/* Enter를 누르면 '더하기'가 눌리도록 먼저 포커스를 둡니다 */}
+            <button
+              type="button"
+              autoFocus
+              onClick={() => handleApplyMappingImport(false)}
+              className="w-full rounded-xl border-2 border-brand-600 bg-brand-50 px-4 py-3 text-left transition hover:bg-brand-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600/40 cursor-pointer"
+            >
+              <div className="text-sm font-semibold text-brand-900">지금 사전에 더하기 <span className="font-normal text-slate-500">Enter</span></div>
+              <div className="text-[13px] text-slate-600">지금 목록은 그대로 두고, 없던 것만 더해요.</div>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleApplyMappingImport(true)}
+              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-left transition hover:bg-slate-50 cursor-pointer"
+            >
+              <div className="text-sm font-semibold text-rose-800">지금 사전을 모두 바꾸기</div>
+              <div className="text-[13px] text-slate-600">지금 목록을 지우고 파일 내용으로 바꿔요. 되돌릴 수 없어요.</div>
+            </button>
           </div>
-        </div>
+        </Modal>
       )}
 
       {/* 엑셀 데이터 미리보기 모달 */}

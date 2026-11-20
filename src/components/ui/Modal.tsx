@@ -190,8 +190,9 @@ export function ConfirmDialog({
       hideClose
       footer={
         <>
-          <button type="button" onClick={onCancel} className={btn.secondary}>{cancelLabel}</button>
-          <button type="button" onClick={onConfirm} className={confirmClass} autoFocus>{confirmLabel}</button>
+          {/* 되돌릴 수 없는 일을 묻는 창이 많아 Enter로 바로 확정되지 않게 '취소'에 먼저 포커스를 둡니다 */}
+          <button type="button" onClick={onCancel} className={btn.secondary} autoFocus>{cancelLabel}</button>
+          <button type="button" onClick={onConfirm} className={confirmClass}>{confirmLabel}</button>
         </>
       }
     >

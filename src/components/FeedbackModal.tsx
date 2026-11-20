@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MessageSquare, X } from 'lucide-react';
+import Modal, { btn } from './ui/Modal';
 import { FEEDBACK_MAX_LENGTH, sendFeedback, type FeedbackCategory } from '../lib/feedback';
 
 const CATEGORIES: FeedbackCategory[] = ['버그', '문의', '제안'];
@@ -29,74 +29,57 @@ export default function FeedbackModal({ onClose, onSent, onError }: FeedbackModa
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 p-4" onClick={onClose}>
-      <div
-        className="w-full max-w-md rounded-2xl bg-white p-5 shadow-xl space-y-4"
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-      >
-        <div className="flex items-center justify-between">
-          <h2 className="flex items-center gap-2 text-base font-bold text-slate-900">
-            <MessageSquare className="w-4 h-4 text-brand-600" />
-            문의 / 버그 신고
-          </h2>
-          <button onClick={onClose} className="p-1 text-slate-500 hover:text-slate-800" aria-label="닫기">
-            <X className="w-4 h-4" />
+    <Modal
+      onClose={onClose}
+      title="문의하기"
+      description="버그, 궁금한 점, 바라는 점을 적어 주세요. 개발자가 직접 읽어요."
+      size="md"
+      zIndex={60}
+      closeOnEsc={false}
+      footer={
+        <>
+          <button type="button" onClick={onClose} className={btn.secondary}>취소</button>
+          <button type="button" onClick={handleSubmit} disabled={isSending || !message.trim()} className={btn.primary}>
+            {isSending ? '보내는 중…' : '보내기'}
           </button>
-        </div>
-
-        <div className="space-y-2">
-          <p className="text-xs font-semibold text-slate-600">어떤 내용인가요?</p>
-          <div className="flex gap-2">
+        </>
+      }
+    >
+      <div className="space-y-4">
+        <fieldset>
+          <legend className="mb-1.5 text-sm font-semibold text-slate-800">어떤 내용인가요?</legend>
+          <div className="inline-flex w-full rounded-xl bg-slate-100 p-1 text-sm">
             {CATEGORIES.map((c) => (
               <button
                 key={c}
+                type="button"
+                aria-pressed={category === c}
                 onClick={() => setCategory(c)}
-                className={`flex-1 rounded-lg border px-3 py-1.5 text-xs font-bold transition ${
-                  category === c
-                    ? 'border-brand-600 bg-brand-600 text-white'
-                    : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+                className={`min-h-9 flex-1 rounded-lg transition cursor-pointer ${
+                  category === c ? 'bg-white font-semibold text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 {c}
               </button>
             ))}
           </div>
-        </div>
+        </fieldset>
 
-        <div className="space-y-2">
+        <label className="block">
+          <span className="mb-1.5 block text-sm font-semibold text-slate-800">내용</span>
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value.slice(0, FEEDBACK_MAX_LENGTH))}
             rows={6}
-            placeholder="어떤 상황에서 무엇이 잘 안 됐는지 적어 주세요. 예: 택배사 엑셀을 올렸는데 송장번호가 안 나왔어요."
-            className="w-full rounded-lg border border-slate-300 p-3 text-sm text-slate-900 focus:border-brand-600 focus:outline-none"
+            placeholder="어떤 상황에서 무엇이 잘 안 됐는지 적어 주세요. 예: 택배사 엑셀을 올렸는데 송장 번호가 안 나왔어요."
+            className="w-full rounded-lg border border-slate-300 p-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600/30 focus:border-brand-600"
           />
-          <p className="text-xs leading-relaxed text-slate-500">
-            고객 이름, 연락처, 주소 같은 개인정보는 적지 마세요. 보내 주신 내용은 개발자만 확인합니다.
-          </p>
-          <p className="text-right text-xs text-slate-400">
-            {message.length} / {FEEDBACK_MAX_LENGTH}
-          </p>
-        </div>
-
-        <div className="flex justify-end gap-2">
-          <button
-            onClick={onClose}
-            className="rounded-lg border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-          >
-            취소
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={isSending || !message.trim()}
-            className="rounded-lg bg-brand-600 px-4 py-2 text-xs font-bold text-white hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {isSending ? '보내는 중...' : '보내기'}
-          </button>
-        </div>
+          <span className="mt-1 flex justify-between gap-3 text-[13px] text-slate-500">
+            <span>고객 이름, 전화번호, 주소 같은 개인정보는 적지 마세요.</span>
+            <span className="shrink-0 tabular-nums">{message.length} / {FEEDBACK_MAX_LENGTH}</span>
+          </span>
+        </label>
       </div>
-    </div>
+    </Modal>
   );
 }

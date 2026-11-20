@@ -10,6 +10,7 @@ import {
   ChevronLeft, ChevronRight, Edit3, SlidersHorizontal, Check,
   Filter, CalendarDays, ArrowRight, X
 } from 'lucide-react';
+import Modal, { btn } from './ui/Modal';
 
 interface DeliveryAnalyticsReportProps {
   orders: ProcessedOrder[];
@@ -1144,38 +1145,49 @@ export default function DeliveryAnalyticsReport({
 
       {/* 팝업 캘린더 모달 (Modal Popup) */}
       {isCalendarModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white w-full max-w-3xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
-            
-            {/* 모달 헤더 */}
-            <div className="bg-slate-900 text-white p-4 px-6 flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-2.5">
-                <span className="p-2 bg-brand-600/30 text-[#9CC7B5] rounded-xl border border-brand-400/30">
-                  <CalendarDays className="w-5 h-5" />
-                </span>
-                <div>
-                  <h3 className="font-bold text-base text-white"> 출고 데이터 캘린더 기간 선택</h3>
-                  <p className="text-xs text-slate-300">
-                    원하는 날짜를 클릭하면 해당 범위의 시각화 데이터가 일괄 반영됩니다.
-                  </p>
-                </div>
-              </div>
-
-              <button
-                onClick={() => setIsCalendarModalOpen(false)}
-                className="p-1.5 text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* 모달 바디: 캘린더 그리드 및 컨트롤 */}
-            <div className="p-6 overflow-y-auto space-y-4">
+        <Modal
+          onClose={() => setIsCalendarModalOpen(false)}
+          title="기간 고르기"
+          description="날짜를 누르면 그 기간의 출고 기록으로 리포트가 바뀌어요."
+          icon={<CalendarDays className="w-4 h-4" />}
+          iconTone="brand"
+          size="lg"
+          footerStart={
+            <button
+              type="button"
+              onClick={() => {
+                setDateFilterType('all');
+                setIsCalendarModalOpen(false);
+              }}
+              className="text-[13px] font-semibold text-slate-600 underline underline-offset-2 hover:text-slate-900 cursor-pointer"
+            >
+              전체 기간으로 되돌리기
+            </button>
+          }
+          footer={
+            <button
+              type="button"
+              onClick={() => {
+                if (customStartDate === customEndDate) {
+                  setDateFilterType('1d');
+                  setTargetBaseDate(customStartDate);
+                } else {
+                  setDateFilterType('custom');
+                }
+                setIsCalendarModalOpen(false);
+              }}
+              className={btn.primary}
+            >
+              <Check className="w-4 h-4" />이 기간으로 보기
+            </button>
+          }
+        >
+            <div className="space-y-4">
               
               {/* 캘린더 상단 월 이동 및 퀵 프리셋 버튼 */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <h4 className="text-lg font-extrabold text-slate-900 tracking-tight">
+                  <h4 className="text-base font-semibold text-slate-900 tracking-tight">
                     {currentYearMonth.year}년 {currentYearMonth.month}월
                   </h4>
                   <div className="flex items-center gap-1 bg-white rounded-lg p-0.5 border border-slate-200">
@@ -1198,7 +1210,7 @@ export default function DeliveryAnalyticsReport({
 
                 {/* 빠른 퀵선택 버튼 */}
                 <div className="flex items-center gap-1.5 text-xs">
-                  <span className="text-slate-500 font-semibold mr-1">빠른 선택:</span>
+                  <span className="text-slate-500 mr-1">빠르게</span>
                   <button
                     onClick={() => {
                       setDateFilterType('1d');
@@ -1207,7 +1219,7 @@ export default function DeliveryAnalyticsReport({
                     }}
                     className="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-300 rounded-lg text-slate-700 font-medium cursor-pointer"
                   >
-                    최신 1일
+                    마지막 날
                   </button>
                   <button
                     onClick={() => {
@@ -1233,7 +1245,7 @@ export default function DeliveryAnalyticsReport({
               </div>
 
               {/* 요일 헤더 */}
-              <div className="grid grid-cols-7 text-center font-bold text-xs bg-slate-100 text-slate-600 py-2 rounded-lg">
+              <div className="grid grid-cols-7 text-center text-[12px] font-semibold text-slate-500 py-1">
                 <span className="text-rose-600">일</span>
                 <span>월</span>
                 <span>화</span>
@@ -1262,12 +1274,12 @@ export default function DeliveryAnalyticsReport({
                       onClick={() => handleCalendarDayClick(d.dateStr)}
                       className={`min-h-[68px] sm:min-h-[76px] p-2 flex flex-col justify-between text-left transition cursor-pointer relative ${
                         isSelected
-                          ? 'bg-brand-600 text-white font-extrabold ring-2 ring-brand-600 ring-inset shadow-md z-10'
+                          ? 'bg-brand-600 text-white font-semibold z-10'
                           : isRangeMid
-                          ? 'bg-brand-100/90 text-[#0A2A22] font-bold border-y border-brand-200'
+                          ? 'bg-brand-50 text-brand-900'
                           : !d.isCurrentMonth
                           ? 'bg-slate-50/50 text-slate-300 hover:bg-slate-100/50'
-                          : 'hover:bg-sky-50 text-slate-700'
+                          : 'hover:bg-slate-50 text-slate-700'
                       }`}
                     >
                       <div className="flex items-center justify-between w-full">
@@ -1290,7 +1302,7 @@ export default function DeliveryAnalyticsReport({
                         </span>
                         {d.isToday && (
                           <span className={`text-xs px-1 py-0.2 rounded font-bold ${
-                            isSelected ? 'bg-amber-300 text-slate-900' : 'bg-amber-400 text-slate-900'
+                            isSelected ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-900'
                           }`}>
                             오늘
                           </span>
@@ -1301,10 +1313,10 @@ export default function DeliveryAnalyticsReport({
                         {d.count > 0 ? (
                           <div className={`inline-block px-1.5 py-0.5 rounded-md font-extrabold text-xs ${
                             isSelected
-                              ? 'bg-amber-300 text-slate-900 shadow-2xs font-black'
+                              ? 'bg-white/20 text-white'
                               : isRangeMid
-                              ? 'bg-brand-200 text-[#0F3A2F] font-bold'
-                              : 'bg-sky-50 text-sky-700 border border-sky-200'
+                              ? 'bg-brand-100 text-brand-900'
+                              : 'bg-slate-100 text-slate-700'
                           }`}>
                             {d.count}건
                           </div>
@@ -1320,51 +1332,15 @@ export default function DeliveryAnalyticsReport({
               </div>
 
               {/* 현재 선택 상태 안내 */}
-              <div className="p-3 bg-brand-50 border border-brand-100 rounded-xl flex items-center justify-between text-xs text-[#0F3A2F]">
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-brand-700">현재 선택된 범위:</span>
-                  <span className="font-mono font-bold text-[#0A2A22] text-sm bg-white px-2 py-0.5 rounded border border-brand-200">
-                    {customStartDate || '미지정'} ~ {customEndDate || '미지정'}
-                  </span>
-                </div>
-                <span className="text-slate-500 text-xs">
-                  날짜를 선택하면 범위(시작일~종료일)로 지정할 수 있습니다.
+              <div className="flex flex-col gap-1 rounded-lg bg-slate-50 px-3 py-2.5 text-[13px] sm:flex-row sm:items-center sm:justify-between">
+                <span className="text-slate-700">
+                  고른 기간 <b className="ml-1 font-semibold tabular-nums text-slate-900">{customStartDate || '안 고름'} ~ {customEndDate || '안 고름'}</b>
                 </span>
+                <span className="text-slate-500">날짜를 누르면 시작일과 종료일로 기간을 정할 수 있어요.</span>
               </div>
 
             </div>
-
-            {/* 모달 하단 푸터 버튼 */}
-            <div className="bg-slate-50 p-4 border-t border-slate-200 flex items-center justify-between shrink-0">
-              <button
-                onClick={() => {
-                  setDateFilterType('all');
-                  setIsCalendarModalOpen(false);
-                }}
-                className="px-4 py-2 bg-white hover:bg-slate-100 border border-slate-300 rounded-xl text-xs font-semibold text-slate-700 cursor-pointer"
-              >
-                전체 기간으로 리셋
-              </button>
-
-              <button
-                onClick={() => {
-                  if (customStartDate === customEndDate) {
-                    setDateFilterType('1d');
-                    setTargetBaseDate(customStartDate);
-                  } else {
-                    setDateFilterType('custom');
-                  }
-                  setIsCalendarModalOpen(false);
-                }}
-                className="px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl text-xs transition cursor-pointer shadow-md flex items-center gap-1.5"
-              >
-                <Check className="w-4 h-4" />
-                <span>선택 기간으로 조회 적용하기</span>
-              </button>
-            </div>
-
-          </div>
-        </div>
+        </Modal>
       )}
 
     </div>

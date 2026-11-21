@@ -130,10 +130,12 @@ export function resolveStatus(account: Account | null): AccountStatus {
   // 휴지통에 든 회원은 구독권이 없는 것으로 봅니다 (이용 중지와 구분)
   if (account.deletedAt) return 'new';
   if (account.blocked) return 'blocked';
-  if (account.expiresAt) return new Date(account.expiresAt).getTime() > Date.now() ? 'active' : 'expired';
-  // 구독 기간이 없으면: 무료 체험 중인지, 예전 무료 플랜(월 횟수 한도)인지 봅니다
+  // 무료 체험 중이면 구독 기간과 상관없이 이용할 수 있습니다 (구독 기간이 끝난 계정도 체험을 한 번 쓸 수 있습니다)
   const trialEnd = trialEndsAtMs(account);
-  if (trialEnd !== null) return trialEnd > Date.now() ? 'active' : 'expired';
+  if (trialEnd !== null && trialEnd > Date.now()) return 'active';
+  if (account.expiresAt) return new Date(account.expiresAt).getTime() > Date.now() ? 'active' : 'expired';
+  // 구독 기간이 없으면: 체험을 써서 끝난 회원인지, 예전 무료 플랜(월 횟수 한도)인지 봅니다
+  if (trialEnd !== null) return 'expired';
   return typeof account.uploadLimit === 'number' ? 'active' : 'new';
 }
 
@@ -146,15 +148,14 @@ export function trialEndsAtMs(account: Account | null): number | null {
 
 /** 무료 체험 남은 날 (올림). 체험 중이 아니면 null입니다. */
 export function trialDaysLeft(account: Account | null): number | null {
-  if (account?.expiresAt) return null;
   const end = trialEndsAtMs(account);
-  if (end === null) return null;
-  return Math.max(0, Math.ceil((end - Date.now()) / (24 * 60 * 60 * 1000)));
+  if (end === null || end <= Date.now()) return null;
+  return Math.ceil((end - Date.now()) / (24 * 60 * 60 * 1000));
 }
 
-/** 무료 체험을 시작할 수 있는 계정인지: 체험·구독 기간·예전 무료 한도가 모두 없을 때만 됩니다. */
+/** 무료 체험을 아직 한 번도 쓰지 않은 계정인지. 구독 기간·월 한도와 상관없이, 한 번도 안 썼으면 됩니다. */
 export function canStartTrial(account: Account | null): boolean {
-  return !account?.trialStartedAt && !account?.expiresAt && typeof account?.uploadLimit !== 'number';
+  return !account?.trialStartedAt;
 }
 
 export function resolveFeatures(account: Account | null): Record<FeatureKey, boolean> {

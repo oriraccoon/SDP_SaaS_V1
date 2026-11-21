@@ -160,7 +160,9 @@ function ExpiredScreen({ status, account }: { status: AccountStatus; account: Ac
 function PlanScreen({ account }: { account: Account | null }) {
   const [notice, setNotice] = useState<string | null>(null);
   const trialAvailable = canStartTrial(account);
-  const trialEnded = trialEndsAtMs(account) !== null && !account?.expiresAt;
+  // 무료 체험을 이미 쓴 계정에서는 무료 플랜 칸을 아예 보여 주지 않습니다
+  const visiblePlans = PLANS.filter((plan) => plan.price !== 0 || trialAvailable);
+  const trialEnded = trialEndsAtMs(account) !== null;
   async function startFree() {
     if (!trialAvailable) return;
     const uid = getCurrentUid();
@@ -184,8 +186,8 @@ function PlanScreen({ account }: { account: Account | null }) {
             {trialEnded ? '계속 쓰려면 플랜을 골라 주세요. ' : ''}지금은 플랜 화면만 준비되어 있어요. 결제는 아직 연결되지 않아 관리자에게 문의해 주세요.
           </p>
 
-          <div className="mt-10 grid gap-4 sm:grid-cols-3">
-            {PLANS.map((plan) => (
+          <div className={`mt-10 grid gap-4 ${visiblePlans.length >= 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
+            {visiblePlans.map((plan) => (
               <div key={plan.name} className="flex flex-col rounded-2xl border border-[#E5E8EB] bg-white p-6">
                 <p className="text-base font-semibold text-[#191F28]">{plan.name}</p>
                 <p className="mt-1 text-sm text-[#6B7684]">{plan.desc}</p>
@@ -203,14 +205,13 @@ function PlanScreen({ account }: { account: Account | null }) {
                 </ul>
                 <button
                   onClick={() => (plan.price === 0 ? startFree() : setNotice('결제는 준비 중입니다. 관리자에게 문의해 주세요.'))}
-                  disabled={plan.price === 0 && !trialAvailable}
-                  className={`mt-6 w-full rounded-xl px-4 py-3.5 text-base font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+                  className={`mt-6 w-full rounded-xl px-4 py-3.5 text-base font-semibold transition-colors ${
                     plan.price === 0
-                      ? 'border border-[#D1D6DB] text-[#191F28] hover:bg-[#F7F8FA] disabled:hover:bg-transparent'
+                      ? 'border border-[#D1D6DB] text-[#191F28] hover:bg-[#F7F8FA]'
                       : 'bg-brand-600 text-white hover:bg-brand-700'
                   }`}
                 >
-                  {plan.price === 0 ? (trialAvailable ? `${FREE_TRIAL_DAYS}일 무료로 시작` : '무료 체험을 이미 썼어요') : '이 플랜 선택'}
+                  {plan.price === 0 ? `${FREE_TRIAL_DAYS}일 무료로 시작` : '이 플랜 선택'}
                 </button>
               </div>
             ))}

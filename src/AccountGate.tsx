@@ -176,7 +176,7 @@ function PlanScreen({ account }: { account: Account | null }) {
   return (
     <div className="flex min-h-screen flex-col bg-white px-6 text-[#191F28]" style={{ fontFamily: "'Inter', 'Noto Sans KR', system-ui, sans-serif" }}>
       <header className="flex w-full items-center justify-between py-6">
-        <span className="text-lg font-bold text-brand-600">{APP_NAME}</span>
+        <a href="/" className="text-lg font-bold text-brand-600 hover:opacity-80" title="처음 화면으로">{APP_NAME}</a>
       </header>
       <main className="flex flex-1 flex-col items-center pb-16">
         <div className="w-full max-w-4xl">

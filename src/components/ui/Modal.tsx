@@ -5,7 +5,7 @@ import { X } from 'lucide-react';
  * 앱 공용 팝업 틀.
  * - 흰 바탕, 제목 + 한 줄 설명 + 오른쪽 위 닫기
  * - 버튼은 아래 버튼줄(footer)에 모읍니다
- * - 휴대폰(640px 미만)에서는 화면 아래에서 올라오는 창으로 보입니다
+ * - 휴대폰(640px 미만)에서는 화면 아래에서 올라오는 창으로 보입니다 (끌어서 닫는 손잡이는 두지 않습니다)
  * 기능은 각 팝업이 넘겨 주는 함수 그대로 씁니다. 이 틀은 모양만 맡습니다.
  */
 
@@ -96,7 +96,6 @@ export default function Modal({
         aria-labelledby={titleId}
         className={`flex w-full max-h-[92vh] flex-col overflow-hidden rounded-t-2xl border border-slate-200 bg-white text-slate-900 shadow-2xl sm:max-h-[calc(100vh-48px)] sm:rounded-2xl ${SIZE[size]}`}
       >
-        <div className="mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-slate-300 sm:hidden" aria-hidden="true" />
         <header className="flex shrink-0 items-start justify-between gap-3 px-5 pt-4 pb-3 sm:px-6 sm:pt-5 sm:pb-4">
           <div className="flex min-w-0 items-start gap-3">
             {icon && (

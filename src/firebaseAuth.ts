@@ -1,4 +1,5 @@
 import { initializeApp, type FirebaseApp } from 'firebase/app';
+import { markSignedIn } from './lib/signedInFlag';
 import {
   createUserWithEmailAndPassword,
   getAuth,
@@ -54,7 +55,10 @@ export function watchUser(callback: (user: User | null) => void): () => void {
     callback(null);
     return () => {};
   }
-  return onAuthStateChanged(a, callback);
+  return onAuthStateChanged(a, (user) => {
+    markSignedIn(Boolean(user));
+    callback(user);
+  });
 }
 
 export async function signInWithGoogle(): Promise<void> {
@@ -125,4 +129,5 @@ export function describeAuthError(e: unknown): string {
 export async function logout(): Promise<void> {
   const a = getFirebaseAuth();
   if (a) await signOut(a);
+  markSignedIn(false);
 }

@@ -56,19 +56,8 @@
 .toc[data-tone="dark"] a[aria-current] .toc__line { background: #fff; }
 @media (prefers-reduced-motion: reduce) { .toc__line, .toc__label { transition: none; } }
 
-/* pricing: the app's own usage meter under the plans */
-.usage { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: var(--s-6); padding: 16px 20px; font: 400 14px/1.4 var(--font-text); }
-.usage__who { display: grid; gap: 2px; min-width: 120px; }
-.usage__label, .usage__note { font-size: 13px; color: var(--u-muted, var(--muted)); }
-.usage__who b, .usage__meter b { font-weight: 500; }
-.usage__meter { display: grid; gap: 8px; flex: 1 1 260px; }
-.usage__meter i { display: block; height: 6px; border-radius: 3px; background: color-mix(in oklab, var(--ink) 10%, transparent); position: relative; overflow: hidden; }
-.usage__meter i::after { content: ""; position: absolute; inset: 0; width: calc(var(--k) * 100%); background: var(--accent); border-radius: 3px; }
-
-
-/* screen fit after the usage meter and the contact window */
-@media (min-width: 1024px) and (max-width: 1279px) { #price .usage { display: none; } }
-@media (min-width: 640px) and (max-width: 1023px) { #price { --h: 2; } #faq .shot-ask { display: none; } }
+/* screen fit: the contact window hides on tablets */
+@media (min-width: 640px) and (max-width: 1023px) { #faq .shot-ask { display: none; } }
 @media (max-width: 639px) {
   #faq .shot-ask { display: none; }
 }
@@ -78,7 +67,6 @@
   #price .card--plan .checks { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0; }
   #price .card--plan .price .t-stat { font-size: 28px; }
   #price .grid { gap: var(--s-3); }
-  #price .usage__note { display: none; }
 }
 
 
@@ -110,3 +98,7 @@
   .step-frame { max-width: 360px; margin-left: auto; margin-right: auto; }
   .step-frame .shot { aspect-ratio: 780 / 1440; max-height: 600px; object-fit: cover; object-position: top; }
 }
+
+/* landing nav: the log-out link is a button styled like the other nav links */
+.nav__logout { background: none; border: 0; padding: 0; font: inherit; color: inherit; cursor: pointer; }
+.nav__logout:disabled { opacity: .6; cursor: default; }

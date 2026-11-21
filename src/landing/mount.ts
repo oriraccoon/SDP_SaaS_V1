@@ -13,6 +13,8 @@
 import { APP_NAME, BUSINESS_INFO, FREE_TRIAL_DAYS, PLANS } from '../config/brand';
 import { DEFAULT_FAQS, loadFaqs, type Faq } from '../lib/siteContent';
 import { SUPPORTED_COURIERS, SUPPORTED_SHOPS } from '../lib/supported';
+import { isMarkedSignedIn, markSignedIn } from '../lib/signedInFlag';
+import { isFirebaseConfigured, logout, watchUser } from '../firebaseAuth';
 
 const esc = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -20,6 +22,12 @@ const esc = (s: string) =>
 const won = (n: number) => `${n.toLocaleString('ko-KR')}원`;
 const MAIN_ACTION = '무료로 시작하기';
 const APP_URL = '/app';
+// 앱에서 로그인했던 브라우저면 메뉴를 '로그아웃 · 앱 열기'로 보여 줍니다 (Firebase는 불러오지 않음)
+const SIGNED_IN = isMarkedSignedIn();
+const navActions = (signedIn: boolean) =>
+  signedIn
+    ? `<button type="button" class="nav__link nav__logout" data-logout>로그아웃</button><a class="btn btn--primary" href="${APP_URL}">앱 열기</a>`
+    : `<a class="nav__link" href="${APP_URL}">로그인</a><a class="btn btn--primary" href="${APP_URL}">${MAIN_ACTION}</a>`;
 const ARROW =
   '<svg class="m-arrow" viewBox="0 0 12 12" aria-hidden="true"><path class="m-arrow__stem" d="M1 6h8"/><path class="m-arrow__head" d="M4.5 2.5 8 6l-3.5 3.5"/></svg>';
 
@@ -77,8 +85,7 @@ const nav = `
       <div class="nav__item"><a class="nav__link" href="#faq">질문</a></div>
     </nav>
     <div class="nav__actions">
-      <a class="nav__link" href="${APP_URL}">로그인</a>
-      <a class="btn btn--primary" href="${APP_URL}">${MAIN_ACTION}</a>
+      ${navActions(SIGNED_IN)}
     </div>
     <button class="nav__toggle" type="button" aria-expanded="false" aria-label="메뉴">
       <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 5h14M2 13h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
@@ -218,12 +225,6 @@ const pricing = `
         </article>`;
       }).join('')}
     </div>
-    <div class="usage ui ui-panel" role="img" aria-label="무료 체험 중인 계정의 사이드바: 체험 ${FREE_TRIAL_DAYS}일 중 2일 남음">
-      <span class="mark" data-mark="dots" aria-hidden="true"></span>
-      <div class="usage__who"><span class="usage__label">로그인한 계정</span><b>내 계정</b></div>
-      <div class="usage__meter"><span>무료 체험 · <b>2일 남음</b></span><i style="--k:${1 / FREE_TRIAL_DAYS}"></i></div>
-      <span class="usage__note">체험 동안은 업로드 횟수 제한이 없어요</span>
-    </div>
   </div>
 </section>`;
 
@@ -294,7 +295,7 @@ const footer = `
         </div>
         <div class="span-3 footer__col"><h3>서비스</h3><ul><li><a href="#app">화면</a></li><li><a href="#features">기능</a></li><li><a href="#price">가격</a></li></ul></div>
         <div class="span-3 footer__col"><h3>도움말</h3><ul><li><a href="#privacy">개인정보</a></li><li><a href="#faq">질문</a></li></ul></div>
-        <div class="span-2 footer__col"><h3>계정</h3><ul><li><a href="${APP_URL}">로그인</a></li></ul></div>
+        <div class="span-2 footer__col"><h3>계정</h3><ul><li><a href="${APP_URL}" data-account-link>${SIGNED_IN ? '앱 열기' : '로그인'}</a></li></ul></div>
       </div>
       <div class="footer__legal">
         <span>&copy; 2026 ${APP_NAME}${business.length ? ` &nbsp; ${business.join(' · ')}` : ''}</span>
@@ -314,6 +315,33 @@ export function mountLanding(): void {
 
   wireToc();
   preloadStepShots();
+
+  // 로그인 상태: 첫 화면은 브라우저에 남긴 표시로 그리고(깜빡임 없음), Firebase의 실제 상태로 한 번 더 맞춥니다.
+  // (랜딩은 관리자가 고친 질문을 불러오려고 이미 Firebase를 쓰고 있어서 더 무거워지지 않습니다)
+  const setSignedIn = (signedIn: boolean) => {
+    const box = document.querySelector('.nav__actions');
+    if (box) box.innerHTML = navActions(signedIn);
+    const acc = document.querySelector('[data-account-link]');
+    if (acc) acc.textContent = signedIn ? '앱 열기' : '로그인';
+    document.querySelectorAll<HTMLButtonElement>('[data-logout]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        btn.textContent = '로그아웃 중…';
+        try {
+          await logout();
+        } finally {
+          markSignedIn(false);
+          setSignedIn(false);
+        }
+      });
+    });
+  };
+  setSignedIn(SIGNED_IN);
+  if (isFirebaseConfigured) {
+    watchUser((user) => {
+      if (Boolean(user) !== SIGNED_IN) setSignedIn(Boolean(user));
+    });
+  }
 
   // 관리자가 바꾼 질문이 있으면 불러와서 바꿉니다
   loadFaqs().then((items) => {

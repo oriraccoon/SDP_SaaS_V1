@@ -497,7 +497,7 @@ export default function App() {
     }));
 
     setProductMappings(updated);
-    showNotification('success', `Warning 매칭 ${mappingsToAdd.length}건이 대치 리스트에 성공적으로 일괄 등록되었습니다.`);
+    showNotification('success', `${mappingsToAdd.length}개를 품목사전에 넣었어요.`);
 
     if (orderFiles.length > 0) {
       processMultipleOrderFiles(orderFiles, customFilePlatforms, decryptedFilesCache, updated);
@@ -586,7 +586,7 @@ export default function App() {
         });
       } catch (err) {
         console.warn('설정 저장 실패:', err);
-        showNotification('error', '설정을 저장하지 못했습니다. 인터넷 연결을 확인해 주세요.');
+        showNotification('error', '설정을 저장하지 못했어요. 인터넷을 확인해 주세요.');
       }
     }, 400);
 
@@ -626,7 +626,7 @@ export default function App() {
     const uniqueNewFiles = newFiles.filter((f: File) => !existingNames.has(f.name));
 
     if (uniqueNewFiles.length === 0) {
-      showNotification('info', '이미 업로드 목록에 포함된 엑셀 파일입니다.');
+      showNotification('info', '이미 올린 파일이에요.');
       e.target.value = '';
       return;
     }
@@ -726,7 +726,7 @@ export default function App() {
           if (err.message === "PASSWORD_PROTECTED") {
             setPasswordPrompt({ file, type: 'order' });
             setPromptPassword('');
-            showNotification('info', `"${file.name}" 파일에 비밀번호가 설정되어 있습니다. 비밀번호를 입력해주세요.`);
+            showNotification('info', `"${file.name}" 파일의 비밀번호를 넣어 주세요.`);
             setIsProcessingOrders(false);
             return;
           }
@@ -735,7 +735,7 @@ export default function App() {
           if (isPassword) {
             setPasswordPrompt({ file, type: 'order' });
             setPromptPassword('');
-            showNotification('info', `"${file.name}" 파일에 비밀번호가 설정되어 있습니다. 비밀번호를 입력해주세요.`);
+            showNotification('info', `"${file.name}" 파일의 비밀번호를 넣어 주세요.`);
             setIsProcessingOrders(false);
             return;
           } else {
@@ -916,7 +916,7 @@ export default function App() {
       setOrderParseResult(null);
       setAnalyticsOrders([]);
       setNewItemsMappingForm({});
-      showNotification('info', "모든 수집 데이터가 삭제되었습니다.");
+      showNotification('info', "올린 주문을 모두 지웠어요.");
       return;
     }
 
@@ -946,7 +946,7 @@ export default function App() {
       setNewItemsMappingForm({});
     }
 
-    showNotification('success', `"${fileNameToRemove}" 수집 데이터가 삭제되었습니다.`);
+    showNotification('success', `"${fileNameToRemove}"을(를) 뺐어요.`);
   };
 
   // 발견된 신규 품목 실시간 즉시 매핑 처리
@@ -1005,10 +1005,10 @@ export default function App() {
     if (!orderParseResult) return;
     try {
       await exportSummaryReportExcel(orderParseResult.orders);
-      showNotification('success', "요약보고서 엑셀 파일을 성공적으로 다운로드했습니다.");
+      showNotification('success', "상품 준비표를 받았어요.");
     } catch (err) {
       console.error("요약보고서 다운로드 실패:", err);
-      showNotification('error', "요약보고서 다운로드 중 오류가 발생했습니다.");
+      showNotification('error', "상품 준비표를 받지 못했어요.");
     }
   };
 
@@ -1017,10 +1017,10 @@ export default function App() {
     if (!orderParseResult) return;
     try {
       await exportProductSortedExcel(orderParseResult.orders);
-      showNotification('success', "품목별정렬 엑셀 파일을 성공적으로 다운로드했습니다.");
+      showNotification('success', "택배사 파일을 받았어요.");
     } catch (err) {
       console.error("품목별정렬 다운로드 실패:", err);
-      showNotification('error', "품목별정렬 다운로드 중 오류가 발생했습니다.");
+      showNotification('error', "택배사 파일을 받지 못했어요.");
     }
   };
 
@@ -1031,10 +1031,10 @@ export default function App() {
       await exportSummaryReportExcel(orderParseResult.orders);
       await new Promise(resolve => setTimeout(resolve, 600));
       await exportProductSortedExcel(orderParseResult.orders);
-      showNotification('success', "2종의 엑셀 파일(요약보고서 & 품목별정렬)을 전체 다운로드했습니다.");
+      showNotification('success', "두 파일을 받았어요.");
     } catch (err) {
       console.error("전체 다운로드 실패:", err);
-      showNotification('error', "다운로드 처리 중 오류가 발생했습니다.");
+      showNotification('error', "파일을 받지 못했어요.");
     }
   };
 
@@ -1055,7 +1055,7 @@ export default function App() {
   // 1단계 가공된 주문 데이터 미리보기 (실제 생성되는 2개 파일 및 각각의 시트와 1:1 완벽 대조)
   const handlePreviewStep1Excel = () => {
     if (!orderParseResult || !orderParseResult.orders || orderParseResult.orders.length === 0) {
-      showNotification('info', "미리볼 주문 가공 데이터가 없습니다. 먼저 주문서를 올려 주세요.");
+      showNotification('info', "주문 엑셀을 먼저 올려 주세요.");
       return;
     }
 
@@ -1161,7 +1161,7 @@ export default function App() {
     setPreviewModal({
       isOpen: true,
       title: "정리된 파일 미리 보기",
-      subtitle: "받게 될 파일과 똑같은 내용이에요. 받기 전에 받는 사람과 수량을 한 번 훑어보세요.",
+      subtitle: "받을 파일과 똑같아요. 받는 사람·수량만 훑어보세요.",
       files: [summaryReportFile, productSortedFile],
       onDownloadAll: () => {
         setPreviewModal(prev => ({ ...prev, isOpen: false }));
@@ -1174,7 +1174,7 @@ export default function App() {
   // 송장 붙인 파일 미리 보기 (각 인풋 쇼핑몰/플랫폼별로 실제 생성되는 출력 엑셀 다중 파일과 100% 동일)
   const handlePreviewStep2Excel = () => {
     if (!trackingResult || !trackingResult.outputOrders || trackingResult.outputOrders.length === 0) {
-      showNotification('info', "미리볼 운송장 매칭 결과가 없습니다. 먼저 운송장 매칭을 실행해주세요.");
+      showNotification('info', "송장 엑셀을 먼저 올려 주세요.");
       return;
     }
 
@@ -1364,7 +1364,7 @@ export default function App() {
     setPreviewModal({
       isOpen: true,
       title: `송장 붙인 파일 미리 보기`,
-      subtitle: "쇼핑몰에서 받은 파일 모양 그대로 송장 번호만 붙였어요. 쇼핑몰 사이트에 이대로 올리면 돼요.",
+      subtitle: "쇼핑몰 파일 모양 그대로 송장 번호만 붙였어요.",
       files: previewFiles,
       onDownloadAll: () => {
         setPreviewModal(prev => ({ ...prev, isOpen: false }));
@@ -1468,7 +1468,7 @@ export default function App() {
         const firstFile = files[0];
         setPasswordPrompt({ file: firstFile, type: 'tracking' });
         setPromptPassword('');
-        showNotification('info', `"${firstFile.name}" 파일에 비밀번호가 설정되어 있습니다.`);
+        showNotification('info', `"${firstFile.name}" 파일의 비밀번호를 넣어 주세요.`);
       } else {
         showNotification('error', `운송장 분석 처리 중 오류 발생: ${err.message || '오류'}`);
       }
@@ -1508,7 +1508,7 @@ export default function App() {
     if (remainingParsed.length === 0) {
       setTrackingResult(null);
       setSourceFile(null);
-      showNotification('info', "모든 운송장 소스 파일이 삭제되었습니다.");
+      showNotification('info', "올린 송장 파일을 모두 지웠어요.");
       return;
     }
 
@@ -1642,7 +1642,7 @@ export default function App() {
     try {
       // 옛 .xls(암호)는 브라우저에서 해제할 수 없습니다. 안내만 띄우고 중단합니다.
       if (passwordPrompt.file.name.toLowerCase().endsWith('.xls')) {
-        throw new Error('암호가 걸린 .xls 파일은 지원하지 않습니다. 엑셀에서 .xlsx로 저장한 뒤 다시 올려 주세요.');
+        throw new Error('암호 걸린 .xls는 열 수 없어요. 엑셀에서 .xlsx로 저장해 올려 주세요.');
       }
 
       // 파일을 서버로 보내지 않고 이 브라우저에서 비밀번호를 해제합니다.
@@ -1654,7 +1654,7 @@ export default function App() {
       };
       setDecryptedFilesCache(updatedCache);
       
-      showNotification('success', `"${passwordPrompt.file.name}" 파일 비밀번호 해제에 성공했습니다.`);
+      showNotification('success', `"${passwordPrompt.file.name}"을(를) 열었어요.`);
       const activeType = passwordPrompt.type;
       
       setPasswordPrompt(null);
@@ -1667,7 +1667,7 @@ export default function App() {
       }
     } catch (err: any) {
       console.error("복호화 오류:", err);
-      showNotification('error', err.message || "비밀번호가 일치하지 않습니다. 올바른 엑셀 비밀번호를 다시 입력해 주세요.");
+      showNotification('error', err.message || "비밀번호가 틀렸어요. 다시 넣어 주세요.");
       setPromptPassword('');
     } finally {
       setIsDecrypting(false);
@@ -1705,9 +1705,9 @@ export default function App() {
         }
       }
 
-      showNotification('success', `성공: 각 쇼핑몰 양식에 맞춰 최종 송장 파일 ${downloadedCount}개를 다운로드했습니다.`);
+      showNotification('success', `쇼핑몰 파일 ${downloadedCount}개를 받았어요.`);
     } catch (err) {
-      showNotification('error', "최종 송장 파일 저장 중 오류가 발생했습니다.");
+      showNotification('error', "쇼핑몰 파일을 받지 못했어요.");
     }
   };
 
@@ -1723,7 +1723,7 @@ export default function App() {
     setTrackingResult(null);
     setPasswordErrorFile(null);
     setDecryptedFilesCache({});
-    showNotification('info', "작업 영역이 깔끔하게 리셋되었습니다.");
+    showNotification('info', "작업을 비웠어요.");
   };
 
   // ----------------------------------------------------
@@ -1782,7 +1782,7 @@ export default function App() {
       .join(',\n');
     navigator.clipboard.writeText(text)
       .then(() => showNotification('success', "품목사전 전체를 글자로 복사했어요."))
-      .catch(() => showNotification('error', "클립보드 복사에 실패했습니다."));
+      .catch(() => showNotification('error', "복사하지 못했어요."));
   };
 
   // --- 품목 대치 사전 전용 파일 가져오기 (Import) ---
@@ -1849,7 +1849,7 @@ export default function App() {
             showNotification('error', "엑셀/CSV 파일에서 품목사전 내용을 읽지 못했어요.");
           }
         } catch {
-          showNotification('error', "파일을 읽는 중 오류가 발생했습니다.");
+          showNotification('error', "파일을 읽지 못했어요.");
         }
       };
       reader.readAsArrayBuffer(file);
@@ -1934,7 +1934,7 @@ export default function App() {
     };
     const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json;charset=utf-8;' });
     triggerDownload(blob, `스마트운송장_설정백업_${new Date().toISOString().slice(0, 10)}.json`);
-    showNotification('success', `설정을 백업했어요. 쇼핑몰·택배사 양식과 품목사전(${productMappings.length}개)이 들어 있어요.`);
+    showNotification('success', `설정을 파일로 받았어요.`);
   };
 
   const handleImportBackup = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1948,7 +1948,7 @@ export default function App() {
         if (parsed.platforms || parsed.productMappings || parsed.couriers || parsed.analyticsOrders) {
           openConfirm(
             "백업 파일로 되돌릴까요?",
-            "지금의 쇼핑몰·택배사 양식과 품목사전이 백업 파일 내용으로 바뀌어요. 계속할까요?",
+            "지금 양식과 품목사전이 백업 내용으로 바뀌어요.",
             () => {
               if (parsed.platforms) setPlatforms(parsed.platforms);
               if (parsed.couriers) setCouriers(parsed.couriers);
@@ -1972,14 +1972,14 @@ export default function App() {
   const handleResetToDefault = () => {
     openConfirm(
       "처음 상태로 초기화할까요?",
-      "직접 추가하거나 고친 쇼핑몰·택배사 양식, 품목사전, 리포트가 모두 지워지고 처음 상태로 돌아가요. 되돌릴 수 없어요. 초기화할까요?",
+      "고친 양식·품목사전·리포트가 모두 지워져요. 되돌릴 수 없어요.",
       () => {
         setPlatforms(DEFAULT_PLATFORMS);
         setCouriers(DEFAULT_COURIERS);
         setProductMappings(DEFAULT_PRODUCT_MAPPINGS);
         setDefaultRawNames(DEFAULT_PRODUCT_MAPPINGS.map(m => m.rawName));
         setAnalyticsOrders([]);
-        showNotification('success', "초기 기본 설정으로 복원되었습니다.");
+        showNotification('success', "처음 상태로 되돌렸어요.");
       }
     );
   };
@@ -2069,7 +2069,7 @@ export default function App() {
       {isFeedbackOpen && (
         <FeedbackModal
           onClose={() => setIsFeedbackOpen(false)}
-          onSent={() => showNotification('success', '보내 주셔서 감사합니다. 확인 후 반영하겠습니다.')}
+          onSent={() => showNotification('success', '보냈어요. 고마워요!')}
           onError={(msg) => showNotification('error', msg)}
         />
       )}
@@ -2245,7 +2245,7 @@ export default function App() {
               </div>
             )}
             <button
-              onClick={() => openConfirm('로그아웃할까요?', '올려 둔 주문 파일과 정리 결과는 사라져요. 설정은 계정에 남아 있어요.', () => logout())}
+              onClick={() => openConfirm('로그아웃할까요?', '올린 파일은 사라지고 설정은 남아요.', () => logout())}
               title="로그아웃"
               className={`pressable flex h-10 items-center gap-3 rounded-lg border border-slate-300 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-100 ${
                 isSidebarOpen ? 'w-full px-3' : 'w-10 justify-center'
@@ -2279,7 +2279,7 @@ export default function App() {
                 <span className="sp flex-1" />
                 {(orderParseResult || trackingFiles.length > 0) && (
                   <button
-                    onClick={() => openConfirm("작업을 비울까요?", "올려 둔 주문 파일, 정리 결과, 송장 파일이 모두 지워져요. 처음부터 다시 올려야 해요.", handleResetProcess)}
+                    onClick={() => openConfirm("작업을 비울까요?", "올린 주문·송장 파일과 결과가 모두 지워져요.", handleResetProcess)}
                     className="pressable inline-flex min-h-[44px] items-center gap-1.5 rounded-lg px-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 cursor-pointer"
                   >
                     <RotateCcw className="w-4 h-4" />
@@ -2369,7 +2369,7 @@ export default function App() {
                           비밀번호가 걸린 엑셀이에요
                         </h3>
                         <p className="text-sm text-slate-600 mt-1 leading-relaxed">
-                          올리신 <strong>{passwordErrorFile === 'order' ? '주문' : '송장'}</strong> 파일을 열려면 비밀번호가 필요해요. 파일을 다시 올리고 비밀번호를 넣으면 바로 열 수 있어요.
+                          <strong>{passwordErrorFile === 'order' ? '주문' : '송장'}</strong> 파일을 다시 올리고 비밀번호를 넣으면 열려요.
                         </p>
                       </div>
                     </div>
@@ -2386,41 +2386,10 @@ export default function App() {
                       비밀번호를 직접 풀고 싶다면
                       <span aria-hidden="true" className="text-slate-400 transition-transform duration-200 group-open:rotate-45">+</span>
                     </summary>
-                    <p className="mt-3 text-sm text-slate-600 leading-relaxed">
-                      주문 파일은 서버로 보내지 않고 이 브라우저 안에서만 열어요. 아래 방법 중 하나로 비밀번호를 지운 뒤 다시 올려도 돼요.
-                    </p>
-                    {/* 가이드 단계 */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-4">
-                      <div className="bg-slate-50 p-3 rounded-lg border border-slate-150 space-y-1.5">
-                        <div className="text-xs font-bold text-brand-600">엑셀에서 풀기</div>
-                        <ol className="text-xs text-slate-500 list-decimal list-inside space-y-1">
-                          <li>암호가 걸린 파일을 엑셀로 엽니다.</li>
-                          <li>상단 메뉴 <strong className="text-slate-700">파일 &gt; 정보</strong>를 누릅니다.</li>
-                          <li><strong className="text-slate-700">통합 문서 보호 &gt; 암호 설정</strong>을 클릭합니다.</li>
-                          <li>기존 입력된 비밀번호를 <strong className="text-slate-700">모두 지우고 빈칸</strong>으로 만든 뒤 확인을 누릅니다.</li>
-                          <li>파일을 <strong className="text-slate-700">저장(Ctrl + S)</strong>한 후 다시 업로드합니다.</li>
-                        </ol>
-                      </div>
-
-                      <div className="bg-slate-50 p-3 rounded-lg border border-slate-150 space-y-1.5">
-                        <div className="text-xs font-bold text-brand-600">구글 시트에서 풀기</div>
-                        <ol className="text-xs text-slate-500 list-decimal list-inside space-y-1">
-                          <li>구글 드라이브에 파일을 올리고 구글 스프레드시트로 엽니다.</li>
-                          <li><strong className="text-slate-700">파일 &gt; 다운로드 &gt; Microsoft Excel(.xlsx)</strong>을 누릅니다.</li>
-                          <li>새로 다운로드된 파일은 암호가 풀린 상태가 됩니다. 해당 파일을 업로드하세요.</li>
-                        </ol>
-                      </div>
-
-                      <div className="bg-slate-50 p-3 rounded-lg border border-slate-150 space-y-1.5">
-                        <div className="text-xs font-bold text-brand-600">다른 이름으로 저장하며 풀기</div>
-                        <ol className="text-xs text-slate-500 list-decimal list-inside space-y-1">
-                          <li>암호가 걸린 파일을 엑셀로 엽니다.</li>
-                          <li><strong className="text-slate-700">다른 이름으로 저장</strong>을 선택합니다.</li>
-                          <li>저장 창의 하단 <strong className="text-slate-700">도구 &gt; 일반 옵션</strong>을 클릭합니다.</li>
-                          <li>열기/쓰기 암호를 지운 뒤 저장하여 새로 파일을 생성하고 업로드합니다.</li>
-                        </ol>
-                      </div>
-                    </div>
+                    <ul className="mt-3 space-y-1.5 text-[13px] text-slate-600">
+                      <li><b className="text-slate-800">엑셀</b> · 파일 &gt; 정보 &gt; 통합 문서 보호 &gt; 암호 설정에서 암호를 지우고 저장</li>
+                      <li><b className="text-slate-800">구글 시트</b> · 시트로 연 뒤 파일 &gt; 다운로드 &gt; .xlsx로 다시 받기</li>
+                    </ul>
                   </details>
                 </motion.div>
               )}
@@ -2430,19 +2399,19 @@ export default function App() {
                 const todoBox = (() => {
                 const todos: { key: string; tone: 'rose' | 'amber' | 'slate'; text: string; actions: { label: string; onClick: () => void }[] }[] = [];
                 if (orderParseResult && anomalousIssues.length > 0) {
-                  todos.push({ key: 'anomalous', tone: 'rose', text: `받는 사람·전화번호·주소를 확인할 주문 ${anomalousIssues.length}건`, actions: [{ label: '주문 확인하기', onClick: () => setAnomalousModalOpen(true) }] });
+                  todos.push({ key: 'anomalous', tone: 'rose', text: `확인할 주문 ${anomalousIssues.length}건`, actions: [{ label: '주문 확인하기', onClick: () => setAnomalousModalOpen(true) }] });
                 }
                 if (newItemCount > 0) {
-                  todos.push({ key: 'new-items', tone: 'amber', text: `품목사전에 없는 새 품목 ${newItemCount}건`, actions: [
-                    { label: '추천 이름으로 채우기', onClick: () => { handleApplyAllRecommendations(); setStep1Open(true); scrollToId('new-items-panel'); } },
+                  todos.push({ key: 'new-items', tone: 'amber', text: `품목사전에 없는 상품 ${newItemCount}개`, actions: [
+                    { label: '추천으로 채우기', onClick: () => { handleApplyAllRecommendations(); setStep1Open(true); scrollToId('new-items-panel'); } },
                     { label: '하나씩 보기', onClick: () => { setStep1Open(true); scrollToId('new-items-panel'); } },
                   ] });
                 }
                 if (orderParseResult && stepValidationResult) {
-                  todos.push({ key: 'quality', tone: 'slate', text: '엑셀 품질 검사 결과', actions: [{ label: '품질 검사 보기', onClick: () => { setStep1Open(true); scrollToId('quality-1'); } }] });
+                  todos.push({ key: 'quality', tone: 'slate', text: '정리 결과 검사', actions: [{ label: '품질 검사 보기', onClick: () => { setStep1Open(true); scrollToId('quality-1'); } }] });
                 }
                 if (trackingResult && trackCheckCount > 0) {
-                  todos.push({ key: 'tracking', tone: 'amber', text: `송장을 한 번 더 볼 주문 ${trackCheckCount}건`, actions: [{ label: '결과 보고서 보기', onClick: () => scrollToId('waybill-report') }] });
+                  todos.push({ key: 'tracking', tone: 'amber', text: `송장을 다시 볼 주문 ${trackCheckCount}건`, actions: [{ label: '결과 보고서 보기', onClick: () => scrollToId('waybill-report') }] });
                 }
                 const toneDot = { rose: 'bg-rose-600', amber: 'bg-amber-500', slate: 'bg-slate-400' } as const;
                 const list = (compact: boolean) => todos.length === 0 ? (
@@ -2505,7 +2474,7 @@ export default function App() {
                         <span className="w-6 h-6 shrink-0 rounded-full bg-slate-900 text-white text-xs font-semibold tabular-nums flex items-center justify-center">1</span>
                       )}
                       <h2 className="font-semibold text-slate-900 text-base">
-                        {orderParseResult && trackingFiles.length === 0 ? '지금 할 일: 정리된 파일을 받아 택배사 사이트에 올리기' : '주문서 올리기'}
+                        {orderParseResult && trackingFiles.length === 0 ? '지금 할 일: 택배사 파일 받기' : '주문서 올리기'}
                       </h2>
                     </div>
                     <div className="flex items-center gap-2">
@@ -2529,9 +2498,9 @@ export default function App() {
                   </div>
 
                   {!step1Collapsed && (<>
-                  <p className="text-sm text-slate-600 leading-relaxed max-w-[68ch]">
-                    쇼핑몰에서 내려받은 주문 엑셀을 올려 주세요. 어느 쇼핑몰 파일인지 알아서 구분하고, 같은 사람에게 갈 주문은 위쪽에 모아 택배사에 넣을 파일로 정리해요.
-                  </p>
+                  {!orderParseResult && (
+                    <p className="text-sm text-slate-600">쇼핑몰 주문 엑셀을 올리면 택배사 파일로 정리해요.</p>
+                  )}
 
                   {/* 드롭존 영역 */}
                   <div 
@@ -2545,7 +2514,7 @@ export default function App() {
                       const uniqueNewFiles = droppedFiles.filter((f: File) => !existingNames.has(f.name));
 
                       if (uniqueNewFiles.length === 0) {
-                        showNotification('info', '이미 업로드 목록에 포함된 엑셀 파일입니다.');
+                        showNotification('info', '이미 올린 파일이에요.');
                         return;
                       }
 
@@ -2568,16 +2537,13 @@ export default function App() {
                     {orderFiles.length > 0 ? (
                       <div className="space-y-1">
                         <div className="text-sm font-semibold text-slate-800">
-                          주문 파일 {orderFiles.length}개를 올렸어요
-                        </div>
-                        <div className="text-xs text-brand-600 font-medium">
-                          더 올리려면 눌러서 고르거나 끌어다 놓으세요
+                          + 주문 엑셀 더 올리기
                         </div>
                       </div>
                     ) : (
                       <div>
-                        <div className="text-sm font-semibold text-slate-800">주문 엑셀을 끌어다 놓거나 눌러서 고르세요</div>
-                        <div className="text-xs text-slate-500 mt-1">여러 파일을 한 번에 올려도 돼요 (.xlsx, .xls)</div>
+                        <div className="text-sm font-semibold text-slate-800">주문 엑셀을 여기에 끌어다 놓기</div>
+                        <div className="text-xs text-slate-500 mt-1">여러 개 한 번에 · .xlsx, .xls</div>
                       </div>
                     )}
                   </div>
@@ -2679,10 +2645,10 @@ export default function App() {
                             </span>
                             <div>
                               <div className="text-xs font-bold text-rose-800 flex items-center gap-2">
-                                확인이 필요한 주문 {anomalousIssues.length}건
+                                확인할 주문 {anomalousIssues.length}건
                               </div>
-                              <p className="text-xs text-rose-700/90 mt-1 leading-relaxed">
-                                받는 사람 이름이 비었거나, 전화번호가 10자리보다 짧거나, 주소가 불완전한 주문이에요. 송장을 뽑기 전에 확인하세요.
+                              <p className="text-xs text-rose-700/90 mt-1">
+                                이름·전화번호·주소가 이상해요
                               </p>
                             </div>
                           </div>
@@ -2702,9 +2668,9 @@ export default function App() {
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-amber-200/60 pb-2.5">
                             <div className="flex items-center gap-2">
                                                             <div>
-                                <h3 className="font-bold text-slate-800 text-xs">새로 발견된 미지정 품목 ({orderParseResult.newRawItems.length}건)</h3>
-                                <p className="text-sm text-slate-600 leading-relaxed max-w-[68ch]">
-                                  상품명에서 광고 문구와 안내 문구를 뺀 이름을 추천해 두었어요. 추천 버튼을 누르거나 직접 고쳐 쓰세요.
+                                <h3 className="font-bold text-slate-800 text-sm">품목사전에 없는 상품 {orderParseResult.newRawItems.length}개</h3>
+                                <p className="text-[13px] text-slate-600">
+                                  짧은 이름을 적으면 상품 준비표에 그 이름으로 나와요
                                 </p>
                               </div>
                             </div>
@@ -2712,7 +2678,7 @@ export default function App() {
                               onClick={handleApplyAllRecommendations}
                               className="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 rounded text-xs font-bold transition shrink-0 flex items-center gap-1 cursor-pointer"
                             >
-                              추천 이름으로 모두 채우기
+                              추천으로 모두 채우기
                             </button>
                           </div>
 
@@ -2722,13 +2688,13 @@ export default function App() {
                               return (
                                 <div key={`${item}-${idx}`} className="bg-white p-3 rounded-lg border border-amber-200/80 space-y-2">
                                   <div className="text-xs font-semibold text-slate-700 truncate flex items-center gap-1.5" title={item}>
-                                    <span className="text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-mono shrink-0">원본</span>
+                                    <span className="text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded shrink-0">원래</span>
                                     <span className="truncate">{item}</span>
                                   </div>
                                   <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                                     <input
                                       type="text"
-                                      placeholder={`추천: "${rec}" (클릭 시 수동 수정 가능)`}
+                                      placeholder={rec ? `짧은 이름 (추천: ${rec})` : '짧은 이름'}
                                       value={newItemsMappingForm[item] || ""}
                                       onChange={(e) => {
                                         setNewItemsMappingForm({
@@ -2744,7 +2710,7 @@ export default function App() {
                                         className="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded text-xs font-semibold transition shrink-0 flex items-center justify-center gap-1 cursor-pointer"
                                         title="추천 이름 넣기"
                                       >
-                                        추천 적용: <span className="font-bold underline underline-offset-2">{rec}</span>
+                                        추천: <span className="font-bold underline underline-offset-2">{rec}</span>
                                       </button>
                                     )}
                                   </div>
@@ -2758,21 +2724,21 @@ export default function App() {
                               onClick={handleAddNewItemMappings}
                               className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold transition shadow-sm cursor-pointer"
                             >
-                              품목사전에 저장하고 지금 주문에 반영
+                              품목사전에 넣기
                             </button>
                           </div>
                         </div>
                       )}
 
                       <div className="bg-slate-50 rounded-xl p-4 border border-slate-150 space-y-3">
-                        <div className="text-slate-900 font-bold text-sm mb-1">정리된 파일 받기</div>
+                        <div className="text-slate-900 font-bold text-sm mb-1">파일 받기</div>
                         <div className="space-y-2">
                           <button
                             onClick={handlePreviewStep1Excel}
                             className="pressable w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 rounded-lg text-sm font-semibold cursor-pointer"
                           >
                             <Eye className="w-4 h-4" />
-                            정리된 파일 미리 보기
+                            미리 보기
                           </button>
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -2781,14 +2747,14 @@ export default function App() {
                               className="pressable flex items-center justify-center gap-2 px-3 py-2.5 bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 rounded-lg text-sm font-semibold"
                             >
                               <Download className="w-4 h-4" />
-                              요약 보고서 받기
+                              상품 준비표
                             </button>
                             <button
                               onClick={handleDownloadProductSorted}
                               className="pressable flex items-center justify-center gap-2 px-3 py-2.5 bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 rounded-lg text-sm font-semibold"
                             >
                               <Download className="w-4 h-4" />
-                              품목별 정렬 파일 받기
+                              택배사 파일
                             </button>
                           </div>
                           <button
@@ -2796,7 +2762,7 @@ export default function App() {
                             className="pressable w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-bold"
                           >
                             <Download className="w-4 h-4" />
-                            두 파일 한 번에 받기
+                            둘 다 받기
                           </button>
                         </div>
                       </div>
@@ -2832,13 +2798,13 @@ export default function App() {
                     <div className="flex min-w-0 items-center gap-2.5">
                       <span className={`w-6 h-6 shrink-0 rounded-full text-white text-xs font-semibold tabular-nums flex items-center justify-center ${trackingResult ? 'bg-brand-600' : 'bg-slate-900'}`}>3</span>
                       <h2 className="font-semibold text-slate-900 text-base">
-                        {trackingResult ? '지금 할 일: 결과를 확인하고 쇼핑몰 파일 받기' : '송장 맞추기'}
+                        {trackingResult ? '지금 할 일: 쇼핑몰 파일 받기' : '송장 맞추기'}
                       </h2>
                     </div>
                   </div>
 
                   <p className={`text-sm text-slate-600 leading-relaxed max-w-[68ch] ${trackingResult ? 'hidden' : ''}`}>
-                    택배사 사이트에서 받은 송장 엑셀을 올려 주세요. 받는 사람, 상품, 수량, 우편번호를 맞춰 보고 주문마다 송장 번호를 붙여요.
+                    택배사에서 받은 송장 엑셀을 올리면 주문마다 송장 번호를 붙여요.
                   </p>
 
                   {/* 드롭존 영역 (다중 파일 drag & drop 및 즉시 자동 분석 지원) */}
@@ -2874,11 +2840,11 @@ export default function App() {
                     {trackingFiles.length === 0 && <Upload className="w-8 h-8 mx-auto mb-2 text-brand-600" />}
                     <div>
                       <div className="text-sm font-semibold text-slate-800">
-                        {trackingFiles.length > 0 ? "송장 엑셀 더 올리기" : "송장 엑셀을 끌어다 놓거나 눌러서 고르세요"}
+                        {trackingFiles.length > 0 ? "+ 송장 엑셀 더 올리기" : "송장 엑셀을 여기에 끌어다 놓기"}
                       </div>
                       <div className="text-xs text-slate-500 mt-1">
-                        어느 택배사 파일인지 알아서 구분해요
-                        {!orderParseResult && ". 주문서를 먼저 올리면 바로 맞춰 드려요"}
+                        택배사는 알아서 알아봐요
+                        {!orderParseResult && " · 주문서를 먼저 올려 주세요"}
                       </div>
                     </div>
                   </div>
@@ -3180,17 +3146,17 @@ export default function App() {
                           설정 백업과 되돌리기
                         </h2>
                         <p className="text-xs text-slate-500 mt-1">
-                          쇼핑몰·택배사 양식과 품목사전({productMappings.length}개)을 파일로 백업하거나 되돌려요.
+                          양식과 품목사전({productMappings.length}개)을 파일로 받아 두거나 되돌려요.
                         </p>
                       </div>
                       <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-xs font-bold shrink-0">
                         <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                        실시간 자동 백업 동기화 중
+                        계정에 자동 저장 중
                       </div>
                     </div>
 
                     <div className="mt-3 p-3 bg-brand-50/60 border border-brand-100 rounded-xl text-xs text-[#0F3A2F] leading-relaxed">
-                      <strong>설정은 알아서 저장돼요.</strong> 쇼핑몰·택배사 양식, 품목사전, 쇼핑몰 연동 설정은 로그인한 계정에 저장되어 다음에 들어와도 그대로 있어요. <strong>주문 엑셀은 저장하지 않아요.</strong> 새로고침하면 사라져요. API 키는 암호화해 저장하고, 다른 컴퓨터에서는 다시 넣어야 해요.
+                      양식·품목사전·연동 설정은 계정에 저장돼요. <strong>주문 엑셀은 저장 안 해요</strong> (새로고침하면 사라져요).
                     </div>
                   </div>
 
@@ -3200,15 +3166,12 @@ export default function App() {
                     {/* 1. 파일 가져오기 (복원/업로드) */}
                     <div className="p-0 md:px-8 first:md:pl-0 last:md:pr-0 flex flex-col justify-between space-y-4">
                       <div className="space-y-2">
-                        <span className="inline-block text-xs font-bold text-brand-600 bg-brand-50 border border-brand-100 px-2.5 py-0.5 rounded-md">
-                          RESTORE & IMPORT
-                        </span>
                         <h3 className="font-bold text-slate-800 text-sm flex items-center gap-1.5">
                           <Upload className="w-4 h-4 text-brand-600" />
-                          백업 / 사전 파일 가져오기
+                          파일로 되돌리기
                         </h3>
                         <p className="text-sm text-slate-600 leading-relaxed max-w-[68ch]">
-                          백업 파일(<code>.json</code>)이나 품목사전 파일(<code>.xlsx</code>, <code>.csv</code>, <code>.txt</code>)을 올리면 알아서 알아보고 되돌려요.
+                          백업 파일이나 품목사전 파일을 올려요.
                         </p>
                       </div>
 
@@ -3228,7 +3191,7 @@ export default function App() {
                                     if (json.platforms || json.productMappings || json.analyticsOrders) {
                                       openConfirm(
                                         "백업 파일로 되돌릴까요?",
-                                        "지금의 쇼핑몰·택배사 양식과 품목사전이 백업 파일 내용으로 바뀌어요. 계속할까요?",
+                                        "지금 양식과 품목사전이 백업 내용으로 바뀌어요.",
                                         () => {
                                           if (json.platforms) setPlatforms(json.platforms);
                                           if (json.productMappings) setProductMappings(json.productMappings);
@@ -3256,25 +3219,22 @@ export default function App() {
                           />
                           <button className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-semibold transition shadow-sm cursor-pointer">
                             <Upload className="w-4 h-4" />
-                            파일 선택하여 복원하기
+                            파일 고르기
                           </button>
                         </div>
-                        <p className="text-xs text-center text-slate-400">올릴 수 있는 파일: .json (전체), .xlsx·.csv·.txt (품목사전)</p>
+                        <p className="text-xs text-center text-slate-400">.json 전체 · .xlsx .csv .txt 품목사전</p>
                       </div>
                     </div>
 
                     {/* 2. 파일 내보내기 (백업/다운로드) */}
                     <div className="p-0 md:px-8 first:md:pl-0 last:md:pr-0 flex flex-col justify-between space-y-4">
                       <div className="space-y-2">
-                        <span className="inline-block text-xs font-bold text-slate-600 bg-slate-200/70 px-2.5 py-0.5 rounded-md">
-                          BACKUP & EXPORT
-                        </span>
                         <h3 className="font-bold text-slate-800 text-sm flex items-center gap-1.5">
                           <Download className="w-4 h-4 text-slate-700" />
-                          백업 / 사전 파일 내보내기
+                          파일로 받아 두기
                         </h3>
                         <p className="text-sm text-slate-600 leading-relaxed max-w-[68ch]">
-                          현재 설정된 <strong>쇼핑몰·택배사 양식, 품목사전</strong>을 백업 파일(.json)로 받아요. 주문 엑셀은 들어가지 않아요.
+                          양식과 품목사전을 파일로 받아요.
                         </p>
                       </div>
 
@@ -3312,14 +3272,14 @@ export default function App() {
                   <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                     <div>
                       <h4 className="text-xs font-bold text-slate-700">처음 상태로 초기화</h4>
-                      <p className="text-xs text-slate-400 mt-0.5">처음 받은 상태(네이버·쿠팡 양식과 예시 품목사전)로 모두 되돌려요.</p>
+                      <p className="text-xs text-slate-400 mt-0.5">고친 양식과 품목사전이 모두 처음 상태로 돌아가요.</p>
                     </div>
                     <button
                       onClick={handleResetToDefault}
                       className="flex items-center gap-1.5 px-3.5 py-2 border border-rose-200 hover:border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl text-xs font-bold transition shrink-0 cursor-pointer"
                     >
                       <RefreshCw className="w-3.5 h-3.5" />
-                      기본 설정으로 전체 초기화
+                      초기화
                     </button>
                   </div>
 
@@ -3331,11 +3291,11 @@ export default function App() {
                     <div className="bg-white border border-slate-200 rounded-xl p-6 space-y-4">
                       <div>
                         <h2 className="text-base font-bold text-slate-900">계정</h2>
-                        <p className="mt-1 text-sm text-slate-600">문의나 버그 신고는 왼쪽 메뉴의 '문의하기'에서 보내 주세요.</p>
+                        <p className="mt-1 text-sm text-slate-600">문의는 왼쪽 메뉴 '문의하기'로 보내 주세요.</p>
                       </div>
                       <div className="flex flex-wrap gap-2">
                         <button
-                          onClick={() => openConfirm('로그아웃할까요?', '올려 둔 주문 파일과 정리 결과는 사라져요. 설정은 계정에 남아 있어요.', () => logout())}
+                          onClick={() => openConfirm('로그아웃할까요?', '올린 파일은 사라지고 설정은 남아요.', () => logout())}
                           className="px-4 py-2 rounded-lg border border-slate-300 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50"
                         >
                           로그아웃
@@ -3367,7 +3327,7 @@ export default function App() {
                     "지금 리포트에 쌓인 출고 기록이 모두 지워져요.",
                     () => {
                       setAnalyticsOrders([]);
-                      showNotification('info', "시각화 데이터가 초기화되었습니다.");
+                      showNotification('info', "리포트를 비웠어요.");
                     }
                   );
                 }}

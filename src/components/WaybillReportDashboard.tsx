@@ -93,7 +93,7 @@ export default function WaybillReportDashboard({
               {totalInputRows}건
             </div>
             <div className={`text-xs mt-0.5 ${activeTab === 'all' ? 'text-emerald-400 font-medium' : 'text-emerald-600 font-semibold'}`}>
-              성공률 {successRate}% ({totalSuccess}건)
+              {totalSuccess}건 붙음 ({successRate}%)
             </div>
           </div>
         </button>
@@ -108,14 +108,14 @@ export default function WaybillReportDashboard({
           }`}
         >
           <div className="flex items-center justify-between w-full">
-            <span className="text-xs font-semibold text-slate-500">완전 매칭</span>
+            <span className="text-xs font-semibold text-slate-500">정확히 맞음</span>
             <div className="p-1.5 bg-brand-100 text-brand-600 rounded-md">
               <Package className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-2">
             <div className="text-lg font-bold text-slate-800">{displayExactCount}건</div>
-            <div className="text-xs text-brand-600 font-medium mt-0.5">완전 일치 (합포장 포함)</div>
+            <div className="text-xs text-brand-600 font-medium mt-0.5">합포장 포함</div>
           </div>
         </button>
 
@@ -129,14 +129,14 @@ export default function WaybillReportDashboard({
           }`}
         >
           <div className="flex items-center justify-between w-full">
-            <span className="text-xs font-semibold text-slate-500">비슷한 주문 연결</span>
+            <span className="text-xs font-semibold text-slate-500">비슷해서 맞춤</span>
             <div className="p-1.5 bg-amber-100 text-amber-600 rounded-md">
               <Lightbulb className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-2">
             <div className="text-lg font-bold text-slate-800">{displaySoftCount}건</div>
-            <div className="text-xs text-amber-600 font-medium mt-0.5">이름이 조금 다르게 적힌 주문</div>
+            <div className="text-xs text-amber-600 font-medium mt-0.5">이름이 조금 달라요</div>
           </div>
         </button>
 
@@ -178,7 +178,7 @@ export default function WaybillReportDashboard({
           </div>
           <div className="mt-2">
             <div className="text-lg font-bold text-slate-800">{unfilledErrors.length}건</div>
-            <div className="text-xs text-rose-600 font-medium mt-0.5">송장 파일에 없음</div>
+            <div className="text-xs text-rose-600 font-medium mt-0.5">송장이 없어요</div>
           </div>
         </button>
 
@@ -199,7 +199,7 @@ export default function WaybillReportDashboard({
           </div>
           <div className="mt-2">
             <div className="text-lg font-bold text-slate-800">{unusedErrors.length}건</div>
-            <div className="text-xs text-purple-600 font-medium mt-0.5">어느 주문에도 안 붙음</div>
+            <div className="text-xs text-purple-600 font-medium mt-0.5">안 붙은 송장</div>
           </div>
         </button>
 
@@ -281,7 +281,7 @@ export default function WaybillReportDashboard({
               <p className="text-xs text-slate-600 flex items-center gap-1.5 bg-slate-100 p-3 rounded-lg border border-slate-200">
                 <CheckCircle className="w-4 h-4 text-slate-700 shrink-0" />
                 <span>
-                  처리 대상 총 <strong>{outputOrders.length}건</strong>의 주문에 대해 운송장 매칭 및 합포장 연동 상태를 한눈에 조회합니다.
+                  주문 <strong>{outputOrders.length}건</strong>에 송장이 어떻게 붙었는지 보여 줘요.
                 </span>
               </p>
 
@@ -289,13 +289,13 @@ export default function WaybillReportDashboard({
                 <table className="w-full text-xs text-left text-slate-600 min-w-[980px]">
                   <thead className="sticky top-0 z-10 bg-slate-100 text-slate-700 font-bold uppercase border-b border-slate-200">
                     <tr>
-                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[100px]">플랫폼</th>
-                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[120px]">수령인</th>
+                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[100px]">쇼핑몰</th>
+                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[120px]">받는 사람</th>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[90px]">우편번호</th>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[70px] text-center">수량</th>
-                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[280px]">주문 품목명</th>
-                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[160px]">부여된 운송장번호</th>
-                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[200px]">연결 방법</th>
+                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[280px]">상품</th>
+                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[160px]">송장 번호</th>
+                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[200px]">맞춘 방법</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -346,7 +346,7 @@ export default function WaybillReportDashboard({
                             )}
                             {!isExact && !isSoft && !isBundled && (
                               <span className="text-rose-600 font-medium">
-                                {ord.unmatchedDetail ? "송장 파일에 맞는 주문이 없음" : "운송장 번호 없음"}
+                                {ord.unmatchedDetail ? "송장 파일에 맞는 송장이 없음" : "송장 번호 없음"}
                               </span>
                             )}
                           </td>
@@ -365,7 +365,7 @@ export default function WaybillReportDashboard({
               <p className="text-xs text-slate-600 flex items-center gap-1.5 bg-brand-50/80 p-3 rounded-lg border border-[#E0EFE8]">
                 <Package className="w-4 h-4 text-brand-600 shrink-0" />
                 <span>
-                  <strong>완전 일치</strong>는 이름, 우편번호, 연락처, 품목명이 모두 똑같아서 송장을 확실하게 붙인 주문 목록입니다.
+                  이름·우편번호·전화번호·상품이 모두 같아 확실히 붙은 주문이에요.
                 </span>
               </p>
 
@@ -373,12 +373,12 @@ export default function WaybillReportDashboard({
                 <table className="w-full text-xs text-left text-slate-600 min-w-[980px]">
                   <thead className="sticky top-0 z-10 bg-brand-50 text-[#0F3A2F] font-bold uppercase border-b border-brand-200">
                     <tr>
-                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[100px]">플랫폼</th>
-                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[120px]">수령인</th>
+                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[100px]">쇼핑몰</th>
+                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[120px]">받는 사람</th>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[90px]">우편번호</th>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[70px] text-center">수량</th>
-                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[280px]">주문 품목명</th>
-                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[160px]">부여된 운송장번호</th>
+                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[280px]">상품</th>
+                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[160px]">송장 번호</th>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[150px]">상태</th>
                     </tr>
                   </thead>
@@ -409,7 +409,7 @@ export default function WaybillReportDashboard({
                     {exactMatchOrders.length === 0 && (
                       <tr>
                         <td colSpan={7} className="px-3 py-8 text-center text-slate-400">
-                          완전 매칭된 주문이 없습니다.
+                          정확히 맞은 주문이 없어요.
                         </td>
                       </tr>
                     )}
@@ -425,7 +425,7 @@ export default function WaybillReportDashboard({
               <p className="text-xs text-slate-600 flex items-center gap-1.5 bg-amber-50/80 p-3 rounded-lg border border-amber-150">
                 <Lightbulb className="w-4 h-4 text-amber-600 shrink-0" />
                 <span>
-                  <strong>비슷한 주문</strong>은 이름의 띄어쓰기나 글자가 조금 빠졌거나(80% 이상 비슷함), 품목명을 줄여 적은 경우에도 같은 주문으로 판단해 송장을 붙인 목록입니다. 한 번 더 확인해 보세요.
+                  이름이나 상품명이 조금 달라도 같은 주문으로 보고 붙였어요. 한 번 확인해 주세요.
                 </span>
               </p>
 
@@ -433,12 +433,12 @@ export default function WaybillReportDashboard({
                 <table className="w-full text-xs text-left text-slate-600 min-w-[980px]">
                   <thead className="sticky top-0 z-10 bg-amber-100/80 text-amber-950 font-bold uppercase border-b border-amber-200">
                     <tr>
-                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[100px]">플랫폼</th>
-                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[120px]">수령인</th>
+                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[100px]">쇼핑몰</th>
+                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[120px]">받는 사람</th>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[90px]">우편번호</th>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[70px] text-center">수량</th>
-                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[280px]">주문 품목명</th>
-                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[160px]">부여된 운송장번호</th>
+                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[280px]">상품</th>
+                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[160px]">송장 번호</th>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[220px]">맞춘 근거</th>
                     </tr>
                   </thead>
@@ -468,7 +468,7 @@ export default function WaybillReportDashboard({
                     {softMatchOrders.length === 0 && (
                       <tr>
                         <td colSpan={7} className="px-3 py-8 text-center text-slate-400">
-                          비슷한 주문 맞춤된 주문이 없습니다.
+                          비슷해서 맞춘 주문이 없어요.
                         </td>
                       </tr>
                     )}
@@ -484,8 +484,8 @@ export default function WaybillReportDashboard({
               <p className="text-xs text-sky-900 flex items-center gap-2 bg-sky-50 p-3 rounded-lg border border-sky-200">
                 <Layers className="w-4 h-4 text-sky-600 shrink-0" />
                 <span>
-                  <strong>합포장 묶음 배송:</strong> 같은 받는 사람과 주소로 여러 상품을 주문해서, 대표 송장 하나로 함께 보내는 주문입니다.
-                  지금 <strong>{displayBundledGroupCount}명</strong>에게 <strong>{displayBundledCount}개 상품</strong>이 합포장으로 보내집니다.
+                  같은 사람·주소로 간 여러 상품을 송장 하나로 함께 보내요.
+                  <strong>{displayBundledGroupCount}명</strong>에게 <strong>{displayBundledCount}개 상품</strong>을 묶어 보내요.
                 </span>
               </p>
 
@@ -493,13 +493,13 @@ export default function WaybillReportDashboard({
                 <table className="w-full text-xs text-left text-slate-600 min-w-[980px]">
                   <thead className="sticky top-0 z-10 bg-sky-100 text-sky-950 font-bold uppercase border-b border-sky-200">
                     <tr>
-                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[100px]">플랫폼</th>
-                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[120px]">수령인</th>
+                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[100px]">쇼핑몰</th>
+                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[120px]">받는 사람</th>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[90px]">우편번호</th>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[70px] text-center">수량</th>
-                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[280px]">합포장 주문 품목명</th>
-                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[160px]">대표 운송장번호</th>
-                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[220px]">묶음 안내</th>
+                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[280px]">상품</th>
+                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[160px]">함께 쓰는 송장 번호</th>
+                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[220px]">안내</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-sky-100">
@@ -528,7 +528,7 @@ export default function WaybillReportDashboard({
                     {bundledOrders.length === 0 && (
                       <tr>
                         <td colSpan={7} className="px-3 py-8 text-center text-slate-400">
-                          합포장 묶음 배송 처리된 주문건이 없습니다.
+                          합포장 주문이 없어요.
                         </td>
                       </tr>
                     )}
@@ -544,7 +544,7 @@ export default function WaybillReportDashboard({
               <p className="text-xs text-slate-600 flex items-center gap-1.5 bg-rose-50/80 p-3 rounded-lg border border-rose-150">
                 <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
                 <span>
-                  <strong>송장 못 찾은 주문:</strong> 주문 파일에는 있지만, 송장 파일에서 맞는 운송장 번호를 찾지 못한 주문입니다. 표의 <strong>플랫폼</strong> 칸에서 어느 쇼핑몰 주문인지 볼 수 있어요.
+                  송장 파일에서 맞는 송장을 못 찾은 주문이에요.
                 </span>
               </p>
 
@@ -552,11 +552,11 @@ export default function WaybillReportDashboard({
                 <table className="w-full text-xs text-left text-slate-600 min-w-[980px]">
                   <thead className="sticky top-0 z-10 bg-rose-100/80 text-rose-950 font-bold uppercase border-b border-rose-200">
                     <tr>
-                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[100px]">플랫폼</th>
-                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[120px]">수령인</th>
+                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[100px]">쇼핑몰</th>
+                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[120px]">받는 사람</th>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[90px]">우편번호</th>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[70px] text-center">수량</th>
-                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[280px]">주문 품목명</th>
+                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[280px]">상품</th>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[280px]">못 찾은 이유</th>
                     </tr>
                   </thead>
@@ -586,7 +586,7 @@ export default function WaybillReportDashboard({
                     {unfilledErrors.length === 0 && (
                       <tr>
                         <td colSpan={6} className="px-3 py-8 text-center text-slate-400">
-                          송장을 못 찾은 주문이 없습니다. 모든 주문에 운송장이 붙었어요.
+                          모든 주문에 송장이 붙었어요.
                         </td>
                       </tr>
                     )}
@@ -602,7 +602,7 @@ export default function WaybillReportDashboard({
               <p className="text-xs text-purple-900 flex items-center gap-1.5 bg-purple-50 p-3 rounded-lg border border-purple-200">
                 <FileText className="w-4 h-4 text-purple-600 shrink-0" />
                 <span>
-                  <strong>쓰이지 않은 송장:</strong> 송장 파일에는 운송장이 있지만, 맞는 주문이 없어서 어느 주문에도 붙지 않은 송장입니다. 표의 <strong>송장 플랫폼</strong> 칸에서 출처를 볼 수 있어요.
+                  송장 파일에는 있지만 어느 주문에도 안 붙은 송장이에요.
                 </span>
               </p>
 
@@ -610,11 +610,11 @@ export default function WaybillReportDashboard({
                 <table className="w-full text-xs text-left text-slate-600 min-w-[980px]">
                   <thead className="sticky top-0 z-10 bg-purple-100 text-purple-950 font-bold uppercase border-b border-purple-200">
                     <tr>
-                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[100px]">송장 플랫폼</th>
-                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[120px]">송장 수령인</th>
+                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[100px]">나온 파일</th>
+                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[120px]">받는 사람</th>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[90px]">우편번호</th>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[70px] text-center">수량</th>
-                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[280px]">송장 품목명</th>
+                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[280px]">상품</th>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[200px]">안 쓰인 이유</th>
                     </tr>
                   </thead>
@@ -637,7 +637,7 @@ export default function WaybillReportDashboard({
                     {unusedErrors.length === 0 && (
                       <tr>
                         <td colSpan={6} className="px-3 py-8 text-center text-slate-400">
-                          미사용 송장이 존재하지 않습니다. 모든 송장이 주문과 정확히 매칭되었습니다.
+                          안 붙은 송장이 없어요.
                         </td>
                       </tr>
                     )}

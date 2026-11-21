@@ -418,7 +418,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
           if (parsed.length > 0) {
             setBulkImportConfirm({ isOpen: true, parsed });
           } else {
-            showNotification('error', "엑셀·CSV 파일에서 넣을 내용을 찾지 못했어요. 첫 칸에 상품명, 둘째 칸에 바꿀 이름이 있는지 확인해 주세요.");
+            showNotification('error', "첫 칸 상품명, 둘째 칸 바꿀 이름인지 봐 주세요.");
           }
         } catch {
           showNotification('error', "파일을 읽지 못했어요.");
@@ -639,7 +639,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
         <Modal
           onClose={() => setShowSmartMatchModal(false)}
           title={`바꿀 이름 추천 ${smartCandidates.length}개`}
-          description="이미 있는 이름과 비슷한 상품을 찾아 바꿀 이름을 골라 두었어요. 맞는 것만 체크하세요."
+          description="맞는 것만 체크하세요."
           icon={<Lightbulb className="w-4 h-4" />}
           iconTone="warn"
           size="lg"
@@ -698,7 +698,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
           <div>
             <h2 className="text-xl font-semibold tracking-tight text-slate-900">품목사전</h2>
             <p className="text-sm text-slate-600 mt-1.5 leading-relaxed max-w-[64ch]">
-              쇼핑몰마다 다른 긴 상품명을 내가 쓰는 짧은 이름으로 바꿔요. 요약 보고서의 상품 준비 목록에 이 짧은 이름이 쓰여요. 택배사에 넣을 파일에는 원래 상품명이 그대로 남아요.
+              긴 상품명을 짧은 이름으로 바꿔 상품 준비표에 써요. 택배사 파일은 원래 이름 그대로예요.
             </p>
             <p className="mt-2 inline-flex flex-wrap items-center gap-x-2 rounded-lg bg-slate-50 px-3 py-1.5 text-[13px] text-slate-700">
               <span className="text-slate-500">예</span>
@@ -804,12 +804,12 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
                   className="mt-2 flex items-center gap-1.5 px-3 py-1.5 bg-brand-50 border border-brand-200 hover:border-brand-400 text-[#0F3A2F] rounded-xl text-xs font-semibold transition group cursor-pointer"
                 >
                   <Lightbulb className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                  <span> 추천: <strong className="text-brand-700">'{getSmartSuggestion(newRawName)?.suggestedName}'</strong> (유사도 {getSmartSuggestion(newRawName)?.confidence}%)</span>
-                  <span className="ml-1 text-xs text-brand-600 underline font-normal group-hover:font-bold">[눌러서 넣기]</span>
+                  <span> 추천: <strong className="text-brand-700">'{getSmartSuggestion(newRawName)?.suggestedName}'</strong> ({getSmartSuggestion(newRawName)?.confidence}% 비슷)</span>
+                  <span className="ml-1 text-xs text-brand-600 underline font-normal group-hover:font-bold">넣기</span>
                 </button>
               )}
 
-              <p className="text-xs text-slate-400 mt-1">상품명에 이 말이 들어 있으면 오른쪽 이름으로 바꿔요. 상품명을 통째로 넣어도 돼요.</p>
+              <p className="text-xs text-slate-400 mt-1">이 말이 들어간 상품명은 오른쪽 이름으로 바뀌어요.</p>
             </div>
 
             <div>
@@ -881,7 +881,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
                 여러 개 한 번에 넣기
               </h3>
               <p className="text-xs text-slate-500 mt-0.5">
-                엑셀 첫 칸에 원래 상품명, 둘째 칸에 바꿀 이름을 적은 파일을 올리거나, 아래 칸에 붙여 넣으세요.
+                첫 칸 원래 상품명, 둘째 칸 바꿀 이름. 파일을 올리거나 붙여 넣으세요.
               </p>
             </div>
             <button
@@ -1012,7 +1012,7 @@ export default function ProductMappingList({ mappings, onChange, defaultRawNames
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left text-slate-600">
                 <caption className="caption-top border-b border-slate-100 px-4 py-2.5 text-left text-sm text-slate-600">
-                  왼쪽 말이 상품명에 들어 있으면 오른쪽 이름으로 바꿔요. 바꿀 이름이 비어 있으면 상품명을 그대로 써요.
+                  왼쪽 말이 들어간 상품명은 오른쪽 이름으로 바뀌어요.
                 </caption>
                 <thead className="bg-slate-50/80 text-slate-600 text-[13px] font-semibold border-b border-slate-150">
                   <tr>

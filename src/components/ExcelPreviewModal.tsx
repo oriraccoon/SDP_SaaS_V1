@@ -42,7 +42,7 @@ export default function ExcelPreviewModal({
   isOpen,
   onClose,
   title,
-  subtitle = "받게 될 파일과 똑같은 내용이에요. 받기 전에 받는 사람과 수량을 한 번 훑어보세요.",
+  subtitle = "받을 파일과 똑같아요. 받는 사람·수량만 훑어보세요.",
   files,
   onDownloadAll,
   downloadAllButtonText = "모두 받기"
@@ -114,8 +114,8 @@ export default function ExcelPreviewModal({
 
   // 파일 카드에 보일 쉬운 이름 (파일 이름은 그 아래 작게)
   const friendlyName = (file: ExcelPreviewFile) => {
-    if (file.fileName.includes('품목별정렬')) return '택배사에 넣을 파일';
-    if (file.fileName.includes('요약보고서')) return '상품 준비용 보고서';
+    if (file.fileName.includes('품목별정렬')) return '택배사 파일';
+    if (file.fileName.includes('요약보고서')) return '상품 준비표';
     return file.platformName || file.fileName;
   };
   const fileMeta = (file: ExcelPreviewFile) => {

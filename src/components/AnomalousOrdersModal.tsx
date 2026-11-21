@@ -65,7 +65,7 @@ export default function AnomalousOrdersModal({
     <Modal
       onClose={onClose}
       title={`잘못 배송될 수 있는 주문 ${issues.length}건`}
-      description="받는 사람이 비었거나, 전화번호 자리 수가 모자라거나, 주소가 짧은 주문을 골랐어요. 원래 엑셀을 고쳐 다시 올리거나, 그대로 진행해도 돼요."
+      description="이름·전화번호·주소가 이상한 주문이에요. 고쳐서 다시 올리거나 그대로 진행해도 돼요."
       icon={<AlertTriangle className="w-4 h-4" />}
       iconTone="warn"
       size="xl"

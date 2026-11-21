@@ -84,3 +84,16 @@
 
 
 
+
+/* hero: the shops it reads, as small chips instead of a sentence */
+.shop-chips { list-style: none; margin: var(--s-5) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.shop-chips li { padding: 5px 10px; border-radius: 999px; font: 500 13px/1.2 var(--font-text); color: var(--muted); background: color-mix(in oklab, var(--ink) 5%, transparent); }
+
+/* the four steps, as icons with a few words */
+.steps { list-style: none; margin: var(--s-6) 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.steps li { display: flex; align-items: center; gap: 12px; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg); font: 500 15px/1.3 var(--font-text); }
+.steps small { display: block; margin-bottom: 2px; font-size: 12px; font-weight: 400; color: var(--muted); }
+.steps__ico { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; color: var(--accent); background: color-mix(in oklab, var(--accent) 12%, transparent); }
+.steps__ico svg { width: 22px; height: 22px; }
+@media (max-width: 1023px) { .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 639px) { .steps li { padding: 12px; gap: 10px; font-size: 14px; } .steps__ico { width: 34px; height: 34px; } }

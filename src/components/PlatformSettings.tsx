@@ -973,7 +973,7 @@ export default function PlatformSettings({
   // 택배사 헤더 자동 스마트 매칭 핸들러
   const handleAutoMatchCourierHeaders = () => {
     if (!activeTrackingFile || !activeTrackingFile.rawRows || activeTrackingFile.rawRows.length === 0 || !activeCourier) {
-      alert('분석할 운송장 엑셀 파일이 없거나 택배사를 선택하지 못했습니다.');
+      alert('송장 엑셀이 없거나 택배사를 고르지 않았어요.');
       return;
     }
 
@@ -1106,7 +1106,7 @@ export default function PlatformSettings({
             <div className="min-w-0">
               <h2 className="text-xl font-semibold tracking-tight text-slate-900">쇼핑몰·택배사 칸 맞추기</h2>
               <p className="text-sm text-slate-600 mt-1.5 leading-relaxed max-w-[64ch]">
-                엑셀의 어느 칸이 상품명이고 어느 칸이 받는 사람인지 맞추는 곳이에요. 대부분은 자동으로 맞춰져요. 정리 결과가 이상할 때만 여기서 고치면 돼요.
+                엑셀의 어느 칸이 무엇인지 맞춰요. 결과가 이상할 때만 고치세요.
               </p>
             </div>
 
@@ -1218,7 +1218,7 @@ export default function PlatformSettings({
             <div>
               <h3 className="text-base font-semibold text-slate-900">아직 올린 주문 엑셀이 없어요</h3>
               <p className="mt-1 text-sm text-slate-600 leading-relaxed max-w-[64ch]">
-                주문정리에서 주문 엑셀을 올리면, 여기서 칸이 제대로 맞았는지 예시 값과 함께 볼 수 있어요.
+                주문 엑셀을 올리면 여기서 칸을 확인할 수 있어요.
               </p>
             </div>
             {onNavigateToProcessTab && (
@@ -1284,7 +1284,7 @@ export default function PlatformSettings({
                     </h3>
                     <p className="mt-1 text-sm text-slate-700 leading-relaxed max-w-[70ch]">
                       {generic
-                        ? '칸 이름을 보고 자동으로 맞춰 봤어요. 아래 표의 예시 값을 보고 틀린 칸만 고르세요. 고르는 순간 이 파일 모양을 새 쇼핑몰 양식으로 저장하고, 주문도 다시 정리해요.'
+                        ? '틀린 칸만 고르세요. 고르면 새 양식으로 저장하고 다시 정리해요.'
                         : '칸을 바꾸면 바로 저장되고, 올린 주문도 다시 정리돼요.'}
                     </p>
                     {secondaryColsInfo.length > 0 && (
@@ -1509,7 +1509,7 @@ export default function PlatformSettings({
                     <ChevronDown className="w-4 h-4 text-slate-500 transition-transform group-open:rotate-180" />
                   </summary>
                   <div className="px-5 pb-5 space-y-2">
-                    <p className="text-sm text-slate-600">{headerRowIndex + 1}번째 줄을 칸 이름으로 읽었어요. 칸 위의 표시는 그 칸을 어떤 항목으로 쓰는지예요.</p>
+                    <p className="text-sm text-slate-600">{headerRowIndex + 1}번째 줄을 칸 이름으로 읽었어요.</p>
                     <div className="overflow-x-auto max-h-72 border border-slate-200 rounded-lg">
                       <table className="w-full text-left text-[13px] border-collapse">
                         <thead>
@@ -1838,7 +1838,7 @@ export default function PlatformSettings({
         <Modal
           onClose={() => setShowSettingsModal(false)}
           title="등록된 쇼핑몰·택배사"
-          description="엑셀을 어떻게 읽을지 정해 둔 양식이에요. 정리 결과가 이상할 때만 고치면 돼요."
+          description="결과가 이상할 때만 고치세요."
           size="xl"
           closeOnEsc={false}
           footer={<button type="button" onClick={() => setShowSettingsModal(false)} className={btn.dark}>닫기</button>}
@@ -2270,7 +2270,7 @@ export default function PlatformSettings({
         <Modal
           onClose={() => setShowPresetModal(false)}
           title="쇼핑몰 추가"
-          description="목록에 있는 쇼핑몰이면 골라서 바로 시작하세요. 없으면 빈 양식으로 만들어요."
+          description="목록에서 고르거나 빈 양식으로 만드세요."
           size="sm"
           zIndex={60}
           closeOnEsc={false}
@@ -2299,7 +2299,7 @@ export default function PlatformSettings({
         <Modal
           onClose={() => setShowCourierPresetModal(false)}
           title="택배사 추가"
-          description="목록에 있는 택배사면 골라서 바로 시작하세요. 없으면 빈 양식으로 만들어요."
+          description="목록에서 고르거나 빈 양식으로 만드세요."
           size="sm"
           zIndex={60}
           closeOnEsc={false}

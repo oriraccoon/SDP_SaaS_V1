@@ -22,7 +22,6 @@ const MAIN_ACTION = '무료로 시작하기';
 const APP_URL = '/app';
 const ARROW =
   '<svg class="m-arrow" viewBox="0 0 12 12" aria-hidden="true"><path class="m-arrow__stem" d="M1 6h8"/><path class="m-arrow__head" d="M4.5 2.5 8 6l-3.5 3.5"/></svg>';
-const shops = SUPPORTED_SHOPS.join(', ');
 
 // 실제 앱 화면 캡처 (public/assets/shots, 예시 데이터로 찍음)
 const shot = (name: string, w: number, h: number, alt: string, extra = '') =>
@@ -98,9 +97,9 @@ const hero = `
   <div class="wrap"><div class="hero-text grid hero__grid">
     <div class="hero__text span-5">
       <h1 id="hero-h">온라인 셀러를 위한 주문·송장 엑셀 정리</h1>
-      <p class="hero__lead">쇼핑몰 주문 엑셀을 올리면 택배사에 넣을 파일을 만들고, 받아 온 송장 번호를 주문마다 붙여 쇼핑몰별 파일로 나눠 드려요. 기본 플랜은 월 ${won(PLANS[1].price)}이에요.</p>
+      <p class="hero__lead">주문 엑셀만 올리면 택배사 파일부터 송장 붙인 쇼핑몰 파일까지 만들어 드려요.</p>
       <div class="btn-row"><a class="btn btn--primary" href="${APP_URL}">${MAIN_ACTION}${ARROW}</a><a class="btn btn--secondary" href="#price">가격 보기</a></div>
-      <p class="hero__proof">${shops} 주문 엑셀을 바로 읽어요.</p>
+      <ul class="shop-chips" aria-label="바로 읽는 쇼핑몰">${SUPPORTED_SHOPS.map((n) => `<li>${n}</li>`).join('')}</ul>
     </div>
     <div class="hero__art span-6 start-7" data-fx="grain-gradient" data-fx-seed="7">
       <div class="ly-piece ly-piece--main shot-win">${shot('app-overview', 1400, 1050, `${APP_NAME} 주문정리 화면: 주문서 올리기부터 송장 맞추기까지 끝난 모습`, 'fetchpriority="high"')}</div>
@@ -109,17 +108,25 @@ const hero = `
   </div></div>
 </section>`;
 
+// ---------- app-frame: 쓰는 순서 4단계 (아이콘 + 짧은 말) ----------
+const ICO = (d: string) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const STEPS: [string, string][] = [
+  [ICO('<path d="M12 15V4m0 0-4 4m4-4 4 4"/><path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/>'), '주문 엑셀 올리기'],
+  [ICO('<path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7"/><circle cx="7" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/>'), '택배사에서 송장 받기'],
+  [ICO('<path d="M14 3H6v18h12V7z"/><path d="M14 3v4h4"/><path d="m9 14 2 2 4-4"/>'), '송장 엑셀 올리기'],
+  [ICO('<path d="M12 4v11m0 0-4-4m4 4 4-4"/><path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/>'), '쇼핑몰 파일 받기'],
+];
+
 // ---------- app-frame ----------
 const app = `
 <section class="section" id="app" aria-labelledby="app-h">
   <div class="wrap">
     <div class="grid grid--top">
-      <h2 id="app-h" class="span-5">주문서와 송장을 한 화면에서 맞춰요</h2>
-      <div class="span-6 start-7 stack-4">
-        <p>택배사에서 받은 송장 엑셀을 올리면 주문마다 송장 번호를 붙이고, 몇 건이 맞았는지 바로 보여 줘요. 확인할 주문은 오른쪽에 따로 모아 알려 드려요.</p>
-        <a class="link" href="#faq">자주 묻는 질문 보기</a>
-      </div>
+      <h2 id="app-h" class="span-12">4단계면 끝나요</h2>
     </div>
+    <ol class="steps">
+      ${STEPS.map(([icon, label], i) => `<li><span class="steps__ico" aria-hidden="true">${icon}</span><span><small>${i + 1}단계</small>${label}</span></li>`).join('')}
+    </ol>
     <figure class="shot-frame">
       <picture>
         <source media="(max-width: 639px)" srcset="/assets/shots/app-match-phone.webp" width="1120" height="894">
@@ -138,19 +145,19 @@ const features = `
   <div class="wrap">
     <div class="group">
       <div class="section-head">
-        <h2 id="features-h">엑셀 정리를 대신 해요. <span class="muted">양식 구분부터 확인할 주문까지 알아서 골라요.</span></h2>
+        <h2 id="features-h">엑셀 정리는 맡기세요</h2>
       </div>
       <div class="grid">
         <article class="card card--row card--open span-6">
-          <h3>쇼핑몰 양식을 알아서 구분해요</h3>
-          <p>${SUPPORTED_SHOPS.length}곳의 주문 엑셀을 한꺼번에 올려도 파일마다 어느 쇼핑몰 양식인지 읽어 내요.</p>
+          <h3>쇼핑몰 양식 자동 구분</h3>
+          <p>${SUPPORTED_SHOPS.length}곳 엑셀을 한 번에</p>
           <div class="panel" ${mesh(21)}>
-            <div class="stage stage--fade-b"><div class="at-corner to-edge" style="--ax:28px;--ay:28px">${shot('files-detected', 1600, 653, '주문서 올리기 카드: 올린 주문 파일 두 개를 쿠팡 양식, 네이버 스마트스토어 양식으로 알아본 모습', 'loading="lazy" style="width:780px"')}</div></div>
+            <div class="stage stage--fade-b"><div class="at-corner to-edge" style="--ax:28px;--ay:28px">${shot('files-detected', 1600, 523, '주문서 올리기 카드: 올린 주문 파일 두 개를 쿠팡 양식, 네이버 스마트스토어 양식으로 알아본 모습', 'loading="lazy" style="width:780px"')}</div></div>
           </div>
         </article>
         <article class="card card--row card--open span-6">
-          <h3>같은 사람에게 갈 주문을 모아요</h3>
-          <p>받는 사람과 주소가 같은 주문은 위쪽에 모으고, 품목별로 정렬해서 택배사 파일을 만들어요.</p>
+          <h3>같은 사람 주문은 한데 모아</h3>
+          <p>합포장할 주문이 바로 보여요</p>
           <div class="panel" ${mesh(34)}>
             <div class="stage stage--fade-b"><div class="at-corner to-edge" style="--ax:28px;--ay:28px">${shot('courier-file', 1800, 1312, '택배사에 넣을 파일 미리 보기: 같은 받는 사람의 주문이 위아래로 붙어 있는 표', 'loading="lazy" style="width:860px"')}</div></div>
           </div>
@@ -159,15 +166,15 @@ const features = `
     </div>
     <div class="grid">
       <article class="card card--row card--open span-6">
-        <h3>확인할 주문을 먼저 보여 줘요</h3>
-        <p>받는 사람 이름이 비었거나 전화번호가 10자리보다 짧은 주문을 송장을 뽑기 전에 골라 둬요.</p>
+        <h3>이상한 주문은 먼저 알려 줘요</h3>
+        <p>이름·전화번호·주소 점검</p>
         <div class="panel" ${mesh(47)}>
-            <div class="stage stage--fade-b"><div class="at-corner to-edge" style="--ax:28px;--ay:28px">${shot('check-orders', 1344, 784, '잘못 배송될 수 있는 주문 2건: 전화번호가 9자리, 주소가 너무 짧음', 'loading="lazy" style="width:600px"')}</div></div>
+            <div class="stage stage--fade-b"><div class="at-corner to-edge" style="--ax:28px;--ay:28px">${shot('check-orders', 1344, 740, '잘못 배송될 수 있는 주문 2건: 전화번호가 9자리, 주소가 너무 짧음', 'loading="lazy" style="width:600px"')}</div></div>
         </div>
       </article>
       <article class="card card--row card--open span-6">
-        <h3>상품명을 품목사전으로 맞춰요</h3>
-        <p>광고 문구가 붙은 긴 상품명을 내가 정한 짧은 이름으로 바꿔서 품목별로 셀 수 있게 해요.</p>
+        <h3>긴 상품명은 짧게</h3>
+        <p>한 번 정하면 계속 써요</p>
         <div class="panel" ${mesh(58)}>
           <div class="stage stage--fade-b"><div class="at-corner to-edge" style="--ax:28px;--ay:28px">${shot('dictionary', 1600, 1417, '품목사전 화면: 긴 상품명마다 바꿀 짧은 이름이 적힌 목록', 'loading="lazy" style="width:760px"')}</div></div>
         </div>
@@ -181,8 +188,8 @@ const pricing = `
 <section class="section" id="price" aria-labelledby="price-h">
   <div class="wrap">
     <div class="section-head">
-      <h2 id="price-h">월 단위 요금</h2>
-      <p>${FREE_TRIAL_DAYS}일 동안 무료로 마음껏 써 보고, 맞으면 기본 플랜으로 이어서 쓰세요.</p>
+      <h2 id="price-h">요금</h2>
+      <p>${FREE_TRIAL_DAYS}일 무료, 그다음 월 ${won(PLANS[1].price)}</p>
     </div>
     <div class="grid">
       ${PLANS.map((plan) => {
@@ -212,12 +219,12 @@ const privacy = `
   <div class="wrap">
     <div class="grid grid--top fill">
       <div class="span-5 stack-6">
-        <h2 id="privacy-h">주문 파일은 이 브라우저 안에서만 다뤄요</h2>
-        <p class="t-lead">받는 사람 이름, 주소, 연락처가 든 엑셀을 서버로 보내지 않아요. 비밀번호가 걸린 엑셀도 내 컴퓨터에서 풀어요.</p>
+        <h2 id="privacy-h">주문 파일은 내 컴퓨터에서만</h2>
+        <p class="t-lead">고객 이름·주소·전화번호를 서버로 보내지 않아요.</p>
         <ul class="facts">
-          <li><b>계정에 저장하는 것</b><span>품목사전과 쇼핑몰·택배사 설정</span></li>
-          <li><b>새로고침하면</b><span>올린 주문 파일과 결과가 사라져요</span></li>
-          <li><b>택배사</b><span>${SUPPORTED_COURIERS.join(', ')} 송장 엑셀</span></li>
+          <li><b>계정에 남는 것</b><span>품목사전, 양식 설정</span></li>
+          <li><b>새로고침하면</b><span>주문 파일은 지워져요</span></li>
+          <li><b>택배사</b><span>${SUPPORTED_COURIERS.join(' · ')}</span></li>
         </ul>
       </div>
       <div class="frame frame--split frame--fill span-6 start-7">
@@ -239,7 +246,7 @@ const faq = `
     <div class="grid grid--top">
       <div class="span-5 stack-4">
         <h2 id="faq-h">자주 묻는 질문</h2>
-        <p>더 궁금한 점은 로그인한 뒤 왼쪽 메뉴의 문의하기로 보내 주세요.</p>
+        <p>더 궁금하면 앱의 '문의하기'로 보내 주세요.</p>
         <figure class="shot-ask">${shot('contact', 1040, 948, `${APP_NAME} 앱의 문의하기 창`, 'loading="lazy"')}</figure>
       </div>
       <div class="faq span-6 start-7" data-faq-list>${faqItems(DEFAULT_FAQS)}</div>
@@ -260,7 +267,7 @@ const footer = `
   <div class="wrap">
     <div class="closing__cta close--word">
       <div class="section-head--split">
-        <div><h2 id="close-h">${FREE_TRIAL_DAYS}일 무료로 정리해 보세요</h2><p class="t-lead">기본 플랜은 월 ${won(PLANS[1].price)}, 올리는 횟수에 제한이 없어요.</p></div>
+        <div><h2 id="close-h">${FREE_TRIAL_DAYS}일 무료로 정리해 보세요</h2><p class="t-lead">그다음 월 ${won(PLANS[1].price)} · 횟수 제한 없음</p></div>
         <a class="btn btn--primary" href="${APP_URL}">${MAIN_ACTION}${ARROW}</a>
       </div>
       <p class="close__word" aria-hidden="true">${APP_NAME}</p>

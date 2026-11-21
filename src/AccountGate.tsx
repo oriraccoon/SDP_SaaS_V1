@@ -75,7 +75,7 @@ export default function AccountGate({ children }: { children: ReactNode }) {
       } catch (err: any) {
         console.warn('회원 정보 확인 실패:', err);
         if (!cancelled) {
-          setError('회원 정보를 확인하지 못했습니다. 인터넷 연결을 확인하고 새로고침해 주세요.');
+          setError('회원 정보를 못 불러왔어요. 인터넷을 확인하고 새로고침해 주세요.');
           setLoaded(true);
         }
       }
@@ -123,9 +123,9 @@ function NoticeBanner({ text }: { text: string }) {
 function ExpiredScreen({ status, account }: { status: AccountStatus; account: Account | null }) {
   const titles: Record<AccountStatus, string> = {
     active: '',
-    new: '구독 기간이 아직 등록되지 않았습니다',
-    expired: '구독 기간이 끝났습니다',
-    blocked: '이용이 중지된 계정입니다',
+    new: '아직 구독 기간이 없어요',
+    expired: '구독 기간이 끝났어요',
+    blocked: '이용이 멈춘 계정이에요',
   };
   const descs: Record<AccountStatus, string> = {
     active: '',
@@ -183,7 +183,7 @@ function PlanScreen({ account }: { account: Account | null }) {
           <p className="text-sm font-semibold text-brand-600">구독 플랜</p>
           <h1 className="mt-3 text-3xl font-bold leading-tight sm:text-4xl">{trialEnded ? `무료 체험 ${FREE_TRIAL_DAYS}일이 끝났어요` : '나에게 맞는 플랜을 골라 주세요'}</h1>
           <p className="mt-3 text-base leading-relaxed text-[#6B7684]">
-            {trialEnded ? '계속 쓰려면 플랜을 골라 주세요. ' : ''}지금은 플랜 화면만 준비되어 있어요. 결제는 아직 연결되지 않아 관리자에게 문의해 주세요.
+            {trialEnded ? '계속 쓰려면 플랜을 골라 주세요. ' : ''}결제는 준비 중이에요. 관리자에게 문의해 주세요.
           </p>
 
           <div className={`mt-10 grid gap-4 ${visiblePlans.length >= 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>

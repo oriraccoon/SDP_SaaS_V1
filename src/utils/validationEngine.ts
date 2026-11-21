@@ -72,7 +72,7 @@ export function runComprehensiveValidation(
       code: 'STEP1_E1',
       title: '요약보고서 상세내역 시트 포맷 검사',
       status: detailHeaderFailures.length === 0 ? 'PASS' : 'FAIL',
-      description: '요약 보고서 상세내역의 칸 순서(용량, 상품명, 수량, 주문자)가 맞는지 확인합니다.',
+      description: '상품 준비표 상세내역의 칸 순서(용량, 상품명, 수량, 주문자)가 맞는지 확인합니다.',
       failCount: detailHeaderFailures.length,
       details: detailHeaderFailures.length === 0 ? ['정상 포맷 [용량, 상품명, 수량, 주문자] 준수함'] : detailHeaderFailures
     });
@@ -130,7 +130,7 @@ export function runComprehensiveValidation(
       code: 'STEP1_E3',
       title: '원본 엑셀 vs 요약보고서 상세내역 수량/건수 검사',
       status: (detailCountDiff === 0 && detailQtyDiff <= 0.01) ? 'PASS' : 'FAIL',
-      description: '요약 보고서 상세내역의 줄 수와 총 수량이 처음 올린 주문 파일과 똑같은지 확인합니다.',
+      description: '상품 준비표 상세내역의 줄 수와 총 수량이 처음 올린 주문 파일과 똑같은지 확인합니다.',
       failCount: detailCountDetails.length,
       details: (detailCountDiff === 0 && detailQtyDiff <= 0.01) ? [`원본 엑셀 건수(${rawCount}건, 총 ${rawTotalQty}개)와 완벽히 일치함`] : detailCountDetails
     });
@@ -179,7 +179,7 @@ export function runComprehensiveValidation(
       code: 'STEP1_E6',
       title: '품목별정렬 시트 포맷 검사',
       status: sortedHeaderFailures.length === 0 ? 'PASS' : 'FAIL',
-      description: '택배사에 넣을 파일의 칸 이름과 순서(용량, 상품명, 수량(고정), 수량, 수령인, 연락처, 우편번호, 주소, 배송메세지)가 맞는지 확인합니다.',
+      description: '택배사 파일의 칸 이름과 순서(용량, 상품명, 수량(고정), 수량, 수령인, 연락처, 우편번호, 주소, 배송메세지)가 맞는지 확인합니다.',
       failCount: sortedHeaderFailures.length,
       details: sortedHeaderFailures.length === 0 ? ['표준 규격 포맷 준수 확인'] : sortedHeaderFailures
     });
@@ -202,7 +202,7 @@ export function runComprehensiveValidation(
       code: 'STEP1_E7',
       title: '품목별정렬 C열 수량(고정) 고정값(1) 검사',
       status: nonOneCColDetails.length === 0 ? 'PASS' : 'FAIL',
-      description: '택배사에 넣을 파일의 "수량(고정)" 칸이 모두 1인지 확인합니다.',
+      description: '택배사 파일의 "수량(고정)" 칸이 모두 1인지 확인합니다.',
       failCount: nonOneCColDetails.length,
       details: nonOneCColDetails.length === 0 ? ['C열 수량(고정) 모든 행이 1로 정방향 세팅됨'] : nonOneCColDetails
     });
@@ -229,7 +229,7 @@ export function runComprehensiveValidation(
       code: 'STEP1_E8',
       title: '품목별정렬 데이터 무결성 검사',
       status: sortedMissingDetails.length === 0 ? 'PASS' : 'FAIL',
-      description: '택배사에 넣을 파일에서 수령인, 주소, 연락처, 상품명, 수량 중 빠진 칸이 있는지 확인합니다.',
+      description: '택배사 파일에서 수령인, 주소, 연락처, 상품명, 수량 중 빠진 칸이 있는지 확인합니다.',
       failCount: sortedMissingDetails.length,
       details: sortedMissingDetails.length === 0 ? ['모든 가공 데이터 누락 없음 (완벽 기입)'] : sortedMissingDetails
     });
@@ -251,7 +251,7 @@ export function runComprehensiveValidation(
       code: 'STEP1_E9',
       title: '품목별정렬 상품명 원본 유지 검사',
       status: sortedReplacedDetails.length === 0 ? 'PASS' : 'FAIL',
-      description: '택배사에 넣을 파일의 상품명이 잘못 바뀌지 않고 원래 이름 그대로인지 확인합니다.',
+      description: '택배사 파일의 상품명이 잘못 바뀌지 않고 원래 이름 그대로인지 확인합니다.',
       failCount: sortedReplacedDetails.length,
       details: sortedReplacedDetails.length === 0 ? ['상품명이 대치 키워드로 변환되지 않고 올바르게 유지됨'] : sortedReplacedDetails
     });
@@ -313,7 +313,7 @@ export function runComprehensiveValidation(
       code: 'STEP1_E11',
       title: '원본 엑셀 vs 품목별정렬 수량/건수 직접 대조 검사',
       status: (sortedCountDiff === 0 && sortedQtyDiff <= 0.01) ? 'PASS' : 'FAIL',
-      description: '택배사에 넣을 파일의 줄 수와 총 수량이 원래 주문 파일과 똑같은지 확인합니다.',
+      description: '택배사 파일의 줄 수와 총 수량이 원래 주문 파일과 똑같은지 확인합니다.',
       failCount: sortedCompareDetails.length,
       details: (sortedCountDiff === 0 && sortedQtyDiff <= 0.01) ? [`원본 엑셀과 품목별정렬의 총 건수(${rawCount}건) 및 총 수량(${rawTotalQty}개) 100% 일치함`] : sortedCompareDetails
     });

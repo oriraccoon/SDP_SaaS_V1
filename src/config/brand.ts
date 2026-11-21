@@ -11,9 +11,9 @@ export const FREE_TRIAL_DAYS = 3;
 
 /** 요금제. 랜딩 가격 섹션과 구독권 화면이 함께 씁니다. */
 export const PLANS = [
-  { name: '무료 체험', price: 0, desc: `${FREE_TRIAL_DAYS}일 동안 모든 기능을 써 보세요`, features: [`${FREE_TRIAL_DAYS}일 동안 무료`, '업로드 횟수 제한 없음', '모든 정리 기능'] },
-  { name: '기본', price: MONTHLY_PRICE_KRW, desc: '매달 주문을 정리하는 셀러', features: ['업로드 횟수 제한 없음', '모든 정리 기능', '설정 백업'] },
-  { name: '프로', price: PRO_PRICE_KRW, desc: '주문이 많은 셀러', features: ['기본 플랜의 모든 기능', '우선 문의 응대'] },
+  { name: '무료 체험', price: 0, desc: '먼저 써 보기', features: ['횟수 제한 없음', '모든 기능'] },
+  { name: '기본', price: MONTHLY_PRICE_KRW, desc: '매달 정리하는 셀러', features: ['횟수 제한 없음', '모든 기능', '설정 백업'] },
+  { name: '프로', price: PRO_PRICE_KRW, desc: '주문이 많은 셀러', features: ['기본 플랜 전부', '문의 먼저 답변'] },
 ];
 
 /**

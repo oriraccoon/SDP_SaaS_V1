@@ -22,7 +22,7 @@ export default function FeedbackModal({ onClose, onSent, onError }: FeedbackModa
       onSent();
       onClose();
     } catch (err: any) {
-      onError(err?.message || '전송에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+      onError(err?.message || '보내지 못했어요. 잠시 뒤 다시 해 주세요.');
     } finally {
       setIsSending(false);
     }
@@ -71,7 +71,7 @@ export default function FeedbackModal({ onClose, onSent, onError }: FeedbackModa
             value={message}
             onChange={(e) => setMessage(e.target.value.slice(0, FEEDBACK_MAX_LENGTH))}
             rows={6}
-            placeholder="어떤 상황에서 무엇이 잘 안 됐는지 적어 주세요. 예: 택배사 엑셀을 올렸는데 송장 번호가 안 나왔어요."
+            placeholder="무엇이 안 됐는지 적어 주세요. 예: 송장 번호가 안 나왔어요."
             className="w-full rounded-lg border border-slate-300 p-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-600/30 focus:border-brand-600"
           />
           <span className="mt-1 flex justify-between gap-3 text-[13px] text-slate-500">

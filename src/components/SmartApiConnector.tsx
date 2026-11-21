@@ -227,14 +227,14 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification, co
     if (e) e.stopPropagation();
     setConfigs(prev => prev.filter(c => c.id !== id));
     if (showNotification) {
-      showNotification('info', `'${name}' 연동 카드가 삭제되었습니다.`);
+      showNotification('info', `'${name}' 카드를 지웠어요.`);
     }
   };
 
   // 신규 커스텀 플랫폼 추가 저장
   const handleCreateCustomPlatform = () => {
     if (!newPlatformName.trim()) {
-      if (showNotification) showNotification('error', '플랫폼 이름을 입력해주세요.');
+      if (showNotification) showNotification('error', '쇼핑몰 이름을 적어 주세요.');
       return;
     }
 
@@ -273,7 +273,7 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification, co
     setNewClientSecret('');
 
     if (showNotification) {
-      showNotification('success', ` 새로운 커스텀 플랫폼 '${newConfig.name}'이(가) 추가되었습니다.`);
+      showNotification('success', `'${newConfig.name}'을(를) 추가했어요.`);
     }
   };
 
@@ -282,7 +282,7 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification, co
     setConfigs(prev => prev.map(c => c.id === updated.id ? updated : c));
     setActiveConfigModal(null);
     if (showNotification) {
-      showNotification('success', `${updated.name} API 연동 정보가 저장되었습니다.`);
+      showNotification('success', `${updated.name} 연동 키를 저장했어요.`);
     }
   };
 
@@ -291,7 +291,7 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification, co
     const enabledPlatforms = configs.filter(c => c.isEnabled);
     if (enabledPlatforms.length === 0) {
       if (showNotification) {
-        showNotification('info', '연동 활성화된 플랫폼이 없습니다. 연동 스위치를 켜주세요.');
+        showNotification('info', '켜 둔 쇼핑몰이 없어요. 카드의 스위치를 켜 주세요.');
       }
       return;
     }
@@ -441,7 +441,7 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification, co
 
     setIsSyncing(false);
 
-    const summary = ` ${enabledPlatforms.length}개 플랫폼에서 총 ${sampleOrders.length}건의 신규 주문이 API로 자동 수집되었습니다.`;
+    const summary = `예시 주문 ${sampleOrders.length}건을 넣었어요. (자동 연동 준비 중)`;
     onOrdersSynced(sampleOrders, summary);
 
     if (showNotification) {
@@ -456,8 +456,7 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification, co
       {/* 상단: 준비 중 안내 한 줄. 기존 수집·추가·설정 기능은 '연동 설정 열기'를 누르면 그대로 나옵니다 */}
       <div className="bg-white border border-slate-200 rounded-xl px-4 py-3 sm:px-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <p className="text-sm text-slate-600 leading-relaxed">
-          <span className="font-semibold text-slate-900">쇼핑몰 자동 연동은 준비 중이에요.</span>{' '}
-          지금은 아래에서 주문 엑셀을 직접 올려 주세요.
+          <span className="font-semibold text-slate-900">쇼핑몰 자동 연동은 준비 중이에요.</span>
         </p>
 
         <div className="flex flex-wrap items-center gap-2 shrink-0">
@@ -516,10 +515,10 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification, co
           <div className="flex items-center justify-between text-xs border-b border-slate-200 pb-2">
             <span className="font-bold text-slate-800 flex items-center gap-1.5">
               <Settings className="w-4 h-4 text-brand-600" />
-              쇼핑몰별 연동 키 등록과 셀러센터 바로가기 ({configs.length}곳 지원)
+              쇼핑몰 연동 키 · 셀러센터 바로가기
             </span>
             <span className="text-slate-500 text-xs">
-              연동 키는 이 컴퓨터(브라우저)에만 저장돼요.
+              키는 암호화해서 이 컴퓨터에서만 써요
             </span>
           </div>
 
@@ -571,20 +570,6 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification, co
                   </div>
                 </div>
 
-                {/* 중단: 연동 정보 요약 */}
-                <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs space-y-1">
-                  <div className="flex items-center justify-between text-slate-500">
-                    <span>연동 상태:</span>
-                    <span className={plat.isEnabled ? 'text-emerald-600 font-bold' : 'text-slate-400'}>
-                      {plat.isEnabled ? ' 정상 연동됨' : ' 연동 미사용'}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-slate-500">
-                    <span>최근 수집:</span>
-                    <span className="font-mono text-slate-700">{plat.lastSyncedAt || '-'}</span>
-                  </div>
-                </div>
-
                 {/* 하단: 키 설정 버튼 & 셀러센터 바로가기 버튼 */}
                 <div className="flex items-center gap-1.5 pt-1">
                   <button
@@ -618,7 +603,7 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification, co
                 <Plus className="w-5 h-5" />
               </div>
               <span className="font-bold text-xs">새 쇼핑몰 추가</span>
-              <span className="text-xs text-slate-500">쓰고 싶은 쇼핑몰을 등록하세요</span>
+              <span className="text-xs text-slate-500">목록에 없는 쇼핑몰</span>
             </button>
           </div>
 
@@ -627,7 +612,7 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification, co
             <div className="flex items-center gap-2">
               <HelpCircle className="w-4 h-4 text-brand-600 shrink-0" />
               <span>
-                <strong>팁:</strong> 각 쇼핑몰 셀러센터의 'API 관리' 메뉴에서 연동 키를 발급받아 입력하면 자동 수집이 시작돼요.
+                연동 키는 각 쇼핑몰 셀러센터의 'API 관리'에서 받을 수 있어요.
               </span>
             </div>
             <a
@@ -636,7 +621,7 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification, co
               rel="noopener noreferrer"
               className="text-brand-700 hover:underline font-bold text-xs shrink-0"
             >
-              네이버 스마트스토어 API 발급가이드 →
+              스마트스토어 키 받는 법 →
             </a>
           </div>
         </div>
@@ -647,7 +632,7 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification, co
         <Modal
           onClose={() => setActiveConfigModal(null)}
           title={`${activeConfigModal.name} 연동 설정`}
-          description="쇼핑몰 셀러센터에서 받은 API 키를 넣어 주세요. 키는 암호화해서 저장해요."
+          description="셀러센터에서 받은 API 키를 넣어 주세요."
           icon={<Key className="w-4 h-4" />}
           iconTone="brand"
           size="md"
@@ -700,7 +685,7 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification, co
             </label>
             <div className="rounded-lg bg-slate-50 px-3 py-2.5 text-[13px] text-slate-600">
               <div className="font-semibold text-slate-800">키 받는 곳</div>
-              <p className="mt-0.5 leading-relaxed">셀러센터의 [스토어 관리] → [API 연동] 메뉴에서 주문 조회 권한이 있는 키를 만드세요.</p>
+              <p className="mt-0.5 leading-relaxed">셀러센터 [API 연동] 메뉴에서 주문 조회 키를 만드세요.</p>
               <a
                 href={activeConfigModal.sellerUrl}
                 target="_blank"
@@ -782,7 +767,7 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification, co
               />
             </label>
             <p className="rounded-lg bg-brand-50 px-3 py-2 text-[13px] leading-relaxed text-brand-900">
-              쇼핑몰 자동 연동은 준비 중이에요. 지금 추가해 두면 준비되는 대로 바로 쓸 수 있어요.
+              자동 연동은 준비 중이에요. 미리 추가해 둘 수 있어요.
             </p>
           </form>
         </Modal>

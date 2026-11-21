@@ -72,7 +72,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
                 try {
                   await signInWithGoogle();
                 } catch (e: any) {
-                  setError(e?.message || '로그인에 실패했습니다.');
+                  setError(e?.message || '로그인하지 못했어요.');
                 }
               }}
               className="w-full rounded-xl border border-[#D1D6DB] bg-white px-4 py-4 text-base font-semibold text-[#191F28] transition-colors hover:bg-[#F7F8FA]"

@@ -128,6 +128,11 @@ export function describeAuthError(e: unknown): string {
 
 export async function logout(): Promise<void> {
   const a = getFirebaseAuth();
-  if (a) await signOut(a);
-  markSignedIn(false);
+  try {
+    if (a) await signOut(a);
+  } finally {
+    markSignedIn(false);
+    // 로그아웃하면 처음 화면(랜딩)으로 보냅니다. 랜딩에서 눌러도 새로 불러와서 바뀐 화면이 바로 보입니다.
+    window.location.assign('/');
+  }
 }

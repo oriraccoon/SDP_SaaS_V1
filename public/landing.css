@@ -122,6 +122,8 @@
 .feat-row { display: grid; gap: 24px; }
 .feat-row--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .feat-row--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+/* 같은 상품 카드는 긴 상품명이 들어가서 조금 넓게 */
+.feat-row--3 { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr); }
 .feat { --pad: 32px; position: relative; display: flex; flex-direction: column; gap: 24px; min-height: 0; overflow: hidden;
   padding: var(--pad) 0 0 var(--pad); border-radius: 24px; background: var(--p-surface); }
 .feat__text { padding-right: var(--pad); display: grid; gap: 6px; }
@@ -214,5 +216,6 @@
 /* 창 폭에 맞추기(컨테이너 쿼리, 파일 맨 끝에 두어 위 규칙을 이김): 좁으면 덜 중요한 열·칸을 빼서 창 끝에서 글이 잘리지 않게 */
 @container (max-width: 460px) { .frag__sheet .is-opt { display: none; } }
 @container (max-width: 300px) { .frag__sheet .opt-narrow { display: none; } }
+@container (max-width: 700px) { .frag__sheet .opt-wide { display: none; } }
 @container (max-width: 480px) { .frag__select { display: none; } }
 @container (max-width: 340px) { .frag__odd li { flex-direction: column; gap: 6px; } .frag__alert small { display: none; } }

@@ -168,14 +168,14 @@ const INFO_ICO = '<svg viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy=
 
 // 엑셀 미리 보기 모양 표: 열 글자(A, B, …), 행 번호, 회색 머리줄. opt: 좁은 화면에서 숨기는 열
 type Col = { h: string; cls?: string; opt?: boolean };
-const sheet = (cols: Col[], rows: string[][], mark: (r: string[]) => boolean) => {
+const sheet = (cols: Col[], rows: string[][], mark: (r: string[], i: number) => boolean) => {
   const td = (c: Col, v: string) => `<td class="${[c.cls, c.opt && 'is-opt'].filter(Boolean).join(' ')}">${v}</td>`;
   return `<table class="frag__sheet">
     <thead>
       <tr class="frag__letters"><td></td>${cols.map((c, i) => td(c, String.fromCharCode(65 + i))).join('')}</tr>
       <tr class="frag__head"><td>1</td>${cols.map((c) => td(c, c.h)).join('')}</tr>
     </thead>
-    <tbody>${rows.map((r, i) => `<tr${mark(r) ? ' class="is-mark"' : ''}><td>${i + 2}</td>${cols.map((c, j) => td(c, r[j])).join('')}</tr>`).join('')}</tbody>
+    <tbody>${rows.map((r, i) => `<tr${mark(r, i) ? ' class="is-mark"' : ''}><td>${i + 2}</td>${cols.map((c, j) => td(c, r[j])).join('')}</tr>`).join('')}</tbody>
   </table>`;
 };
 const PEOPLE: Record<string, [string]> = {
@@ -189,13 +189,23 @@ const COURIER_ROWS = [
   ['가상 앰플 30ml', '1', '가상최유진'], ['가상 토너 120ml', '1', '가상최유진'], ['가상 선크림 SPF50', '3', '가상정하늘'],
   ['가상 세럼 50ml', '1', '가상정하늘'], ['가상 앰플 30ml', '1', '가상정하늘'],
 ].map(([p, q, n]) => [p, q, n, PEOPLE[n][0]]);
+// 앱의 '품목별 정렬' 파일 그대로 (가상 데이터로 찍은 결과): 같은 상품 주문이 위아래로 붙어 나옵니다
 const SORTED_ROWS = [
-  ['가상 선크림 SPF50', '1', '가상김도윤'], ['가상 선크림 SPF50', '1', '가상이서연'], ['가상 선크림 SPF50', '1', '가상박지호'],
-  ['가상 세럼 50ml', '1', '가상김도윤'], ['가상 세럼 50ml', '1', '가상이서연'], ['가상 세럼 50ml', '2', '가상박지호'],
-  ['가상 세럼 50ml', '1', '가상정하늘'],
-  ['가상 앰플 30ml', '1', '가상최유진'], ['가상 앰플 30ml', '1', '가상정하늘'],
-  ['가상 토너 120ml', '2', '가상김도윤'], ['가상 토너 120ml', '1', '가상박지호'], ['가상 토너 120ml', '1', '가상최유진'],
+  ['3kg', '나주 신고배 3kg 명절 선물세트', '1', '가상김도윤', '쿠팡'],
+  ['5kg', '경북 청송 꿀사과 부사 5kg 선물용 특대과', '1', '가상김도윤', '쿠팡'],
+  ['2kg', '캠벨 포도 2kg 당일수확 산지직송', '1', '가상김도윤', '네이버 스마트스토어'],
+  ['5kg', '산지직송 꿀맛 제주 감귤 로열과 5kg 가정용', '1', '가상이서연', '네이버 스마트스토어'],
+  ['5kg', '경북 청송 꿀사과 부사 5kg 선물용 특대과', '2', '가상이서연', '네이버 스마트스토어'],
+  ['5kg', '산지직송 꿀맛 제주 감귤 로열과 5kg 가정용', '1', '가상문하린', '쿠팡'],
+  ['5kg', '산지직송 꿀맛 제주 감귤 로열과 5kg 가정용', '2', '가상박지호', '쿠팡'],
+  ['5kg', '산지직송 꿀맛 제주 감귤 로열과 5kg 가정용', '1', '가상윤도현', '네이버 스마트스토어'],
+  ['5kg', '상주 단감 5kg 아삭한 부유 단감', '2', '가상최유진', '쿠팡'],
+  ['3kg', '나주 신고배 3kg 명절 선물세트', '1', '가상강태오', '네이버 스마트스토어'],
+  ['5kg', '경북 청송 꿀사과 부사 5kg 선물용 특대과', '2', '가상서지훈', '쿠팡'],
+  ['5kg', '경북 청송 꿀사과 부사 5kg 선물용 특대과', '1', '가상오세린', '쿠팡'],
+  ['5kg', '경북 청송 꿀사과 부사 5kg 선물용 특대과', '1', '가상조은비', '쿠팡'],
 ];
+const SORTED_MARK = new Set([5, 6, 7, 10, 11, 12]);
 const FILES: [string, string, number, string][] = [
   ['DeliveryList_가상쿠팡_주문.xlsx', '5.4 KB', 6, '쿠팡'],
   ['스마트스토어_주문_1120.xlsx', '28.1 KB', 8, '네이버 스마트스토어'],
@@ -221,7 +231,6 @@ const DICT: [string, string][] = [
   ['그린 웰빙 업소용 국산 반달 슬라이스 단무지', '반달단무지'],
   ['국내제조 비린맛 없는 절단 돌산 간장 꽃게장', '게장'],
   ['제주 한라봉 3kg 선물용 고당도 산지직송', '한라봉 3kg'],
-  ['유기농 현미 10kg 햅쌀 당일도정', '현미 10kg'],
 ];
 
 const FRAGS: Record<string, string> = {
@@ -231,8 +240,8 @@ const FRAGS: Record<string, string> = {
     [{ h: '상품명' }, { h: '수량', cls: 'num' }, { h: '수령인', cls: 'name' }, { h: '연락처', opt: true }],
     COURIER_ROWS, (r) => r[2] === '가상김도윤'),
   sort: sheet(
-    [{ h: '상품명', cls: 'name' }, { h: '수량', cls: 'num' }, { h: '수령인', cls: 'opt-narrow' }],
-    SORTED_ROWS, (r) => r[0] === '가상 선크림 SPF50'),
+    [{ h: '용량', cls: 'opt-wide' }, { h: '상품명' }, { h: '수량', cls: 'num' }, { h: '주문자', cls: 'opt-narrow' }, { h: '쇼핑몰/플랫폼', cls: 'opt-wide' }],
+    SORTED_ROWS, (_r, i) => SORTED_MARK.has(i)),
   check: `<div class="frag__alert"><span class="frag__alert-ico">${WARN_ICO}</span><span><b>잘못 배송될 수 있는 주문 ${ODD.length}건</b><small>이름·전화번호·주소가 이상한 주문이에요.</small></span></div>
     <ul class="frag__odd">${ODD.map(([n, line, why]) => `<li><span><b>${n}</b><small>${line}</small></span><em class="frag__flag">${INFO_ICO}${why}</em></li>`).join('')}</ul>`,
   dict: `<table class="frag__dict"><thead><tr><td>상품명에 들어 있는 말</td><td>바꿀 이름</td></tr></thead>
@@ -241,7 +250,7 @@ const FRAGS: Record<string, string> = {
 const FEATS: [key: string, title: string, line: string, label: string][] = [
   ['detect', '쇼핑몰 양식 자동 구분', '양식이 달라도 파일만 올리면 돼요', '올린 주문 파일 여섯 개에 쿠팡 양식, 네이버 스마트스토어 양식, 토스 양식 같은 쇼핑몰 양식 표시가 붙은 목록'],
   ['pack', '같은 사람 주문은 한데 모아', '합포장할 주문이 바로 보여요', '택배사 파일 미리 보기: 가상김도윤의 주문 세 줄이 위아래로 붙어 있는 표'],
-  ['sort', '같은 상품끼리 묶어서 정리해요', '상품 이름순이라 같은 상품이 한데 모여요', '상품 준비표 미리 보기: 가상 선크림 SPF50 주문 세 줄이 한데 모인 표'],
+  ['sort', '같은 상품끼리 묶어서 정리해요', '상품 이름순이라 같은 상품이 한데 모여요', '품목별 정렬 파일 미리 보기: 제주 감귤 주문 세 줄, 청송 꿀사과 주문 세 줄이 각각 위아래로 붙어 있는 표'],
   ['check', '이상한 주문은 먼저 알려 줘요', '이름·전화번호·주소 점검', '잘못 배송될 수 있는 주문 5건: 주소가 너무 짧은 주문, 전화번호가 7자리인 주문 같은 문제마다 붉은 표시가 붙은 목록'],
   ['dict', '긴 상품명은 짧게', '한 번 정하면 계속 써요', '품목사전: 경북 청송 꿀사과 부사 5kg 선물용 특대과를 사과 5kg으로 바꾸는 것처럼 긴 상품명마다 짧은 이름이 적힌 목록'],
 ];

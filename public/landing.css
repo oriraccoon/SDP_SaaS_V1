@@ -127,3 +127,9 @@
 #features .feat-stack > .card { grid-column: auto; }
 @media (max-width: 760px) { #features .feat-stack { grid-template-columns: 1fr; } #features .feat-stack > .card { grid-column: 1 / -1; } }
 
+
+/* 같은 줄의 기능 카드는 높이를 맞추고, 사진은 틀 가운데에 */
+#features .feat-stack { align-items: stretch; }
+#features .feat-stack > .card--open { display: flex; flex-direction: column; }
+#features .feat-stack > .card--open > .panel { flex: 1 1 auto; display: flex; align-items: center; }
+#features .feat-stack > .card--open > .panel > .feat-shot { width: 100%; }

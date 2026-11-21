@@ -188,6 +188,15 @@ const features = `
       </div>
     </div>
     <div class="grid">
+      <article class="card card--row card--open span-12">
+        <h3>같은 상품끼리 묶어서 정리해요</h3>
+        <p>상품 이름순으로 정렬해서 같은 상품이 한데 모여요</p>
+        <div class="panel" ${mesh(58)}>
+          <div class="stage stage--fade-b"><div class="at-corner to-edge" style="--ax:28px;--ay:28px">${shot('product-sorted', 1180, 540, '품목별 정렬 파일 미리 보기: 선크림, 세럼, 토너처럼 같은 상품 주문이 이름순으로 한데 모여 있는 표', 'loading="lazy" style="width:1000px"')}</div></div>
+        </div>
+      </article>
+    </div>
+    <div class="grid">
       <article class="card card--row card--open span-6">
         <h3>이상한 주문은 먼저 알려 줘요</h3>
         <p>이름·전화번호·주소 점검</p>

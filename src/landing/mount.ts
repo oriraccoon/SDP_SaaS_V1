@@ -201,7 +201,7 @@ const features = `
         <h3>이상한 주문은 먼저 알려 줘요</h3>
         <p>이름·전화번호·주소 점검</p>
         <div class="panel" ${mesh(47)}>
-            <div class="stage stage--fade-b"><div class="at-corner to-edge" style="--ax:28px;--ay:28px">${shot('check-orders', 1344, 740, '잘못 배송될 수 있는 주문 2건: 전화번호가 9자리, 주소가 너무 짧음', 'loading="lazy" style="width:600px"')}</div></div>
+            <div class="stage stage--fade-b"><div class="at-corner to-edge" style="--ax:28px;--ay:28px">${shot('check-orders', 920, 370, '잘못 배송될 수 있는 주문 2건: 주소가 너무 짧음', 'loading="lazy" style="width:600px"')}</div></div>
         </div>
       </article>
       <article class="card card--row card--open span-6">

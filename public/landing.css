@@ -29,7 +29,6 @@
 /* screen fit: the phone's privacy and FAQ sections inside one screen */
 @media (max-width: 639px) {
   #privacy .t-lead { font-size: var(--t-body); }
-  #faq .span-5 > p { display: none; }
 }
 
 /* the close word: the Latin face with Hangul fallback sits lower, so give its line room */
@@ -67,12 +66,12 @@
   #price .grid { gap: var(--s-3); }
 }
 
-#price .plan-compare { margin-top: 48px; width: 100%; border-collapse: collapse; font-size: 15px; color: var(--p-ink); }
-#price .plan-compare th, #price .plan-compare td { padding: 14px 12px; border-bottom: 1px solid #e5e5e5; text-align: center; }
+#price .plan-compare { margin-top: 32px; width: 100%; border-collapse: collapse; font-size: 15px; color: var(--p-ink); }
+#price .plan-compare th, #price .plan-compare td { padding: 12px 12px; border-bottom: 1px solid #e5e5e5; text-align: center; }
 #price .plan-compare thead th { font-weight: 600; }
 #price .plan-compare tbody th { text-align: left; font-weight: 400; }
 #price .plan-compare .yes { color: var(--p-accent); font-weight: 700; font-size: 17px; }
-#price .plan-compare .no { color: #bdbdbd; }
+#price .plan-compare .no { color: var(--muted); }
 @media (max-width: 639px) {
   #price .plan-compare { font-size: 14px; }
   #price .plan-compare th, #price .plan-compare td { padding: 10px 4px; }
@@ -83,8 +82,9 @@
 
 
 /* hero: the shops it reads, as small chips instead of a sentence */
-.shop-chips { list-style: none; margin: var(--s-5) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
-.shop-chips li { padding: 5px 10px; border-radius: 999px; font: 500 13px/1.2 var(--font-text); color: var(--muted); background: color-mix(in oklab, var(--ink) 5%, transparent); }
+.shop-chips { list-style: none; margin: var(--s-5) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 0; }
+.shop-chips li { font: 500 14px/1.4 var(--font-text); color: var(--muted); }
+.shop-chips li:not(:last-child)::after { content: "·"; margin: 0 8px; color: color-mix(in oklab, var(--muted) 60%, transparent); }
 
 /* the four steps: tabs that switch the app screen below */
 .steps { margin: var(--s-6) 0 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
@@ -227,3 +227,15 @@
 @container (max-width: 700px) { .frag__sheet .opt-wide { display: none; } }
 @container (max-width: 480px) { .frag__select { display: none; } }
 @container (max-width: 340px) { .frag__odd li { flex-direction: column; gap: 6px; } .frag__alert small { display: none; } }
+
+/* 요금제 카드 이름 앞 아이콘 */
+.plan__head { display: flex; align-items: center; gap: 10px; }
+.plan__ico { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 10px; color: var(--p-accent); background: color-mix(in oklab, var(--p-accent) 12%, transparent); }
+.is-featured .plan__ico { color: #fff; background: var(--p-accent); }
+.plan__ico svg { width: 24px; height: 24px; }
+
+/* FAQ: 문의하기 안내 줄에 앱의 문의 버튼 모양 아이콘. 섹션 내용은 화면 세로 가운데 */
+.faq__ask { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+.faq__ask-ico { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; color: var(--p-ink); background: #fff; border: 1px solid var(--line); box-shadow: 0 2px 8px rgb(0 0 0 / .06); }
+.faq__ask-ico svg { width: 24px; height: 24px; }
+#faq > .wrap { justify-content: center; }

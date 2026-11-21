@@ -164,51 +164,45 @@ const mesh = (seed: number) =>
   `data-fx="gradient-mesh" data-fx-seed="${seed}" data-fx-params='{"drift":0}'`;
 
 const features = `
-<section class="section g2" id="features" aria-labelledby="features-h">
+<section class="section" id="features" aria-labelledby="features-h">
   <div class="wrap">
-    <div class="group">
-      <div class="section-head">
-        <h2 id="features-h">엑셀 정리는 맡기세요</h2>
-      </div>
-      <div class="grid">
-        <article class="card card--row card--open span-6">
+    <div class="section-head">
+      <h2 id="features-h">엑셀 정리는 맡기세요</h2>
+    </div>
+    <div class="feat-stack">
+      <article class="card card--row card--open span-6">
           <h3>쇼핑몰 양식 자동 구분</h3>
           <p>쇼핑몰 양식이 달라도 파일만 올리면 돼요</p>
           <div class="panel" ${mesh(21)}>
-            <div class="stage stage--fade-b"><div class="at-corner to-edge" style="--ax:28px;--ay:28px">${shot('files-detected', 1600, 523, '주문서 올리기 카드: 올린 주문 파일 두 개를 쿠팡 양식, 네이버 스마트스토어 양식으로 알아본 모습', 'loading="lazy" style="width:780px"')}</div></div>
+            <div class="feat-shot">${shot('files-detected', 1600, 523, '주문서 올리기 카드: 올린 주문 파일 두 개를 쿠팡 양식, 네이버 스마트스토어 양식으로 알아본 모습', 'loading=\"lazy\"')}</div>
           </div>
         </article>
-        <article class="card card--row card--open span-6">
+      <article class="card card--row card--open span-6">
           <h3>같은 사람 주문은 한데 모아</h3>
           <p>합포장할 주문이 바로 보여요</p>
           <div class="panel" ${mesh(34)}>
-            <div class="stage stage--fade-b"><div class="at-corner to-edge" style="--ax:28px;--ay:28px">${shot('courier-file', 1180, 270, '택배사에 넣을 파일 미리 보기: 같은 받는 사람의 주문이 위아래로 붙어 있는 표', 'loading="lazy" style="width:860px"')}</div></div>
+            <div class="feat-shot">${shot('courier-file', 1180, 270, '택배사에 넣을 파일 미리 보기: 같은 받는 사람의 주문이 위아래로 붙어 있는 표', 'loading=\"lazy\"')}</div>
           </div>
         </article>
-      </div>
-    </div>
-    <div class="grid">
       <article class="card card--row card--open span-12">
         <h3>같은 상품끼리 묶어서 정리해요</h3>
         <p>상품 이름순으로 정렬해서 같은 상품이 한데 모여요</p>
         <div class="panel" ${mesh(58)}>
-          <div class="stage stage--fade-b"><div class="at-corner to-edge" style="--ax:28px;--ay:28px">${shot('product-sorted', 1180, 540, '품목별 정렬 파일 미리 보기: 선크림, 세럼, 토너처럼 같은 상품 주문이 이름순으로 한데 모여 있는 표', 'loading="lazy" style="width:1000px"')}</div></div>
+          <div class="feat-shot">${shot('product-sorted', 1180, 540, '품목별 정렬 파일 미리 보기: 선크림, 세럼, 토너처럼 같은 상품 주문이 이름순으로 한데 모여 있는 표', 'loading=\"lazy\"')}</div>
         </div>
       </article>
-    </div>
-    <div class="grid">
       <article class="card card--row card--open span-6">
         <h3>이상한 주문은 먼저 알려 줘요</h3>
         <p>이름·전화번호·주소 점검</p>
         <div class="panel" ${mesh(47)}>
-            <div class="stage stage--fade-b"><div class="at-corner to-edge" style="--ax:28px;--ay:28px">${shot('check-orders', 920, 370, '잘못 배송될 수 있는 주문 2건: 주소가 너무 짧음', 'loading="lazy" style="width:600px"')}</div></div>
+            <div class="feat-shot">${shot('check-orders', 920, 370, '잘못 배송될 수 있는 주문 2건: 주소가 너무 짧음', 'loading=\"lazy\"')}</div>
         </div>
       </article>
       <article class="card card--row card--open span-6">
         <h3>긴 상품명은 짧게</h3>
         <p>한 번 정하면 계속 써요</p>
         <div class="panel" ${mesh(58)}>
-          <div class="stage stage--fade-b"><div class="at-corner to-edge" style="--ax:28px;--ay:28px">${shot('dictionary', 1600, 1417, '품목사전 화면: 긴 상품명마다 바꿀 짧은 이름이 적힌 목록', 'loading="lazy" style="width:760px"')}</div></div>
+          <div class="feat-shot">${shot('dictionary', 1600, 1417, '품목사전 화면: 긴 상품명마다 바꿀 짧은 이름이 적힌 목록', 'loading=\"lazy\"')}</div>
         </div>
       </article>
     </div>

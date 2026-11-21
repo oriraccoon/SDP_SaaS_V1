@@ -116,3 +116,14 @@
 
 /* 히어로 제목은 글자 사이를 조금 넓혀서 읽기 편하게 (공용 기본값 -0.025em보다 느슨하게) */
 #hero-h { letter-spacing: 0em; }
+
+/* 기능 카드 사진: 틀 안에 온전히 들어가게 (잘림·흐림 없이) */
+#features .feat-shot { padding: 28px; }
+#features .feat-shot img { display: block; width: 100%; height: auto; border-radius: 12px; }
+#features .card--open > .panel { height: auto; min-height: 0; }
+/* 기능 카드: 한 격자에 두 줄로, 넓은 카드는 두 칸. 사진은 틀 안에 온전히 */
+#features .feat-stack { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 56px 32px; margin-top: 48px; }
+#features .feat-stack > .span-12 { grid-column: 1 / -1; }
+#features .feat-stack > .card { grid-column: auto; }
+@media (max-width: 760px) { #features .feat-stack { grid-template-columns: 1fr; } #features .feat-stack > .card { grid-column: 1 / -1; } }
+

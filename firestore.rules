@@ -29,7 +29,8 @@ service cloud.firestore {
     // 회원 문서 필드 (앱이 쓰는 것):
     //   email: string (로그인 이메일) / lastLoginAt: string (ISO 시각)
     //   expiresAt: string|null, features: map, blocked: bool, deletedAt: string|null  (관리자 또는 초대만)
-    //   uploadLimit: int|null (월 업로드 한도, 없거나 null이면 제한 없음. 본인은 처음 한 번 5만 설정)
+    //   uploadLimit: int|null (월 업로드 한도, 없거나 null이면 제한 없음. 관리자만 설정, 예전 무료 플랜 회원에게 남아 있음)
+    //   trialStartedAt: timestamp (무료 체험 시작 시각. 본인이 한 번만 서버 시각 그대로 기록)
     //   usage: { month: 'YYYY-MM', count: int } (이번 달 업로드 사용량. 본인은 늘리기만 가능)
 
     // 시각을 'YYYY-MM' 달 키로 바꿉니다.
@@ -100,13 +101,15 @@ service cloud.firestore {
           && invite(request.resource.data.email).features == request.resource.data.features
           && invite(request.resource.data.email).blocked == request.resource.data.blocked)
         // 본인은 이번 달 업로드 사용량(usage)을 늘리기만 할 수 있습니다.
-        // 무료 플랜 한도(5회)는 한도가 아직 없을 때 한 번만 스스로 설정할 수 있습니다 (관리자가 정한 한도는 못 바꿈).
+        // 무료 체험은 체험·구독 기간·월 한도가 모두 없는 계정만 한 번 시작할 수 있고, 시작 시각은 서버 시각이어야 합니다.
         || (isSignedIn() && request.auth.uid == uid
           && ((request.resource.data.diff(resource.data).affectedKeys().hasOnly(['usage'])
               && isValidUsageIncrease())
-            || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['uploadLimit'])
+            || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['trialStartedAt'])
+              && !('trialStartedAt' in resource.data)
               && !('uploadLimit' in resource.data)
-              && request.resource.data.uploadLimit == 5)))
+              && resource.data.get('expiresAt', null) == null
+              && request.resource.data.trialStartedAt == request.time)))
         || isAdmin();
       // 관리자는 휴지통에서 영구 삭제할 때 회원 정보를 지울 수 있습니다.
       allow delete: if isAdmin();

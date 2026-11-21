@@ -10,7 +10,7 @@
  * moment: line-carries-colour on the privacy section (the dark band): the page turns dark where it talks
  *         about keeping order files in the browser
  */
-import { APP_NAME, BUSINESS_INFO, FREE_MONTHLY_UPLOADS, PLANS } from '../config/brand';
+import { APP_NAME, BUSINESS_INFO, FREE_TRIAL_DAYS, PLANS } from '../config/brand';
 import { DEFAULT_FAQS, loadFaqs, type Faq } from '../lib/siteContent';
 import { SUPPORTED_COURIERS, SUPPORTED_SHOPS } from '../lib/supported';
 
@@ -182,26 +182,26 @@ const pricing = `
   <div class="wrap">
     <div class="section-head">
       <h2 id="price-h">월 단위 요금</h2>
-      <p>무료 플랜으로 월 ${FREE_MONTHLY_UPLOADS}회까지 써 보고, 주문이 늘면 바꾸세요.</p>
+      <p>${FREE_TRIAL_DAYS}일 동안 무료로 마음껏 써 보고, 맞으면 기본 플랜으로 이어서 쓰세요.</p>
     </div>
     <div class="grid">
       ${PLANS.map((plan) => {
         const featured = plan.name === '기본';
-        const label = `${plan.name} 플랜 시작하기`;
+        const label = plan.price === 0 ? `${FREE_TRIAL_DAYS}일 무료로 써 보기` : `${plan.name} 플랜 시작하기`;
         return `<article class="card card--plan span-4 m-nolift${featured ? ' is-featured' : ''}">
           <h3>${plan.name}${featured ? ' <span class="badge">많이 써요</span>' : ''}</h3>
           <p>${plan.desc}</p>
-          <p class="price"><span class="t-stat">${won(plan.price)}</span><span class="muted">/ 월</span></p>
+          <p class="price"><span class="t-stat">${won(plan.price)}</span><span class="muted">/ ${plan.price === 0 ? `${FREE_TRIAL_DAYS}일` : '월'}</span></p>
           <a class="btn ${featured ? 'btn--primary' : 'btn--secondary'}" href="${APP_URL}">${label}</a>
           <ul class="checks">${plan.features.map((f) => `<li>${f}</li>`).join('')}</ul>
         </article>`;
       }).join('')}
     </div>
-    <div class="usage ui ui-panel" role="img" aria-label="무료 플랜을 쓰는 계정의 사이드바: 이번 달 업로드 5회 중 3회 사용">
+    <div class="usage ui ui-panel" role="img" aria-label="무료 체험 중인 계정의 사이드바: 체험 ${FREE_TRIAL_DAYS}일 중 2일 남음">
       <span class="mark" data-mark="dots" aria-hidden="true"></span>
       <div class="usage__who"><span class="usage__label">로그인한 계정</span><b>내 계정</b></div>
-      <div class="usage__meter"><span>무료 플랜 · 이번 달 <b>3 / ${FREE_MONTHLY_UPLOADS}회</b> 사용</span><i style="--k:${3 / FREE_MONTHLY_UPLOADS}"></i></div>
-      <span class="usage__note">${FREE_MONTHLY_UPLOADS}회를 다 쓰면 다음 달 1일에 다시 채워져요</span>
+      <div class="usage__meter"><span>무료 체험 · <b>2일 남음</b></span><i style="--k:${1 / FREE_TRIAL_DAYS}"></i></div>
+      <span class="usage__note">체험 동안은 업로드 횟수 제한이 없어요</span>
     </div>
   </div>
 </section>`;
@@ -260,7 +260,7 @@ const footer = `
   <div class="wrap">
     <div class="closing__cta close--word">
       <div class="section-head--split">
-        <div><h2 id="close-h">무료 플랜으로 월 ${FREE_MONTHLY_UPLOADS}회 정리</h2><p class="t-lead">기본 플랜은 월 ${won(PLANS[1].price)}, 올리는 횟수에 제한이 없어요.</p></div>
+        <div><h2 id="close-h">${FREE_TRIAL_DAYS}일 무료로 정리해 보세요</h2><p class="t-lead">기본 플랜은 월 ${won(PLANS[1].price)}, 올리는 횟수에 제한이 없어요.</p></div>
         <a class="btn btn--primary" href="${APP_URL}">${MAIN_ACTION}${ARROW}</a>
       </div>
       <p class="close__word" aria-hidden="true">${APP_NAME}</p>

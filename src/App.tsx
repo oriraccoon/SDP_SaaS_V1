@@ -68,7 +68,7 @@ import { encryptApiConfigs, decryptApiConfigs } from './lib/secureKey';
 import { decryptExcelFile } from './utils/decryptExcel';
 import { getCurrentUid, logout } from './firebaseAuth';
 import { useAccount } from './AccountGate';
-import { consumeUploads, uploadsLeft } from './lib/account';
+import { consumeUploads, uploadsLeft, trialDaysLeft } from './lib/account';
 import { APP_NAME } from './config/brand';
 import { uploadsUsedThisMonth } from './lib/account';
 import FeedbackModal from './components/FeedbackModal';
@@ -2233,7 +2233,11 @@ export default function App() {
                     {account.email}
                   </span>
                 )}
-                {account && typeof account.uploadLimit === 'number' && (
+                {account && trialDaysLeft(account) !== null ? (
+                  <span className="mt-1 text-xs text-slate-500 tabular-nums">
+                    무료 체험 · {trialDaysLeft(account)}일 남음
+                  </span>
+                ) : account && typeof account.uploadLimit === 'number' && (
                   <span className="mt-1 text-xs text-slate-500 tabular-nums">
                     무료 플랜 · 이번 달 {uploadsUsedThisMonth(account)}/{account.uploadLimit}회 사용
                   </span>

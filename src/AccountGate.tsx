@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { Check, Megaphone } from 'lucide-react';
-import { APP_NAME, PLANS } from './config/brand';
+import { APP_NAME, FREE_TRIAL_DAYS, PLANS } from './config/brand';
 import { getCurrentUid, getCurrentUser, isFirebaseConfigured, logout } from './firebaseAuth';
 import {
   isAdminUser,
@@ -9,7 +9,9 @@ import {
   subscribeAccount,
   subscribeNotice,
   touchAccount,
-  startFreePlan,
+  startFreeTrial,
+  canStartTrial,
+  trialEndsAtMs,
   type Account,
   type AccountStatus,
   type FeatureKey,
@@ -97,7 +99,7 @@ export default function AccountGate({ children }: { children: ReactNode }) {
   if (status !== 'active') {
     // 이용이 중지된 계정은 안내만, 신규 가입자와 기간이 끝난 회원은 구독권 화면을 봅니다.
     if (status === 'blocked') return <ExpiredScreen status={status} account={account} />;
-    return <PlanScreen />;
+    return <PlanScreen account={account} />;
   }
 
   const features = resolveFeatures(account);
@@ -155,15 +157,18 @@ function ExpiredScreen({ status, account }: { status: AccountStatus; account: Ac
 }
 
 /** 구독하지 않은 회원(신규 가입, 기간 만료)에게 보여 주는 구독권 선택 화면. 결제는 아직 연결하지 않았습니다. */
-function PlanScreen() {
+function PlanScreen({ account }: { account: Account | null }) {
   const [notice, setNotice] = useState<string | null>(null);
+  const trialAvailable = canStartTrial(account);
+  const trialEnded = trialEndsAtMs(account) !== null && !account?.expiresAt;
   async function startFree() {
+    if (!trialAvailable) return;
     const uid = getCurrentUid();
     if (!uid) return;
     try {
-      await startFreePlan(uid);
+      await startFreeTrial(uid);
     } catch (err) {
-      setNotice('무료 플랜을 시작하지 못했습니다. 잠시 후 다시 시도해 주세요.');
+      setNotice('무료 체험을 시작하지 못했어요. 잠시 후 다시 시도해 주세요.');
     }
   }
   return (
@@ -174,8 +179,10 @@ function PlanScreen() {
       <main className="flex flex-1 flex-col items-center pb-16">
         <div className="w-full max-w-4xl">
           <p className="text-sm font-semibold text-brand-600">구독 플랜</p>
-          <h1 className="mt-3 text-3xl font-bold leading-tight sm:text-4xl">나에게 맞는 플랜을 골라 주세요</h1>
-          <p className="mt-3 text-base leading-relaxed text-[#6B7684]">지금은 플랜 화면만 준비되어 있어요. 결제는 아직 연결되지 않았습니다.</p>
+          <h1 className="mt-3 text-3xl font-bold leading-tight sm:text-4xl">{trialEnded ? `무료 체험 ${FREE_TRIAL_DAYS}일이 끝났어요` : '나에게 맞는 플랜을 골라 주세요'}</h1>
+          <p className="mt-3 text-base leading-relaxed text-[#6B7684]">
+            {trialEnded ? '계속 쓰려면 플랜을 골라 주세요. ' : ''}지금은 플랜 화면만 준비되어 있어요. 결제는 아직 연결되지 않아 관리자에게 문의해 주세요.
+          </p>
 
           <div className="mt-10 grid gap-4 sm:grid-cols-3">
             {PLANS.map((plan) => (
@@ -184,7 +191,7 @@ function PlanScreen() {
                 <p className="mt-1 text-sm text-[#6B7684]">{plan.desc}</p>
                 <p className="mt-5 text-3xl font-bold">
                   {plan.price === 0 ? '0원' : `${plan.price.toLocaleString('ko-KR')}원`}
-                  <span className="ml-1 text-sm font-medium text-[#8B95A1]">{plan.price === 0 ? '' : '/ 월'}</span>
+                  <span className="ml-1 text-sm font-medium text-[#8B95A1]">{plan.price === 0 ? `/ ${FREE_TRIAL_DAYS}일` : '/ 월'}</span>
                 </p>
                 <ul className="mt-5 flex-1 space-y-2.5">
                   {plan.features.map((f) => (
@@ -196,13 +203,14 @@ function PlanScreen() {
                 </ul>
                 <button
                   onClick={() => (plan.price === 0 ? startFree() : setNotice('결제는 준비 중입니다. 관리자에게 문의해 주세요.'))}
-                  className={`mt-6 w-full rounded-xl px-4 py-3.5 text-base font-semibold transition-colors ${
+                  disabled={plan.price === 0 && !trialAvailable}
+                  className={`mt-6 w-full rounded-xl px-4 py-3.5 text-base font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
                     plan.price === 0
-                      ? 'border border-[#D1D6DB] text-[#191F28] hover:bg-[#F7F8FA]'
+                      ? 'border border-[#D1D6DB] text-[#191F28] hover:bg-[#F7F8FA] disabled:hover:bg-transparent'
                       : 'bg-brand-600 text-white hover:bg-brand-700'
                   }`}
                 >
-                  {plan.price === 0 ? '무료로 시작' : '이 플랜 선택'}
+                  {plan.price === 0 ? (trialAvailable ? `${FREE_TRIAL_DAYS}일 무료로 시작` : '무료 체험을 이미 썼어요') : '이 플랜 선택'}
                 </button>
               </div>
             ))}

@@ -19,6 +19,7 @@ import {
   subscribeNotice,
   updateAccount,
   uploadsUsedThisMonth,
+  trialEndsAtMs,
   type Account,
   type FeatureKey,
   type FeedbackReport,
@@ -222,6 +223,7 @@ function MembersTab() {
                   마지막 접속: {acc.lastLoginAt ? new Date(acc.lastLoginAt).toLocaleString('ko-KR') : '-'}
                   {' · '}만료일: {acc.expiresAt ? new Date(acc.expiresAt).toLocaleDateString('ko-KR') : '-'}
                   {' · '}이번 달 업로드: {uploadsUsedThisMonth(acc)}{typeof acc.uploadLimit === 'number' ? ` / ${acc.uploadLimit}회` : '회 (제한 없음)'}
+                  {trialEndsAtMs(acc) !== null && <>{' · '}무료 체험: {new Date(trialEndsAtMs(acc) as number).toLocaleDateString('ko-KR')}까지</>}
                 </p>
               </div>
               <span className={`rounded-md border px-2 py-0.5 text-xs font-bold ${statusColor}`}>{statusLabel}</span>

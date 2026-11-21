@@ -1,4 +1,4 @@
-import { FREE_MONTHLY_UPLOADS } from '../config/brand';
+import { FREE_TRIAL_DAYS } from '../config/brand';
 import {
   collection,
   deleteDoc,
@@ -6,6 +6,7 @@ import {
   getDoc,
   getDocs,
   getFirestore,
+  serverTimestamp,
   onSnapshot,
   setDoc,
   updateDoc,
@@ -41,6 +42,8 @@ export interface Account {
   uploadLimit?: number | null;
   /** 이번 달 업로드 사용량. 달이 바뀌면 자동으로 0이 됩니다. */
   usage?: { month: string; count: number } | null;
+  /** 무료 체험을 시작한 시각 (서버 시각). 이때부터 FREE_TRIAL_DAYS일 동안 씁니다. */
+  trialStartedAt?: { toMillis: () => number } | null;
 }
 
 export type AccountStatus = 'active' | 'new' | 'expired' | 'blocked';
@@ -127,8 +130,31 @@ export function resolveStatus(account: Account | null): AccountStatus {
   // 휴지통에 든 회원은 구독권이 없는 것으로 봅니다 (이용 중지와 구분)
   if (account.deletedAt) return 'new';
   if (account.blocked) return 'blocked';
-  if (!account.expiresAt) return typeof account.uploadLimit === 'number' ? 'active' : 'new';
-  return new Date(account.expiresAt).getTime() > Date.now() ? 'active' : 'expired';
+  if (account.expiresAt) return new Date(account.expiresAt).getTime() > Date.now() ? 'active' : 'expired';
+  // 구독 기간이 없으면: 무료 체험 중인지, 예전 무료 플랜(월 횟수 한도)인지 봅니다
+  const trialEnd = trialEndsAtMs(account);
+  if (trialEnd !== null) return trialEnd > Date.now() ? 'active' : 'expired';
+  return typeof account.uploadLimit === 'number' ? 'active' : 'new';
+}
+
+/** 무료 체험이 끝나는 시각(ms). 체험을 시작하지 않았으면 null입니다. */
+export function trialEndsAtMs(account: Account | null): number | null {
+  const started = account?.trialStartedAt;
+  if (!started || typeof started.toMillis !== 'function') return null;
+  return started.toMillis() + FREE_TRIAL_DAYS * 24 * 60 * 60 * 1000;
+}
+
+/** 무료 체험 남은 날 (올림). 체험 중이 아니면 null입니다. */
+export function trialDaysLeft(account: Account | null): number | null {
+  if (account?.expiresAt) return null;
+  const end = trialEndsAtMs(account);
+  if (end === null) return null;
+  return Math.max(0, Math.ceil((end - Date.now()) / (24 * 60 * 60 * 1000)));
+}
+
+/** 무료 체험을 시작할 수 있는 계정인지: 체험·구독 기간·예전 무료 한도가 모두 없을 때만 됩니다. */
+export function canStartTrial(account: Account | null): boolean {
+  return !account?.trialStartedAt && !account?.expiresAt && typeof account?.uploadLimit !== 'number';
 }
 
 export function resolveFeatures(account: Account | null): Record<FeatureKey, boolean> {
@@ -166,9 +192,9 @@ export async function consumeUploads(account: Account | null, count: number): Pr
   return true;
 }
 
-/** 무료 플랜 시작: 본인 계정에 무료 월 업로드 한도를 설정합니다. */
-export async function startFreePlan(uid: string): Promise<void> {
-  await setDoc(doc(database(), 'users', uid), { uploadLimit: FREE_MONTHLY_UPLOADS }, { merge: true });
+/** 무료 체험 시작: 본인 계정에 체험 시작 시각(서버 시각)을 한 번 기록합니다. */
+export async function startFreeTrial(uid: string): Promise<void> {
+  await setDoc(doc(database(), 'users', uid), { trialStartedAt: serverTimestamp() }, { merge: true });
 }
 
 // ---- 관리자 전용 ----

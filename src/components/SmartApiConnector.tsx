@@ -493,15 +493,15 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification, co
 
       {/* 동기화 프로그레스 진행바 */}
       {isSyncing && (
-        <div className="bg-[#0F3A2F]/80 border border-brand-700 rounded-xl p-3.5 space-y-2 animate-fadeIn">
-          <div className="flex items-center justify-between text-xs font-bold text-amber-300">
+        <div className="bg-brand-50 border border-brand-200 rounded-xl p-3.5 space-y-2 animate-fadeIn">
+          <div className="flex items-center justify-between text-xs font-bold text-brand-700">
             <span className="flex items-center gap-1.5">
-              <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-300" />
+              <RefreshCw className="w-3.5 h-3.5 animate-spin text-brand-600" />
               {syncStatusText}
             </span>
             <span>{syncProgress}%</span>
           </div>
-          <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+          <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
             <div 
               className="bg-emerald-500 h-full transition-all duration-300 ease-out"
               style={{ width: `${syncProgress}%` }}
@@ -513,13 +513,13 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification, co
       {/* 펼쳐졌을 때: 쇼핑몰 카드 리스트 및 셀러센터 바로가기 / API 키 설정 모듈 */}
       {isExpanded && (
         <div className="space-y-4 pt-2">
-          <div className="flex items-center justify-between text-xs border-b border-brand-800/30 pb-2">
-            <span className="font-bold text-brand-200 flex items-center gap-1.5">
-              <Settings className="w-4 h-4 text-brand-400" />
-              플랫폼별 API 키 등록 및 셀러센터 퀵링크 ({configs.length}개 지원)
+          <div className="flex items-center justify-between text-xs border-b border-slate-200 pb-2">
+            <span className="font-bold text-slate-800 flex items-center gap-1.5">
+              <Settings className="w-4 h-4 text-brand-600" />
+              쇼핑몰별 연동 키 등록과 셀러센터 바로가기 ({configs.length}곳 지원)
             </span>
-            <span className="text-slate-400 text-xs">
-              API 인증키는 본인 브라우저(로컬스토리지)에만 안전하게 저장됩니다.
+            <span className="text-slate-500 text-xs">
+              연동 키는 이 컴퓨터(브라우저)에만 저장돼요.
             </span>
           </div>
 
@@ -527,10 +527,10 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification, co
             {configs.map(plat => (
               <div 
                 key={plat.id}
-                className={`bg-slate-900/90 border rounded-xl p-3.5 flex flex-col justify-between gap-3 transition relative group ${
+                className={`bg-white border rounded-xl p-3.5 flex flex-col justify-between gap-3 transition relative group ${
                   plat.isEnabled 
-                    ? 'border-brand-700/80 shadow-md' 
-                    : 'border-slate-800 opacity-70 hover:opacity-100'
+                    ? 'border-brand-300 shadow-md' 
+                    : 'border-slate-200 opacity-70 hover:opacity-100'
                 }`}
               >
                 {/* 상단: 플랫폼명 & 토글 스위치 & 삭제버튼 */}
@@ -539,7 +539,7 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification, co
                     <span className={`px-2 py-0.5 rounded text-xs font-extrabold shrink-0 ${plat.logoColor}`}>
                       {plat.name.slice(0, 2)}
                     </span>
-                    <span className="font-bold text-xs text-white truncate" title={plat.name}>
+                    <span className="font-bold text-xs text-slate-900 truncate" title={plat.name}>
                       {plat.name}
                     </span>
                   </div>
@@ -548,7 +548,7 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification, co
                     {/* 커스텀 또는 개별 삭제 버튼 */}
                     <button
                       onClick={(e) => handleDeletePlatform(plat.id, plat.name, e)}
-                      className="p-1 text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 rounded transition cursor-pointer"
+                      className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition cursor-pointer"
                       title="플랫폼 카드 삭제"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -558,7 +558,7 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification, co
                     <button
                       onClick={() => handleTogglePlatform(plat.id)}
                       className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                        plat.isEnabled ? 'bg-emerald-500' : 'bg-slate-700'
+                        plat.isEnabled ? 'bg-emerald-500' : 'bg-slate-300'
                       }`}
                       title={plat.isEnabled ? '자동 연동 해제' : '자동 연동 활성화'}
                     >
@@ -572,16 +572,16 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification, co
                 </div>
 
                 {/* 중단: 연동 정보 요약 */}
-                <div className="bg-slate-950/70 p-2.5 rounded-lg border border-slate-800 text-xs space-y-1">
-                  <div className="flex items-center justify-between text-slate-400">
-                    <span>API 상태:</span>
-                    <span className={plat.isEnabled ? 'text-emerald-400 font-bold' : 'text-slate-500'}>
+                <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs space-y-1">
+                  <div className="flex items-center justify-between text-slate-500">
+                    <span>연동 상태:</span>
+                    <span className={plat.isEnabled ? 'text-emerald-600 font-bold' : 'text-slate-400'}>
                       {plat.isEnabled ? ' 정상 연동됨' : ' 연동 미사용'}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between text-slate-400">
+                  <div className="flex items-center justify-between text-slate-500">
                     <span>최근 수집:</span>
-                    <span className="font-mono text-slate-300">{plat.lastSyncedAt || '-'}</span>
+                    <span className="font-mono text-slate-700">{plat.lastSyncedAt || '-'}</span>
                   </div>
                 </div>
 
@@ -589,21 +589,21 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification, co
                 <div className="flex items-center gap-1.5 pt-1">
                   <button
                     onClick={() => setActiveConfigModal(plat)}
-                    className="flex-1 py-1.5 px-2 bg-slate-800 hover:bg-slate-700 text-[#9CC7B5] hover:text-white border border-slate-700 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer"
+                    className="flex-1 py-1.5 px-2 bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer"
                   >
-                    <Key className="w-3.5 h-3.5 text-amber-300" />
-                    <span>API Key 설정</span>
+                    <Key className="w-3.5 h-3.5 text-amber-600" />
+                    <span>연동 키 설정</span>
                   </button>
 
                   <a
                     href={plat.sellerUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="py-1.5 px-2.5 bg-[#0A2A22] hover:bg-[#0F3A2F] text-brand-200 border border-brand-800 rounded-lg text-xs font-semibold transition flex items-center gap-1 shrink-0"
+                    className="py-1.5 px-2.5 bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200 rounded-lg text-xs font-semibold transition flex items-center gap-1 shrink-0"
                     title={`${plat.name} 셀러센터로 바로 이동`}
                   >
-                    <span>센터</span>
-                    <ExternalLink className="w-3 h-3 text-brand-400" />
+                    <span>셀러센터</span>
+                    <ExternalLink className="w-3 h-3 text-brand-600" />
                   </a>
                 </div>
               </div>
@@ -612,29 +612,29 @@ export default function SmartApiConnector({ onOrdersSynced, showNotification, co
             {/* 카드 추가 클릭 버튼 */}
             <button
               onClick={() => setIsAddModalOpen(true)}
-              className="bg-slate-900/40 hover:bg-slate-900/80 border-2 border-dashed border-brand-700/50 hover:border-amber-400 rounded-xl p-4 flex flex-col items-center justify-center gap-2 text-[#9CC7B5] hover:text-amber-300 transition cursor-pointer group min-h-[140px]"
+              className="bg-white hover:bg-brand-50/40 border-2 border-dashed border-slate-300 hover:border-brand-400 rounded-xl p-4 flex flex-col items-center justify-center gap-2 text-slate-600 hover:text-brand-700 transition cursor-pointer group min-h-[140px]"
             >
-              <div className="p-2.5 bg-[#0A2A22]/80 group-hover:bg-amber-400/20 text-[#9CC7B5] group-hover:text-amber-300 rounded-full border border-brand-700/60 group-hover:border-amber-400/40 transition">
+              <div className="p-2.5 bg-slate-100 group-hover:bg-brand-100 text-slate-600 group-hover:text-brand-700 rounded-full border border-slate-200 group-hover:border-brand-300 transition">
                 <Plus className="w-5 h-5" />
               </div>
-              <span className="font-bold text-xs">새 쇼핑몰/플랫폼 추가</span>
-              <span className="text-xs text-slate-400">원하는 쇼핑몰을 새로 등록하세요</span>
+              <span className="font-bold text-xs">새 쇼핑몰 추가</span>
+              <span className="text-xs text-slate-500">쓰고 싶은 쇼핑몰을 등록하세요</span>
             </button>
           </div>
 
           {/* 하단 가이드 팁 */}
-          <div className="p-3 bg-[#0A2A22]/60 rounded-xl border border-brand-800/40 text-xs text-brand-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="p-3 bg-brand-50/60 rounded-xl border border-brand-100 text-xs text-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <HelpCircle className="w-4 h-4 text-amber-300 shrink-0" />
+              <HelpCircle className="w-4 h-4 text-brand-600 shrink-0" />
               <span>
-                <strong>팁:</strong> 각 쇼핑몰 셀러센터의 'API 관리' 메뉴에서 Client ID/Secret 또는 API Key를 발급받아 입력하시면 자동 수집이 시작됩니다.
+                <strong>팁:</strong> 각 쇼핑몰 셀러센터의 'API 관리' 메뉴에서 연동 키를 발급받아 입력하면 자동 수집이 시작돼요.
               </span>
             </div>
             <a
               href="https://sell.smartstore.naver.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-amber-300 hover:underline font-bold text-xs shrink-0"
+              className="text-brand-700 hover:underline font-bold text-xs shrink-0"
             >
               네이버 스마트스토어 API 발급가이드 →
             </a>

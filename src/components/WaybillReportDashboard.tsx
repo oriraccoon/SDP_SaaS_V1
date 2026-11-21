@@ -129,14 +129,14 @@ export default function WaybillReportDashboard({
           }`}
         >
           <div className="flex items-center justify-between w-full">
-            <span className="text-xs font-semibold text-slate-500">비슷한 주문 맞춤</span>
+            <span className="text-xs font-semibold text-slate-500">비슷한 주문 연결</span>
             <div className="p-1.5 bg-amber-100 text-amber-600 rounded-md">
               <Lightbulb className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-2">
             <div className="text-lg font-bold text-slate-800">{displaySoftCount}건</div>
-            <div className="text-xs text-amber-600 font-medium mt-0.5">유사 성명/대치 매칭 (합포장 포함)</div>
+            <div className="text-xs text-amber-600 font-medium mt-0.5">이름이 조금 다르게 적힌 주문</div>
           </div>
         </button>
 
@@ -171,14 +171,14 @@ export default function WaybillReportDashboard({
           }`}
         >
           <div className="flex items-center justify-between w-full">
-            <span className="text-xs font-semibold text-slate-500">못 채운 값</span>
+            <span className="text-xs font-semibold text-slate-500">송장 못 찾은 주문</span>
             <div className="p-1.5 bg-rose-100 text-rose-600 rounded-md">
               <AlertCircle className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-2">
             <div className="text-lg font-bold text-slate-800">{unfilledErrors.length}건</div>
-            <div className="text-xs text-rose-600 font-medium mt-0.5">송장 누락/조건 불일치</div>
+            <div className="text-xs text-rose-600 font-medium mt-0.5">송장 파일에 없음</div>
           </div>
         </button>
 
@@ -192,14 +192,14 @@ export default function WaybillReportDashboard({
           }`}
         >
           <div className="flex items-center justify-between w-full">
-            <span className="text-xs font-semibold text-slate-500">못 넣은 값</span>
+            <span className="text-xs font-semibold text-slate-500">쓰이지 않은 송장</span>
             <div className="p-1.5 bg-purple-100 text-purple-600 rounded-md">
               <FileText className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-2">
             <div className="text-lg font-bold text-slate-800">{unusedErrors.length}건</div>
-            <div className="text-xs text-purple-600 font-medium mt-0.5">미사용 잔여 송장</div>
+            <div className="text-xs text-purple-600 font-medium mt-0.5">어느 주문에도 안 붙음</div>
           </div>
         </button>
 
@@ -218,7 +218,7 @@ export default function WaybillReportDashboard({
                 : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
-            [1] 전체 주문 ({outputOrders.length}건)
+            전체 주문 ({outputOrders.length}건)
           </button>
           <button
             onClick={() => setActiveTab('exact')}
@@ -228,7 +228,7 @@ export default function WaybillReportDashboard({
                 : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
-            [2] 완전 매칭 ({exactMatchOrders.length}건)
+            완전 일치 ({exactMatchOrders.length}건)
           </button>
           <button
             onClick={() => setActiveTab('soft')}
@@ -238,7 +238,7 @@ export default function WaybillReportDashboard({
                 : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
-            [3] 비슷한 주문 맞춤 ({softMatchOrders.length}건)
+            비슷한 주문 ({softMatchOrders.length}건)
           </button>
           <button
             onClick={() => setActiveTab('bundled')}
@@ -248,7 +248,7 @@ export default function WaybillReportDashboard({
                 : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
-            [4] 합포장 묶음 ({displayBundledGroupCount}묶음 / {displayBundledCount}개)
+            합포장 묶음 ({displayBundledGroupCount}묶음 / {displayBundledCount}개)
           </button>
           <button
             onClick={() => setActiveTab('unfilled')}
@@ -258,7 +258,7 @@ export default function WaybillReportDashboard({
                 : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
-            [5] 못 채운 값 ({unfilledErrors.length}건) - 송장 누락
+            송장 못 찾은 주문 ({unfilledErrors.length}건)
           </button>
           <button
             onClick={() => setActiveTab('unused')}
@@ -268,7 +268,7 @@ export default function WaybillReportDashboard({
                 : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
-            [6] 못 넣은 값 ({unusedErrors.length}건) - 미사용 송장
+            쓰이지 않은 송장 ({unusedErrors.length}건)
           </button>
         </div>
 
@@ -295,7 +295,7 @@ export default function WaybillReportDashboard({
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[70px] text-center">수량</th>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[280px]">주문 품목명</th>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[160px]">부여된 운송장번호</th>
-                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[200px]">매칭 분류 및 근거</th>
+                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[200px]">연결 방법</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -325,7 +325,7 @@ export default function WaybillReportDashboard({
                                 {ord.trackingNumber}
                               </span>
                             ) : (
-                              <span className="text-rose-500 font-semibold">미매칭 (누락)</span>
+                              <span className="text-rose-500 font-semibold">없음 (빠짐)</span>
                             )}
                           </td>
                           <td className="px-3 py-2.5 whitespace-nowrap">
@@ -336,17 +336,17 @@ export default function WaybillReportDashboard({
                             )}
                             {isSoft && (
                               <span className="inline-flex items-center gap-1 text-amber-800 font-medium bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                                <Lightbulb className="w-3 h-3 text-amber-600" /> {ord.softMatchReason || "비슷한 주문 맞춤"}
+                                <Lightbulb className="w-3 h-3 text-amber-600" /> {ord.softMatchReason || "비슷한 주문"}
                               </span>
                             )}
                             {isBundled && (
                               <span className="inline-flex items-center gap-1 text-sky-800 font-semibold bg-sky-50 px-2 py-0.5 rounded border border-sky-200">
-                                <Layers className="w-3 h-3 text-sky-600" /> {ord.softMatchReason || "합포장 묶음 배송"}
+                                <Layers className="w-3 h-3 text-sky-600" /> {ord.softMatchReason || "합포장 묶음"}
                               </span>
                             )}
                             {!isExact && !isSoft && !isBundled && (
                               <span className="text-rose-600 font-medium">
-                                {ord.unmatchedDetail ? "매칭 조건 미충족 (송장 엑셀 누락)" : "운송장 미기입"}
+                                {ord.unmatchedDetail ? "송장 파일에 맞는 주문이 없음" : "운송장 번호 없음"}
                               </span>
                             )}
                           </td>
@@ -365,7 +365,7 @@ export default function WaybillReportDashboard({
               <p className="text-xs text-slate-600 flex items-center gap-1.5 bg-brand-50/80 p-3 rounded-lg border border-[#E0EFE8]">
                 <Package className="w-4 h-4 text-brand-600 shrink-0" />
                 <span>
-                  <strong>일반 완전 매칭</strong>은 성명, 우편번호, 연락처, 품목명이 100% 교차 대조되어 완벽하게 송장이 매칭된 주문 목록입니다.
+                  <strong>완전 일치</strong>는 이름, 우편번호, 연락처, 품목명이 모두 똑같아서 송장을 확실하게 붙인 주문 목록입니다.
                 </span>
               </p>
 
@@ -425,7 +425,7 @@ export default function WaybillReportDashboard({
               <p className="text-xs text-slate-600 flex items-center gap-1.5 bg-amber-50/80 p-3 rounded-lg border border-amber-150">
                 <Lightbulb className="w-4 h-4 text-amber-600 shrink-0" />
                 <span>
-                  <strong>비슷한 주문 맞춤</strong>은 수령인 성명 공백/짤림(80% 이상 유사), 품목 대치어 교차 대조 등을 통해 100% 문자가 일치하지 않더라도 정확한 대상을 안전하게 추론해 송장번호를 연결한 내역입니다.
+                  <strong>비슷한 주문</strong>은 이름의 띄어쓰기나 글자가 조금 빠졌거나(80% 이상 비슷함), 품목명을 줄여 적은 경우에도 같은 주문으로 판단해 송장을 붙인 목록입니다. 한 번 더 확인해 보세요.
                 </span>
               </p>
 
@@ -461,7 +461,7 @@ export default function WaybillReportDashboard({
                           {ord.trackingNumber || "-"}
                         </td>
                         <td className="px-3 py-2.5 whitespace-nowrap text-amber-800 font-medium">
-                          {ord.softMatchReason || "수령인 성명 유사 및 대치어 교차 매칭"}
+                          {ord.softMatchReason || "이름이 비슷하게 적혀 있어 같은 주문으로 판단"}
                         </td>
                       </tr>
                     ))}
@@ -484,8 +484,8 @@ export default function WaybillReportDashboard({
               <p className="text-xs text-sky-900 flex items-center gap-2 bg-sky-50 p-3 rounded-lg border border-sky-200">
                 <Layers className="w-4 h-4 text-sky-600 shrink-0" />
                 <span>
-                  <strong>합포장 묶음배송 내역:</strong> 동일한 수취인 및 배송지로 여러 상품이 주문되어 대표 운송장에 통합 동봉 출고된 건입니다.
-                  현재 <strong>총 {displayBundledGroupCount}명의 수령인(묶음)</strong>에게 <strong>{displayBundledCount}개 품목</strong>이 합포장 발송 처리되었습니다.
+                  <strong>합포장 묶음 배송:</strong> 같은 받는 사람과 주소로 여러 상품을 주문해서, 대표 송장 하나로 함께 보내는 주문입니다.
+                  지금 <strong>{displayBundledGroupCount}명</strong>에게 <strong>{displayBundledCount}개 상품</strong>이 합포장으로 보내집니다.
                 </span>
               </p>
 
@@ -498,8 +498,8 @@ export default function WaybillReportDashboard({
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[90px]">우편번호</th>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[70px] text-center">수량</th>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[280px]">합포장 주문 품목명</th>
-                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[160px]">통합 부여 운송장번호</th>
-                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[220px]">합포장 안내</th>
+                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[160px]">대표 운송장번호</th>
+                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[220px]">묶음 안내</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-sky-100">
@@ -521,7 +521,7 @@ export default function WaybillReportDashboard({
                           {ord.trackingNumber || "-"}
                         </td>
                         <td className="px-3 py-2.5 whitespace-nowrap text-sky-800 font-medium">
-                          {ord.softMatchReason || "동일 수취인 타 주문건과 대표 송장으로 합포장 출고됨"}
+                          {ord.softMatchReason || "같은 받는 사람의 다른 주문과 대표 송장으로 함께 보냄"}
                         </td>
                       </tr>
                     ))}
@@ -544,7 +544,7 @@ export default function WaybillReportDashboard({
               <p className="text-xs text-slate-600 flex items-center gap-1.5 bg-rose-50/80 p-3 rounded-lg border border-rose-150">
                 <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
                 <span>
-                  <strong>못 채운 값 (송장 누락):</strong> 주문서에는 존재하나 송장파일에서 매칭되는 운송장 데이터를 찾지 못한 미매칭 항목입니다. 아래의 <strong>[플랫폼]</strong> 열에서 어느 쇼핑몰의 주문인지 확인하실 수 있습니다.
+                  <strong>송장 못 찾은 주문:</strong> 주문 파일에는 있지만, 송장 파일에서 맞는 운송장 번호를 찾지 못한 주문입니다. 표의 <strong>플랫폼</strong> 칸에서 어느 쇼핑몰 주문인지 볼 수 있어요.
                 </span>
               </p>
 
@@ -557,7 +557,7 @@ export default function WaybillReportDashboard({
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[90px]">우편번호</th>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[70px] text-center">수량</th>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[280px]">주문 품목명</th>
-                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[280px]">원인 진단 및 대조 내역</th>
+                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[280px]">못 찾은 이유</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -586,7 +586,7 @@ export default function WaybillReportDashboard({
                     {unfilledErrors.length === 0 && (
                       <tr>
                         <td colSpan={6} className="px-3 py-8 text-center text-slate-400">
-                          누락된 주문이 없습니다. 모든 주문에 운송장 연결 완료.
+                          송장을 못 찾은 주문이 없습니다. 모든 주문에 운송장이 붙었어요.
                         </td>
                       </tr>
                     )}
@@ -602,7 +602,7 @@ export default function WaybillReportDashboard({
               <p className="text-xs text-purple-900 flex items-center gap-1.5 bg-purple-50 p-3 rounded-lg border border-purple-200">
                 <FileText className="w-4 h-4 text-purple-600 shrink-0" />
                 <span>
-                  <strong>못 넣은 값 (미사용 송장):</strong> 소스(송장) 엑셀에는 운송장이 존재하나 주문서에 대상이 없어 사용되지 않고 남은 잔여 송장 내역입니다. 아래의 <strong>[송장 플랫폼]</strong> 열에서 출처를 확인하실 수 있습니다.
+                  <strong>쓰이지 않은 송장:</strong> 송장 파일에는 운송장이 있지만, 맞는 주문이 없어서 어느 주문에도 붙지 않은 송장입니다. 표의 <strong>송장 플랫폼</strong> 칸에서 출처를 볼 수 있어요.
                 </span>
               </p>
 
@@ -615,7 +615,7 @@ export default function WaybillReportDashboard({
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[90px]">우편번호</th>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[70px] text-center">수량</th>
                       <th className="px-3 py-2.5 whitespace-nowrap min-w-[280px]">송장 품목명</th>
-                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[200px]">상태 및 이유</th>
+                      <th className="px-3 py-2.5 whitespace-nowrap min-w-[200px]">안 쓰인 이유</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-purple-100">

@@ -72,7 +72,7 @@ export function runComprehensiveValidation(
       code: 'STEP1_E1',
       title: '요약보고서 상세내역 시트 포맷 검사',
       status: detailHeaderFailures.length === 0 ? 'PASS' : 'FAIL',
-      description: '상세내역 시트 포맷이 [용량, 상품명, 수량, 주문자]로 구성되었는지 확인',
+      description: '요약 보고서 상세내역의 칸 순서(용량, 상품명, 수량, 주문자)가 맞는지 확인합니다.',
       failCount: detailHeaderFailures.length,
       details: detailHeaderFailures.length === 0 ? ['정상 포맷 [용량, 상품명, 수량, 주문자] 준수함'] : detailHeaderFailures
     });
@@ -92,7 +92,7 @@ export function runComprehensiveValidation(
       code: 'STEP1_E2',
       title: '요약보고서 상세내역 무결성 검사',
       status: detailMissingDetails.length === 0 ? 'PASS' : 'FAIL',
-      description: '상세내역 시트에서 누락된 데이터(용량, 상품명, 수량, 주문자) 존재 여부 확인',
+      description: '상세내역에서 용량, 상품명, 수량, 주문자 중 빠진 내용이 있는지 확인합니다.',
       failCount: detailMissingDetails.length,
       details: detailMissingDetails.length === 0 ? ['상세내역 누락 항목 없음 (100% 기입)'] : detailMissingDetails
     });
@@ -130,7 +130,7 @@ export function runComprehensiveValidation(
       code: 'STEP1_E3',
       title: '원본 엑셀 vs 요약보고서 상세내역 수량/건수 검사',
       status: (detailCountDiff === 0 && detailQtyDiff <= 0.01) ? 'PASS' : 'FAIL',
-      description: '요약보고서 상세내역의 행 개수 및 총 수량이 집어넣은 원본 엑셀과 100% 일치하는지 검증',
+      description: '요약 보고서 상세내역의 줄 수와 총 수량이 처음 올린 주문 파일과 똑같은지 확인합니다.',
       failCount: detailCountDetails.length,
       details: (detailCountDiff === 0 && detailQtyDiff <= 0.01) ? [`원본 엑셀 건수(${rawCount}건, 총 ${rawTotalQty}개)와 완벽히 일치함`] : detailCountDetails
     });
@@ -156,7 +156,7 @@ export function runComprehensiveValidation(
       code: 'STEP1_E4',
       title: '원본 엑셀 vs 상품준비요약 수량 삼자 대조 검사',
       status: groupCalcDetails.length === 0 ? 'PASS' : 'FAIL',
-      description: '상품준비요약 시트의 총 수량이 원본 엑셀 및 상세내역 수량 총합과 3자 모두 일치하는지 검증',
+      description: '상품준비요약의 총 수량이 원래 주문 파일, 상세내역과 모두 같은지 확인합니다.',
       failCount: groupCalcDetails.length,
       details: groupCalcDetails.length === 0 ? [`원본 엑셀, 상세내역, 상품준비요약 총 수량(${groupTotalQty}개) 3자 완벽 일치함`] : groupCalcDetails
     });
@@ -179,7 +179,7 @@ export function runComprehensiveValidation(
       code: 'STEP1_E6',
       title: '품목별정렬 시트 포맷 검사',
       status: sortedHeaderFailures.length === 0 ? 'PASS' : 'FAIL',
-      description: '품목별정렬 시트 헤더가 [용량, 상품명, 수량(고정), 수량, 수령인, 연락처, 우편번호, 주소, 배송메세지] 인지 확인',
+      description: '택배사에 넣을 파일의 칸 이름과 순서(용량, 상품명, 수량(고정), 수량, 수령인, 연락처, 우편번호, 주소, 배송메세지)가 맞는지 확인합니다.',
       failCount: sortedHeaderFailures.length,
       details: sortedHeaderFailures.length === 0 ? ['표준 규격 포맷 준수 확인'] : sortedHeaderFailures
     });
@@ -202,7 +202,7 @@ export function runComprehensiveValidation(
       code: 'STEP1_E7',
       title: '품목별정렬 C열 수량(고정) 고정값(1) 검사',
       status: nonOneCColDetails.length === 0 ? 'PASS' : 'FAIL',
-      description: '품목별정렬의 C열(수량 고정열)이 예외 없이 모두 1로 고정되었는지 확인',
+      description: '택배사에 넣을 파일의 "수량(고정)" 칸이 모두 1인지 확인합니다.',
       failCount: nonOneCColDetails.length,
       details: nonOneCColDetails.length === 0 ? ['C열 수량(고정) 모든 행이 1로 정방향 세팅됨'] : nonOneCColDetails
     });
@@ -229,7 +229,7 @@ export function runComprehensiveValidation(
       code: 'STEP1_E8',
       title: '품목별정렬 데이터 무결성 검사',
       status: sortedMissingDetails.length === 0 ? 'PASS' : 'FAIL',
-      description: '품목별정렬 데이터 중 필수 배송/주문 정보(수령인, 주소, 연락처, 상품명, 수량) 누락 여부 확인',
+      description: '택배사에 넣을 파일에서 수령인, 주소, 연락처, 상품명, 수량 중 빠진 칸이 있는지 확인합니다.',
       failCount: sortedMissingDetails.length,
       details: sortedMissingDetails.length === 0 ? ['모든 가공 데이터 누락 없음 (완벽 기입)'] : sortedMissingDetails
     });
@@ -251,7 +251,7 @@ export function runComprehensiveValidation(
       code: 'STEP1_E9',
       title: '품목별정렬 상품명 원본 유지 검사',
       status: sortedReplacedDetails.length === 0 ? 'PASS' : 'FAIL',
-      description: '품목별정렬 시트의 상품명이 대치 키워드로 오변환되지 않고 올바르게 유지되었는지 확인',
+      description: '택배사에 넣을 파일의 상품명이 잘못 바뀌지 않고 원래 이름 그대로인지 확인합니다.',
       failCount: sortedReplacedDetails.length,
       details: sortedReplacedDetails.length === 0 ? ['상품명이 대치 키워드로 변환되지 않고 올바르게 유지됨'] : sortedReplacedDetails
     });
@@ -282,7 +282,7 @@ export function runComprehensiveValidation(
       code: 'STEP1_E10',
       title: '이상 주문 데이터 사전 오류 검증 (오배송 예방)',
       status: anomalousDetails.length === 0 ? 'PASS' : 'FAIL',
-      description: '수령인명 누락, 전화번호 자릿수 부족(10자리 미만), 주소 정보 미흡, 수량 0개 등 이상 주문 데이터 선별',
+      description: '수령인 이름이 없거나, 전화번호가 10자리보다 짧거나, 주소가 부족하거나, 수량이 0인 주문을 찾아 보여 줍니다.',
       failCount: anomalousDetails.length,
       details: anomalousDetails.length === 0 ? ['이상 데이터 없음 (수령인/연락처/주소/수량 100% 정상)'] : anomalousDetails
     });
@@ -313,7 +313,7 @@ export function runComprehensiveValidation(
       code: 'STEP1_E11',
       title: '원본 엑셀 vs 품목별정렬 수량/건수 직접 대조 검사',
       status: (sortedCountDiff === 0 && sortedQtyDiff <= 0.01) ? 'PASS' : 'FAIL',
-      description: '품목별정렬 데이터의 총 행 건수 및 총 수량이 집어넣은 원본 엑셀 데이터와 100% 일치하는지 검증',
+      description: '택배사에 넣을 파일의 줄 수와 총 수량이 원래 주문 파일과 똑같은지 확인합니다.',
       failCount: sortedCompareDetails.length,
       details: (sortedCountDiff === 0 && sortedQtyDiff <= 0.01) ? [`원본 엑셀과 품목별정렬의 총 건수(${rawCount}건) 및 총 수량(${rawTotalQty}개) 100% 일치함`] : sortedCompareDetails
     });
@@ -355,7 +355,7 @@ export function runComprehensiveValidation(
       code: 'STEP1_E12',
       title: '중복 업로드 / 중복 주문 데이터 감지 검사',
       status: duplicateDetails.length === 0 ? 'PASS' : 'WARNING',
-      description: '엑셀을 따로 올리거나 동일 주문서가 반복 업로드되어 발생한 중복 데이터 감지',
+      description: '같은 주문이 두 번 들어간 줄이 있는지 찾습니다. (같은 파일을 두 번 올렸을 때 생겨요)',
       failCount: totalDuplicateCount,
       details: duplicateDetails.length === 0 ? ['중복 업로드되거나 동일한 중복 주문 데이터 없음 (정상)'] : duplicateDetails
     });
@@ -376,7 +376,7 @@ export function runComprehensiveValidation(
       code: 'STEP1_W1',
       title: '상품준비요약 대치 키워드 미발견(미매핑) 검사',
       status: unmappedKeywordDetails.length === 0 ? 'PASS' : 'WARNING',
-      description: '매핑 사전에 등록되어 있지 않아 대치 키워드를 찾지 못한 품목 존재 여부 확인',
+      description: '품목사전에 없어서 이름을 바꾸지 못한 상품이 있는지 확인합니다.',
       failCount: unmappedKeywordDetails.length,
       details: unmappedKeywordDetails.length === 0 ? ['모든 품목의 대치 키워드 완벽 발견/매핑 완료'] : unmappedKeywordDetails
     });
@@ -405,7 +405,7 @@ export function runComprehensiveValidation(
       code: 'STEP1_W2',
       title: '지능형 유사 매칭(Fuzzy Matching) 적용 검사',
       status: smartMatchedDetails.length === 0 ? 'PASS' : 'WARNING',
-      description: '기존 정제 분류명 및 문맥 유사도를 기반으로 자동 탐색/매칭된 품목 내역을 안내합니다.',
+      description: '비슷한 이름을 찾아 자동으로 맞춘 상품 목록입니다. 맞는지 확인해 주세요.',
       failCount: smartMatchedDetails.length,
       details: smartMatchedDetails.length === 0 ? ['지능형 유사 매칭 적용 항목 없음 (전건 Exact Match 또는 대치 매핑됨)'] : smartMatchedDetails
     });
@@ -436,7 +436,7 @@ export function runComprehensiveValidation(
       code: 'STEP2_E1',
       title: '최종 발송 엑셀 총 주문 수량 일치 검사',
       status: outputCountDiff === 0 ? 'PASS' : 'FAIL',
-      description: '생성된 output 엑셀들의 총 행 개수가 1단계 input 주문 건수와 일치하는지 확인',
+      description: '정리된 파일들의 줄 수가 처음 올린 주문 수와 같은지 확인합니다.',
       failCount: outputCountDiff,
       details: outputCountDiff === 0 ? [`Input 주문 수량(${step1InputOrderCount}건)과 100% 일치함`] : countMismatchDetails
     });
@@ -460,7 +460,7 @@ export function runComprehensiveValidation(
       code: 'STEP2_E2',
       title: '최종 output 엑셀 서식/컬럼 포맷 일치 검사',
       status: formatMismatchDetails.length === 0 ? 'PASS' : 'FAIL',
-      description: '생성된 각 output 엑셀의 컬럼 구조 및 포맷이 1단계 input 엑셀 구조와 완벽히 일치하는지 확인',
+      description: '송장을 붙인 파일의 칸 구성이 쇼핑몰 원래 양식과 같은지 확인합니다.',
       failCount: formatMismatchDetails.length,
       details: formatMismatchDetails.length === 0 ? ['모든 플랫폼별 output 엑셀 포맷 정상 보존 확인'] : formatMismatchDetails
     });
@@ -482,7 +482,7 @@ export function runComprehensiveValidation(
       code: 'STEP2_E3',
       title: '운송장번호 매핑 및 기입 누락 검사',
       status: totalMissingTracking === 0 ? 'PASS' : 'FAIL',
-      description: '최종 발송 엑셀에서 운송장번호가 누락되거나 미입력된 건이 있는지 확인',
+      description: '송장 번호가 비어 있는 주문이 있는지 확인합니다.',
       failCount: totalMissingTracking,
       details: totalMissingTracking === 0 ? ['모든 주문건에 운송장번호 매핑 및 기입 완료'] : missingTrackingDetails
     });
@@ -504,7 +504,7 @@ export function runComprehensiveValidation(
       code: 'STEP2_E4',
       title: '쿠팡 DeliveryList 합포장(N) 중복 제거 검사',
       status: totalDupN === 0 ? 'PASS' : 'FAIL',
-      description: '쿠팡 엑셀에서 동일 주문(A열 번호)의 분리배송 N 중복 행이 정상적으로 단일화되었는지 확인',
+      description: '쿠팡 묶음배송 주문이 파일에 두 번 들어가지 않았는지 확인합니다.',
       failCount: totalDupN,
       details: totalDupN === 0 ? ['쿠팡 합포장건(N) 중복 완전 제거 및 단일화 성공'] : dupNDetails
     });
@@ -528,7 +528,7 @@ export function runComprehensiveValidation(
       code: 'STEP2_E5',
       title: '쿠팡 합포장(C열) 품목수 및 묶음수 일치 검사',
       status: totalBundleMismatch === 0 ? 'PASS' : 'FAIL',
-      description: '2단계 엑셀 C열(합포)에 2 이상으로 기재된 합포장건의 품목수/묶음수가 실제 주문서 매칭 수량과 일치하는지 검증',
+      description: '묶음 배송 표시(합포)가 2 이상인 주문의 품목 수가 실제 주문과 같은지 확인합니다.',
       failCount: totalBundleMismatch,
       details: totalBundleMismatch === 0 ? ['모든 합포장건의 C열 수량과 주문서 매칭 수량이 100% 일치함'] : bundleMismatchDetailsList
     });
@@ -550,7 +550,7 @@ export function runComprehensiveValidation(
       code: 'STEP2_W1',
       title: '택배사 정보 기입 검사',
       status: totalMissingCourier === 0 ? 'PASS' : 'WARNING',
-      description: '생성된 각 output 엑셀에 택배사명이 정상 기입되었는지 확인',
+      description: '정리된 파일마다 택배사 이름이 들어갔는지 확인합니다.',
       failCount: totalMissingCourier,
       details: totalMissingCourier === 0 ? ['모든 건에 택배사 명칭 기입 완료'] : missingCourierDetails
     });

@@ -9,6 +9,9 @@ import {
   subscribeAccount,
   subscribeNotice,
   touchAccount,
+  recordAccessDay,
+  markWarningRead,
+  hasUnreadWarning,
   startFreeTrial,
   canStartTrial,
   trialEndsAtMs,
@@ -65,6 +68,9 @@ export default function AccountGate({ children }: { children: ReactNode }) {
     (async () => {
       try {
         await touchAccount(user);
+        // 오늘 접속을 기록합니다 (하루 한 번). 실패해도 이용은 막지 않습니다.
+        // 접속 기록은 기다리지 않습니다 (실패해도 이용은 막지 않음)
+        recordAccessDay(user.uid).catch((err) => console.warn('접속 기록 실패:', err));
         const admin = await isAdminUser(user.uid);
         if (cancelled) return;
         setIsAdmin(admin);
@@ -106,8 +112,30 @@ export default function AccountGate({ children }: { children: ReactNode }) {
   return (
     <AccountContext.Provider value={{ account, isAdmin: Boolean(isAdmin), features }}>
       {notice?.active && notice.text && <NoticeBanner text={notice.text} />}
+      {account && hasUnreadWarning(account) && account.warning && (
+        <WarningBanner
+          text={account.warning.text}
+          onRead={() => markWarningRead(account.uid, account.warning!.sentAt).catch((err) => console.warn('경고 읽음 표시 실패:', err))}
+        />
+      )}
       {children}
     </AccountContext.Provider>
+  );
+}
+
+/** 관리자가 보낸 경고. 확인 버튼을 누르기 전까지 위에 떠 있습니다. */
+function WarningBanner({ text, onRead }: { text: string; onRead: () => void }) {
+  return (
+    <div role="alert" className="flex flex-col gap-2 border-b border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900 sm:flex-row sm:items-center sm:justify-between">
+      <p className="whitespace-pre-line leading-relaxed">
+        <strong className="font-semibold">관리자 안내</strong>
+        <br />
+        {text}
+      </p>
+      <button type="button" onClick={onRead} className="shrink-0 self-start rounded-lg border border-rose-300 bg-white px-3 py-1.5 text-sm font-semibold text-rose-800 hover:bg-rose-100 sm:self-auto cursor-pointer">
+        확인했어요
+      </button>
+    </div>
   );
 }
 

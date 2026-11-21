@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import Modal, { btn } from './components/ui/Modal';
+import { WATCH_ACCESS_DAYS } from './config/brand';
 import { loadFaqs, saveFaqs, type Faq } from './lib/siteContent';
 import { getCurrentUser, isFirebaseConfigured } from './firebaseAuth';
 import {
@@ -20,6 +22,11 @@ import {
   updateAccount,
   uploadsUsedThisMonth,
   trialEndsAtMs,
+  accessDaysThisMonth,
+  isWatchTarget,
+  getWarningTemplate,
+  saveWarningTemplate,
+  sendWarning,
   type Account,
   type FeatureKey,
   type FeedbackReport,
@@ -103,6 +110,86 @@ function Center({ text, desc }: { text: string; desc?: string }) {
   );
 }
 
+/** 경고 문구 창: 틀을 고쳐서 저장하거나, 이 회원에게만 보낼 수 있습니다. */
+function WarningModal({ account, onClose, onSent }: { account: Account; onClose: () => void; onSent: (msg: string) => void }) {
+  const [text, setText] = useState('');
+  const [loaded, setLoaded] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    getWarningTemplate()
+      .then((t) => setText(t))
+      .catch((e) => setError(String(e?.message || e)))
+      .finally(() => setLoaded(true));
+  }, []);
+
+  const fill = (t: string) =>
+    t
+      .replaceAll('{email}', account.email || '')
+      .replaceAll('{days}', String(accessDaysThisMonth(account)))
+      .replaceAll('{usage}', String(uploadsUsedThisMonth(account)));
+
+  const send = async () => {
+    if (!text.trim()) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await sendWarning(account.uid, fill(text.trim()));
+      onSent(`${account.email || '회원'}에게 경고를 보냈습니다.`);
+    } catch (e: any) {
+      setError(String(e?.message || e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const saveTemplate = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      await saveWarningTemplate(text.trim());
+      onSent('경고 문구 틀을 저장했습니다. 다음부터 이 문구가 기본으로 나옵니다.');
+    } catch (e: any) {
+      setError(String(e?.message || e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Modal
+      onClose={onClose}
+      title="경고 보내기"
+      description={<><b className="font-semibold text-slate-800">{account.email || '이 회원'}</b>에게 화면 위쪽에 안내로 보입니다. 회원이 "확인했어요"를 누르기 전까지 떠 있어요.</>}
+      size="md"
+      closeOnBackdrop={false}
+      footerStart={<span>넣을 수 있는 말: {'{email}'} {'{days}'} {'{usage}'}</span>}
+      footer={
+        <>
+          <button type="button" onClick={saveTemplate} disabled={busy || !loaded} className={btn.secondary}>이 문구를 기본 틀로 저장</button>
+          <button type="button" onClick={send} disabled={busy || !loaded || !text.trim()} className={btn.danger}>이 회원에게 보내기</button>
+        </>
+      }
+    >
+      <div className="space-y-2">
+        <label htmlFor="warning-text" className="text-sm font-semibold text-slate-800">경고 문구</label>
+        <textarea
+          id="warning-text"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          disabled={!loaded}
+          rows={6}
+          maxLength={500}
+          className="w-full rounded-lg border border-slate-300 p-3 text-sm leading-relaxed focus:border-brand-500 focus:outline-none"
+        />
+        <p className="text-xs text-slate-500">{text.length} / 500자 · 보낸 뒤에는 회원 화면에 그대로 보입니다.</p>
+        {error && <p className="text-sm text-rose-600">{error}</p>}
+      </div>
+    </Modal>
+  );
+}
+
 function MembersTab() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
@@ -129,6 +216,7 @@ function MembersTab() {
   const activeAccounts = accounts.filter((a) => !a.deletedAt);
   const trashAccounts = accounts.filter((a) => a.deletedAt);
   const [trashOpen, setTrashOpen] = useState(false);
+  const [warningTarget, setWarningTarget] = useState<Account | null>(null);
 
   const run = async (uid: string, action: () => Promise<void>, doneText: string) => {
     setBusy(uid);
@@ -146,6 +234,17 @@ function MembersTab() {
 
   return (
     <section className="space-y-3">
+      {warningTarget && (
+        <WarningModal
+          account={warningTarget}
+          onClose={() => setWarningTarget(null)}
+          onSent={async (msg) => {
+            setWarningTarget(null);
+            setMessage(msg);
+            await reload();
+          }}
+        />
+      )}
       <div className="flex items-center justify-between">
         <p className="text-sm text-slate-600">회원 {accounts.length}명</p>
         <button onClick={reload} className="text-xs font-semibold text-indigo-600 hover:underline">새로고침</button>
@@ -222,11 +321,18 @@ function MembersTab() {
                 <p className="text-xs text-slate-500">
                   마지막 접속: {acc.lastLoginAt ? new Date(acc.lastLoginAt).toLocaleString('ko-KR') : '-'}
                   {' · '}만료일: {acc.expiresAt ? new Date(acc.expiresAt).toLocaleDateString('ko-KR') : '-'}
+                  {' · '}이번 달 접속: {accessDaysThisMonth(acc)}일
                   {' · '}이번 달 업로드: {uploadsUsedThisMonth(acc)}{typeof acc.uploadLimit === 'number' ? ` / ${acc.uploadLimit}회` : '회 (제한 없음)'}
+                  {acc.warning && <>{' · '}경고: {acc.warningReadSentAt === acc.warning.sentAt ? '읽음' : '안 읽음'}</>}
                   {trialEndsAtMs(acc) !== null && <>{' · '}무료 체험: {new Date(trialEndsAtMs(acc) as number).toLocaleDateString('ko-KR')}까지</>}
                 </p>
               </div>
-              <span className={`rounded-md border px-2 py-0.5 text-xs font-bold ${statusColor}`}>{statusLabel}</span>
+              <div className="flex flex-wrap items-center gap-1.5">
+                {isWatchTarget(acc) && (
+                  <span className="rounded-md border border-amber-300 bg-amber-50 px-2 py-0.5 text-xs font-bold text-amber-800" title={`이번 달 접속 ${WATCH_ACCESS_DAYS}일 이상인데 업로드가 0회`}>확인 필요</span>
+                )}
+                <span className={`rounded-md border px-2 py-0.5 text-xs font-bold ${statusColor}`}>{statusLabel}</span>
+              </div>
             </div>
 
             <div className="flex flex-wrap gap-2">
@@ -268,6 +374,13 @@ function MembersTab() {
                 className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
               >
                 업로드 한도
+              </button>
+              <button
+                disabled={busy === acc.uid}
+                onClick={() => setWarningTarget(acc)}
+                className="rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-bold text-amber-800 hover:bg-amber-50 disabled:opacity-50"
+              >
+                경고 보내기
               </button>
               <button
                 disabled={busy === acc.uid}

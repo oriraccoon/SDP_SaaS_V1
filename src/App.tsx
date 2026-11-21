@@ -69,6 +69,7 @@ import { decryptExcelFile } from './utils/decryptExcel';
 import { getCurrentUid, logout } from './firebaseAuth';
 import { useAccount } from './AccountGate';
 import { consumeUploads, uploadsLeft, trialDaysLeft } from './lib/account';
+import { admitFiles, assertAdmitted } from './lib/admission';
 import { APP_NAME } from './config/brand';
 import { uploadsUsedThisMonth } from './lib/account';
 import FeedbackModal from './components/FeedbackModal';
@@ -609,9 +610,10 @@ export default function App() {
   // 2. 1단계: 주문서 파싱 및 가공 핸들러 (다중 파일 처리 지원)
   // ----------------------------------------------------
   // 업로드 횟수 제한: 한도 안이면 사용량을 올리고, 넘으면 막고 안내합니다.
-  const checkUploadAllowed = async (count: number): Promise<boolean> => {
-    const ok = await consumeUploads(account, count);
+  const checkUploadAllowed = async (files: File[]): Promise<boolean> => {
+    const ok = await consumeUploads(account, files.length);
     if (!ok) window.alert(`이번 달 업로드 횟수를 모두 썼어요. 남은 횟수: ${uploadsLeft(account) ?? 0}회`);
+    else admitFiles(files);
     return ok;
   };
 
@@ -619,8 +621,8 @@ export default function App() {
     const files = e.target.files;
     if (!files || files.length === 0) return;
     
-    const newFiles = Array.from(files);
-    if (!(await checkUploadAllowed(newFiles.length))) { e.target.value = ''; return; }
+    const newFiles: File[] = Array.from(files as FileList);
+    if (!(await checkUploadAllowed(newFiles))) { e.target.value = ''; return; }
     // 중복 파일명 체크하여 중복 로딩 방지
     const existingNames = new Set(orderFiles.map((f: File) => f.name));
     const uniqueNewFiles = newFiles.filter((f: File) => !existingNames.has(f.name));
@@ -700,6 +702,7 @@ export default function App() {
             const rawRows = XLSX.utils.sheet_to_json<any[]>(worksheet, { header: 1, defval: "" });
             result = processRawRows(rawRows, file.name, platformsToUse, mappingsToUse, forcedPlatId);
           } else {
+            assertAdmitted(file);
             result = await parseAndProcessOrderExcel(file, platformsToUse, mappingsToUse, forcedPlatId);
           }
 
@@ -1409,6 +1412,7 @@ export default function App() {
           const worksheet = workbook.Sheets[bestSheetName];
           rawRows = XLSX.utils.sheet_to_json<any[]>(worksheet, { header: 1, defval: "" });
         } else {
+          assertAdmitted(file);
           const data = new Uint8Array(await file.arrayBuffer());
           const workbook = XLSX.read(data, { type: 'array' });
           const bestSheetName = findBestOrderSheet(workbook);
@@ -1480,8 +1484,8 @@ export default function App() {
   const handleSourceFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
-    const newFiles = Array.from(files);
-    if (!(await checkUploadAllowed(newFiles.length))) { e.target.value = ''; return; }
+    const newFiles: File[] = Array.from(files as FileList);
+    if (!(await checkUploadAllowed(newFiles))) { e.target.value = ''; return; }
 
     const existingNames = new Set(trackingFiles.map((f: File) => f.name));
     const uniqueNewFiles = newFiles.filter((f: File) => !existingNames.has(f.name));
@@ -2509,7 +2513,7 @@ export default function App() {
                       e.preventDefault();
                       const droppedFiles = Array.from(e.dataTransfer.files as FileList).filter((f: File) => f.name.match(/\.xlsx?$/i));
                       if (droppedFiles.length === 0) return;
-                      if (!(await checkUploadAllowed(droppedFiles.length))) return;
+                      if (!(await checkUploadAllowed(droppedFiles))) return;
                       const existingNames = new Set(orderFiles.map((f: File) => f.name));
                       const uniqueNewFiles = droppedFiles.filter((f: File) => !existingNames.has(f.name));
 
@@ -2814,7 +2818,7 @@ export default function App() {
                       e.preventDefault();
                       const droppedFiles = Array.from(e.dataTransfer.files as FileList).filter((f: File) => f.name.match(/\.xlsx?$/i));
                       if (droppedFiles.length === 0) return;
-                      if (!(await checkUploadAllowed(droppedFiles.length))) return;
+                      if (!(await checkUploadAllowed(droppedFiles))) return;
 
                       const existingNames = new Set(trackingFiles.map((f: File) => f.name));
                       const uniqueNewFiles = droppedFiles.filter((f: File) => !existingNames.has(f.name));

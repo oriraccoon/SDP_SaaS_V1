@@ -8,6 +8,11 @@ export const PRO_PRICE_KRW = 9900;
 export const FREE_MONTHLY_UPLOADS = 5;
 // 무료 체험 기간 (일). 무료 체험을 시작한 때부터 이 기간 동안 업로드 횟수 제한 없이 씁니다
 export const FREE_TRIAL_DAYS = 3;
+// 확인 대상 기준: 이번 달 접속한 날이 이 수 이상인데 업로드 횟수가 0이면 관리자 화면에 '확인 필요'로 표시합니다
+export const WATCH_ACCESS_DAYS = 10;
+// 회원에게 보내는 경고 문구의 기본 틀. 관리자 화면에서 고치면 저장되어 이 기본값 대신 씁니다.
+// 바꿔 넣는 말: {email}(회원 이메일), {days}(이번 달 접속 일수), {usage}(이번 달 사용 횟수)
+export const WARNING_TEMPLATE_DEFAULT = '안녕하세요. 이번 달 {days}일 접속하셨지만 주문 정리 기록이 확인되지 않았어요. 정리 과정을 다시 확인해 주세요. 문의는 관리자에게 해 주세요.';
 
 /** 요금제. 랜딩 가격 섹션과 구독권 화면이 함께 씁니다. */
 export const PLANS = [

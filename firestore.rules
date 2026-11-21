@@ -32,6 +32,9 @@ service cloud.firestore {
     //   uploadLimit: int|null (월 업로드 한도, 없거나 null이면 제한 없음. 관리자만 설정, 예전 무료 플랜 회원에게 남아 있음)
     //   trialStartedAt: timestamp (무료 체험 시작 시각. 본인이 처음 한 번만 서버 시각 그대로 기록)
     //   usage: { month: 'YYYY-MM', count: int } (이번 달 업로드 사용량. 본인은 늘리기만 가능)
+    //   access: { month: 'YYYY-MM', count: int, lastDay: 'YYYY-MM-DD' } (이번 달 접속한 날 수. 하루에 1번만 늘어남)
+    //   warning: { text: string, sentAt: string } (관리자가 보낸 경고. 관리자만 씀)
+    //   warningReadSentAt: string (본인이 경고를 읽었다고 표시한 경고 시각. 본인은 이 칸만 씀)
 
     // 시각을 'YYYY-MM' 달 키로 바꿉니다.
     function monthKey(t) {
@@ -42,6 +45,30 @@ service cloud.firestore {
     // 앱은 사용자 컴퓨터 시각으로 달을 정합니다. 국제 표준시(UTC)와 한국 시각(UTC+9)의 이번 달을 허용합니다.
     function isThisMonth(key) {
       return key == monthKey(request.time) || key == monthKey(request.time + duration.value(9, 'h'));
+    }
+
+    // 한국 시각(UTC+9)의 날짜 키 'YYYY-MM-DD'
+    function dayKey(t) {
+      let m = t.month();
+      let d = t.day();
+      return string(t.year()) + '-' + (m < 10 ? '0' + string(m) : string(m)) + '-' + (d < 10 ? '0' + string(d) : string(d));
+    }
+
+    // 접속한 날 수: 오늘(한국 날짜) 기록이고, 같은 달 안에서 하루에 한 번만 1씩 늘어납니다.
+    function isValidAccessDay() {
+      let before = resource.data.get('access', null);
+      let a = request.resource.data.get('access', null);
+      let now = request.time + duration.value(9, 'h');
+      return a is map
+        && a.keys().hasOnly(['month', 'count', 'lastDay']) && a.keys().hasAll(['month', 'count', 'lastDay'])
+        && a.month == monthKey(now)
+        && a.lastDay == dayKey(now)
+        && a.count is int && a.count >= 1 && a.count <= 31
+        && (
+          !(before is map)
+          || (before.get('month', '') == a.month && before.get('lastDay', '') != a.lastDay && a.count == before.get('count', 0) + 1)
+          || (before.get('month', '') != a.month && a.count == 1)
+        );
     }
 
     // 로그인 시각은 짧은 글자여야 합니다.
@@ -100,6 +127,15 @@ service cloud.firestore {
           && invite(request.resource.data.email).expiresAt == request.resource.data.expiresAt
           && invite(request.resource.data.email).features == request.resource.data.features
           && invite(request.resource.data.email).blocked == request.resource.data.blocked)
+        // 본인은 오늘 접속 기록(access)을 하루 한 번 늘릴 수 있습니다.
+        || (isSignedIn() && request.auth.uid == uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['access'])
+          && isValidAccessDay())
+        // 본인은 받은 경고를 읽었다고 표시할 수 있습니다 (경고 시각과 같은 값만 씀)
+        || (isSignedIn() && request.auth.uid == uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['warningReadSentAt'])
+          && resource.data.get('warning', null) != null
+          && request.resource.data.warningReadSentAt == resource.data.warning.sentAt)
         // 본인은 이번 달 업로드 사용량(usage)을 늘리기만 할 수 있습니다.
         // 무료 체험은 한 번도 시작한 적이 없는 계정만 시작할 수 있고, 시작 시각은 서버 시각이어야 합니다.
         // (구독 기간이나 월 한도가 있어도 한 번은 체험할 수 있습니다)
@@ -126,6 +162,11 @@ service cloud.firestore {
     match /admins/{adminUid} {
       allow read: if isSignedIn() && request.auth.uid == adminUid;
       allow write: if false;
+    }
+
+    // 경고 문구 틀: 관리자만 읽고 고칩니다 (회원에게는 보이지 않음).
+    match /config/warning {
+      allow read, write: if isAdmin();
     }
 
     // 랜딩 페이지 질문(FAQ): 로그인 전에도 누구나 읽을 수 있고, 관리자만 고칩니다.

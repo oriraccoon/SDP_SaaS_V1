@@ -1,4 +1,4 @@
-import { FREE_TRIAL_DAYS } from '../config/brand';
+import { FREE_TRIAL_DAYS, WATCH_ACCESS_DAYS, WARNING_TEMPLATE_DEFAULT } from '../config/brand';
 import {
   collection,
   deleteDoc,
@@ -44,6 +44,12 @@ export interface Account {
   usage?: { month: string; count: number } | null;
   /** 무료 체험을 시작한 시각 (서버 시각). 이때부터 FREE_TRIAL_DAYS일 동안 씁니다. */
   trialStartedAt?: { toMillis: () => number } | null;
+  /** 이번 달 접속한 날 수. 하루에 한 번만 늘어납니다. */
+  access?: { month: string; count: number; lastDay: string } | null;
+  /** 관리자가 보낸 경고 */
+  warning?: { text: string; sentAt: string } | null;
+  /** 회원이 읽었다고 표시한 경고 시각 (경고 sentAt과 같으면 읽음) */
+  warningReadSentAt?: string | null;
 }
 
 export type AccountStatus = 'active' | 'new' | 'expired' | 'blocked';
@@ -111,6 +117,70 @@ export async function touchAccount(user: User): Promise<void> {
   }
 
   await setDoc(ref, { email, lastLoginAt: now }, { merge: true });
+}
+
+/** 한국 시각 기준 날짜 키 (예: 2026-11-21). */
+export function kstDayKey(now: Date = new Date()): string {
+  const k = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  return `${k.getUTCFullYear()}-${String(k.getUTCMonth() + 1).padStart(2, '0')}-${String(k.getUTCDate()).padStart(2, '0')}`;
+}
+
+/** 오늘 접속을 한 번 기록합니다 (하루에 한 번만 늘어남). 규칙이 하루 1번 이상 늘리는 것을 막습니다. */
+export async function recordAccessDay(uid: string): Promise<void> {
+  const ref = doc(database(), 'users', uid);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return;
+  const data = snap.data() as Account;
+  const today = kstDayKey();
+  const month = today.slice(0, 7);
+  if (data.access?.lastDay === today) return;
+  const prevCount = data.access?.month === month ? data.access.count : 0;
+  await updateDoc(ref, { access: { month, count: prevCount + 1, lastDay: today } });
+}
+
+/** 이번 달 접속한 날 수 */
+export function accessDaysThisMonth(account: Account | null, now: Date = new Date()): number {
+  const access = account?.access;
+  return access && access.month === currentMonthKey(now) ? access.count : 0;
+}
+
+/**
+ * 관리자 확인 대상: 무료로 이용 중인데(구독 기간 없음, 이용 중지 아님),
+ * 이번 달 접속한 날이 기준 이상인데 업로드 횟수가 0인 회원.
+ */
+export function isWatchTarget(account: Account | null): boolean {
+  if (!account || account.expiresAt || account.blocked) return false;
+  return accessDaysThisMonth(account) >= WATCH_ACCESS_DAYS && uploadsUsedThisMonth(account) === 0;
+}
+
+/** 회원에게 보여 줄 경고가 있고, 아직 읽지 않았으면 true */
+export function hasUnreadWarning(account: Account | null): boolean {
+  const w = account?.warning;
+  return Boolean(w && account?.warningReadSentAt !== w.sentAt);
+}
+
+/** 경고 문구 틀 (관리자가 고칠 수 있음). 저장된 틀이 없으면 기본 문구를 씁니다. */
+export async function getWarningTemplate(): Promise<string> {
+  const snap = await getDoc(doc(database(), 'config', 'warning'));
+  const text = snap.exists() ? (snap.data() as { text?: string }).text : undefined;
+  return text ?? WARNING_TEMPLATE_DEFAULT;
+}
+
+export async function saveWarningTemplate(text: string): Promise<void> {
+  await setDoc(doc(database(), 'config', 'warning'), { text });
+}
+
+/** 관리자: 회원에게 경고를 보냅니다. 회원 화면에 다시 읽기 전까지 떠 있습니다. */
+export async function sendWarning(uid: string, text: string): Promise<void> {
+  await updateDoc(doc(database(), 'users', uid), {
+    warning: { text, sentAt: new Date().toISOString() },
+    warningReadSentAt: null,
+  });
+}
+
+/** 회원: 받은 경고를 읽었다고 표시합니다. */
+export async function markWarningRead(uid: string, sentAt: string): Promise<void> {
+  await updateDoc(doc(database(), 'users', uid), { warningReadSentAt: sentAt });
 }
 
 export function subscribeAccount(uid: string, callback: (account: Account | null) => void): Unsubscribe {

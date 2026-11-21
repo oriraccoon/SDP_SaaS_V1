@@ -181,7 +181,7 @@ const features = `
           <h3>같은 사람 주문은 한데 모아</h3>
           <p>합포장할 주문이 바로 보여요</p>
           <div class="panel" ${mesh(34)}>
-            <div class="feat-shot">${shot('courier-file', 1180, 270, '택배사에 넣을 파일 미리 보기: 같은 받는 사람의 주문이 위아래로 붙어 있는 표', 'loading=\"lazy\"')}</div>
+            <div class="feat-shot">${shot('courier-file', 1180, 540, '택배사에 넣을 파일 미리 보기: 같은 받는 사람의 주문이 위아래로 붙어 있는 표', 'loading=\"lazy\"')}</div>
           </div>
         </article>
       <article class="card card--row card--open span-12">

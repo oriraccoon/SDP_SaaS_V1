@@ -14,7 +14,7 @@ export const WARNING_TEMPLATE_DEFAULT = '안녕하세요. 이번 달 {days}일 �
 
 /** 요금제. 랜딩 가격 섹션과 구독권 화면이 함께 씁니다. */
 export const PLANS = [
-  { name: 'Free', price: 0, desc: '가볍게 써 보는 분' },
+  { name: 'Free', price: 0, desc: `매달 ${FREE_MONTHLY_UPLOADS}회 무료` },
   { name: 'Basic', price: MONTHLY_PRICE_KRW, desc: '매달 정리하는 셀러' },
   { name: 'Pro', price: PRO_PRICE_KRW, desc: '주문이 많은 셀러' },
 ];
@@ -24,7 +24,8 @@ export const PLANS = [
  * true는 ✓, false는 –, 글자면 그대로 보여 줍니다.
  */
 export const PLAN_FEATURE_ROWS: { label: string; included: (boolean | string)[] }[] = [
-  { label: '엑셀 정리 횟수', included: [`월 ${FREE_MONTHLY_UPLOADS}회`, '무제한', '무제한'] },
+  { label: '업로드 횟수', included: [`월 ${FREE_MONTHLY_UPLOADS}회`, '무제한', '무제한'] },
+  { label: '주문 정리 기능 전부', included: [true, true, true] },
   { label: '설정 백업', included: [false, true, true] },
   { label: 'API 연동', included: [false, false, true] },
 ];

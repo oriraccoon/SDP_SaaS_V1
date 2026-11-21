@@ -228,7 +228,7 @@ const pricing = `
     </div>
     <table class="plan-compare">
       <thead><tr><th scope="col">기능</th>${PLANS.map((p) => `<th scope="col">${p.name}</th>`).join('')}</tr></thead>
-      <tbody>${PLAN_FEATURE_ROWS.map((row) => `<tr><th scope="row">${row.label}</th>${row.included.map((on) => `<td class="${on ? 'yes' : 'no'}"><span aria-label="${on ? '포함' : '없음'}">${on ? '✓' : '–'}</span></td>`).join('')}</tr>`).join('')}</tbody>
+      <tbody>${PLAN_FEATURE_ROWS.map((row) => `<tr><th scope="row">${row.label}</th>${row.included.map((v) => typeof v === 'string' ? `<td class="yes"><span>${v}</span></td>` : `<td class="${v ? 'yes' : 'no'}"><span aria-label="${v ? '포함' : '없음'}">${v ? '✓' : '–'}</span></td>`).join('')}</tr>`).join('')}</tbody>
     </table>
   </div>
 </section>`;

@@ -1,11 +1,12 @@
-import { useEffect, useId, type ReactNode } from 'react';
+import { useEffect, useId, useRef, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 
 /*
  * 앱 공용 팝업 틀.
  * - 흰 바탕, 제목 + 한 줄 설명 + 오른쪽 위 닫기
  * - 버튼은 아래 버튼줄(footer)에 모읍니다
- * - 휴대폰(640px 미만)에서는 화면 아래에서 올라오는 창으로 보입니다 (끌어서 닫는 손잡이는 두지 않습니다)
+ * - 휴대폰(640px 미만)에서는 화면 아래에서 올라오는 창으로 보입니다
+ * - 휴대폰에서는 위쪽 손잡이 막대와 제목 줄을 아래로 끌면 닫힙니다 (바깥 눌러 닫기를 허용하는 팝업만)
  * 기능은 각 팝업이 넘겨 주는 함수 그대로 씁니다. 이 틀은 모양만 맡습니다.
  */
 
@@ -67,6 +68,45 @@ export default function Modal({
   hideClose = false,
 }: ModalProps) {
   const titleId = useId();
+  const panelRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<{ startY: number; dy: number } | null>(null);
+
+  // 손잡이·제목 줄을 아래로 끌어 닫기 (휴대폰 폭에서만, 바깥 눌러 닫기를 허용하는 팝업만)
+  const dragProps = {
+    onPointerDown: (e: ReactPointerEvent<HTMLElement>) => {
+      if (!closeOnBackdrop || !window.matchMedia('(max-width: 639px)').matches) return;
+      if ((e.target as HTMLElement).closest('button')) return;
+      dragRef.current = { startY: e.clientY, dy: 0 };
+      e.currentTarget.setPointerCapture(e.pointerId);
+      if (panelRef.current) panelRef.current.style.transition = 'none';
+    },
+    onPointerMove: (e: ReactPointerEvent<HTMLElement>) => {
+      const d = dragRef.current;
+      if (!d) return;
+      d.dy = Math.max(0, e.clientY - d.startY);
+      if (panelRef.current) panelRef.current.style.transform = `translateY(${d.dy}px)`;
+    },
+    onPointerUp: () => {
+      const d = dragRef.current;
+      dragRef.current = null;
+      const panel = panelRef.current;
+      if (!d || !panel) return;
+      panel.style.transition = 'transform 200ms ease-out';
+      if (d.dy > 100) {
+        panel.style.transform = `translateY(${panel.offsetHeight}px)`;
+        window.setTimeout(onClose, 200);
+      } else {
+        panel.style.transform = '';
+      }
+    },
+    onPointerCancel: () => {
+      dragRef.current = null;
+      if (panelRef.current) {
+        panelRef.current.style.transition = 'transform 200ms ease-out';
+        panelRef.current.style.transform = '';
+      }
+    },
+  };
 
   useEffect(() => {
     if (!open || !closeOnEsc) return;
@@ -91,12 +131,16 @@ export default function Modal({
       }}
     >
       <div
+        ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
         className={`flex w-full max-h-[92vh] flex-col overflow-hidden rounded-t-2xl border border-slate-200 bg-white text-slate-900 shadow-2xl sm:max-h-[calc(100vh-48px)] sm:rounded-2xl ${SIZE[size]}`}
       >
-        <header className="flex shrink-0 items-start justify-between gap-3 px-5 pt-4 pb-3 sm:px-6 sm:pt-5 sm:pb-4">
+        <div {...dragProps} className="touch-none sm:hidden">
+          <div className="mx-auto mt-2 mb-1 h-1 w-10 rounded-full bg-slate-300" aria-hidden="true" />
+        </div>
+        <header {...dragProps} className="flex shrink-0 touch-none items-start justify-between gap-3 px-5 pt-2 pb-3 sm:px-6 sm:pt-5 sm:pb-4">
           <div className="flex min-w-0 items-start gap-3">
             {icon && (
               <span className={`mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full ${ICON_TONE[iconTone]}`}>{icon}</span>

@@ -173,7 +173,7 @@ const features = `
       <div class="grid">
         <article class="card card--row card--open span-6">
           <h3>쇼핑몰 양식 자동 구분</h3>
-          <p>${SUPPORTED_SHOPS.length}곳 엑셀을 한 번에</p>
+          <p>쇼핑몰 양식이 달라도 파일만 올리면 돼요</p>
           <div class="panel" ${mesh(21)}>
             <div class="stage stage--fade-b"><div class="at-corner to-edge" style="--ax:28px;--ay:28px">${shot('files-detected', 1600, 523, '주문서 올리기 카드: 올린 주문 파일 두 개를 쿠팡 양식, 네이버 스마트스토어 양식으로 알아본 모습', 'loading="lazy" style="width:780px"')}</div></div>
           </div>
@@ -182,7 +182,7 @@ const features = `
           <h3>같은 사람 주문은 한데 모아</h3>
           <p>합포장할 주문이 바로 보여요</p>
           <div class="panel" ${mesh(34)}>
-            <div class="stage stage--fade-b"><div class="at-corner to-edge" style="--ax:28px;--ay:28px">${shot('courier-file', 1800, 1312, '택배사에 넣을 파일 미리 보기: 같은 받는 사람의 주문이 위아래로 붙어 있는 표', 'loading="lazy" style="width:860px"')}</div></div>
+            <div class="stage stage--fade-b"><div class="at-corner to-edge" style="--ax:28px;--ay:28px">${shot('courier-file', 1180, 270, '택배사에 넣을 파일 미리 보기: 같은 받는 사람의 주문이 위아래로 붙어 있는 표', 'loading="lazy" style="width:860px"')}</div></div>
           </div>
         </article>
       </div>

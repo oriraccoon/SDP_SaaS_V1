@@ -10,7 +10,7 @@
  * moment: line-carries-colour on the privacy section (the dark band): the page turns dark where it talks
  *         about keeping order files in the browser
  */
-import { APP_NAME, BUSINESS_INFO, FREE_TRIAL_DAYS, PLANS } from '../config/brand';
+import { APP_NAME, BUSINESS_INFO, FREE_TRIAL_DAYS, PLANS, PLAN_FEATURE_ROWS } from '../config/brand';
 import { DEFAULT_FAQS, loadFaqs, type Faq } from '../lib/siteContent';
 import { SUPPORTED_COURIERS, SUPPORTED_SHOPS } from '../lib/supported';
 import { isMarkedSignedIn, markSignedIn } from '../lib/signedInFlag';
@@ -216,17 +216,20 @@ const pricing = `
     </div>
     <div class="grid">
       ${PLANS.map((plan) => {
-        const featured = plan.name === '기본';
+        const featured = plan.name === 'Basic';
         const label = plan.price === 0 ? `${FREE_TRIAL_DAYS}일 무료로 써 보기` : `${plan.name} 플랜 시작하기`;
         return `<article class="card card--plan span-4 m-nolift${featured ? ' is-featured' : ''}">
           <h3>${plan.name}${featured ? ' <span class="badge">많이 써요</span>' : ''}</h3>
           <p>${plan.desc}</p>
           <p class="price"><span class="t-stat">${won(plan.price)}</span><span class="muted">/ ${plan.price === 0 ? `${FREE_TRIAL_DAYS}일` : '월'}</span></p>
           <a class="btn ${featured ? 'btn--primary' : 'btn--secondary'}" href="${APP_URL}">${label}</a>
-          <ul class="checks">${plan.features.map((f) => `<li>${f}</li>`).join('')}</ul>
         </article>`;
       }).join('')}
     </div>
+    <table class="plan-compare">
+      <thead><tr><th scope="col">기능</th>${PLANS.map((p) => `<th scope="col">${p.name}</th>`).join('')}</tr></thead>
+      <tbody>${PLAN_FEATURE_ROWS.map((row) => `<tr><th scope="row">${row.label}</th>${row.included.map((on) => `<td class="${on ? 'yes' : 'no'}"><span aria-label="${on ? '포함' : '없음'}">${on ? '✓' : '–'}</span></td>`).join('')}</tr>`).join('')}</tbody>
+    </table>
   </div>
 </section>`;
 

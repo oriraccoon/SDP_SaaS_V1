@@ -69,6 +69,17 @@
   #price .grid { gap: var(--s-3); }
 }
 
+#price .plan-compare { margin-top: 48px; width: 100%; border-collapse: collapse; font-size: 15px; color: var(--p-ink); }
+#price .plan-compare th, #price .plan-compare td { padding: 14px 12px; border-bottom: 1px solid #e5e5e5; text-align: center; }
+#price .plan-compare thead th { font-weight: 600; }
+#price .plan-compare tbody th { text-align: left; font-weight: 400; }
+#price .plan-compare .yes { color: var(--p-accent); font-weight: 700; font-size: 17px; }
+#price .plan-compare .no { color: #bdbdbd; }
+@media (max-width: 639px) {
+  #price .plan-compare { font-size: 14px; }
+  #price .plan-compare th, #price .plan-compare td { padding: 10px 4px; }
+}
+
 
 
 

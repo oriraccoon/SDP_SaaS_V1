@@ -16,9 +16,17 @@ export const WARNING_TEMPLATE_DEFAULT = '안녕하세요. 이번 달 {days}일 �
 
 /** 요금제. 랜딩 가격 섹션과 구독권 화면이 함께 씁니다. */
 export const PLANS = [
-  { name: '무료 체험', price: 0, desc: '먼저 써 보기', features: ['횟수 제한 없음', '모든 기능'] },
-  { name: '기본', price: MONTHLY_PRICE_KRW, desc: '매달 정리하는 셀러', features: ['횟수 제한 없음', '모든 기능', '설정 백업'] },
-  { name: '프로', price: PRO_PRICE_KRW, desc: '주문이 많은 셀러', features: ['기본 플랜 전부', '문의 먼저 답변'] },
+  { name: 'Free', price: 0, desc: '먼저 써 보기' },
+  { name: 'Basic', price: MONTHLY_PRICE_KRW, desc: '매달 정리하는 셀러' },
+  { name: 'Pro', price: PRO_PRICE_KRW, desc: '주문이 많은 셀러' },
+];
+
+/** 기능표. 각 줄의 included는 PLANS 순서(Free, Basic, Pro)대로 해당하면 true입니다. */
+export const PLAN_FEATURE_ROWS: { label: string; included: boolean[] }[] = [
+  { label: '업로드 횟수 제한 없음', included: [true, true, true] },
+  { label: '주문 정리 기능 전부', included: [true, true, true] },
+  { label: '설정 백업', included: [false, true, true] },
+  { label: 'API 연동', included: [false, false, true] },
 ];
 
 /**

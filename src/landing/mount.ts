@@ -6,7 +6,7 @@
  * deal: hero collage, nav nav-centre, close close-word, footer footer-statement, rhythm dark-band,
  *       buttons pill, mark dots, palette: the client's own green (#1e5b4a) through start.mjs brand,
  *       type instrument (Instrument Sans + DM Mono; Hangul in Noto Sans KR)
- * effect: grain-gradient in the hero frame; card ground gradient-mesh (features)
+ * effect: none. 초록 그라데이션 배경(히어로 grain-gradient, 기능 gradient-mesh)은 사용자 요청으로 뺐고, 히어로 액자와 기능 카드는 평면 surface색
  * moment: line-carries-colour on the privacy section (the dark band): the page turns dark where it talks
  *         about keeping order files in the browser
  */
@@ -110,7 +110,7 @@ const hero = `
       <div class="btn-row"><a class="btn btn--primary" href="${APP_URL}" data-main-action>${mainAction(SIGNED_IN)}${ARROW}</a><a class="btn btn--secondary" href="#price">가격 보기</a></div>
       <ul class="shop-chips" aria-label="바로 읽는 쇼핑몰">${SUPPORTED_SHOPS.map((n) => `<li>${n}</li>`).join('')}</ul>
     </div>
-    <div class="hero__art span-6 start-7" data-fx="grain-gradient" data-fx-seed="7">
+    <div class="hero__art span-6 start-7">
       <div class="ly-piece ly-piece--main shot-win">${shot('app-overview', 1400, 1050, `${APP_NAME} 주문정리 화면: 주문서 올리기부터 송장 맞추기까지 끝난 모습`, 'fetchpriority="high"')}</div>
       <div class="ly-piece ly-piece--note shot-win" aria-hidden="true">${shot('app-todo', 597, 440, '')}</div>
     </div>
@@ -159,52 +159,109 @@ const app = `
   </div>
 </section>`;
 
-// ---------- features 2x2 ----------
-const mesh = (seed: number) =>
-  `data-fx="gradient-mesh" data-fx-seed="${seed}" data-fx-params='{"drift":0}'`;
+// ---------- features: 두 화면, 카드마다 앱 화면 한 조각 ----------
+// 앱 캡처를 줄여 넣지 않고, 앱과 같은 말·모양으로 그 기능이 보이는 몇 줄만 HTML로 그립니다(글씨는 실제 크기).
+// 조각은 카드 왼쪽 위에 붙고 오른쪽·아래로 흘러 잘립니다. 강조는 카드마다 하나.
+const DOC_ICO = '<svg class="frag__doc" viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 1.5H4a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V5z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M9.5 1.5V5H13M5.5 8.5h5M5.5 11h5" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>';
+const WARN_ICO = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2 1.8 13h12.4z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M8 6.5v3M8 11.3v.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>';
+const INFO_ICO = '<svg viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.8" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M6 3.6v2.8M6 8.2v.2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>';
+
+// 엑셀 미리 보기 모양 표: 열 글자(A, B, …), 행 번호, 회색 머리줄. opt: 좁은 화면에서 숨기는 열
+type Col = { h: string; cls?: string; opt?: boolean };
+const sheet = (cols: Col[], rows: string[][], mark: (r: string[]) => boolean) => {
+  const td = (c: Col, v: string) => `<td class="${[c.cls, c.opt && 'is-opt'].filter(Boolean).join(' ')}">${v}</td>`;
+  return `<table class="frag__sheet">
+    <thead>
+      <tr class="frag__letters"><td></td>${cols.map((c, i) => td(c, String.fromCharCode(65 + i))).join('')}</tr>
+      <tr class="frag__head"><td>1</td>${cols.map((c) => td(c, c.h)).join('')}</tr>
+    </thead>
+    <tbody>${rows.map((r, i) => `<tr${mark(r) ? ' class="is-mark"' : ''}><td>${i + 2}</td>${cols.map((c, j) => td(c, r[j])).join('')}</tr>`).join('')}</tbody>
+  </table>`;
+};
+const PEOPLE: Record<string, [string]> = {
+  가상김도윤: ['01012345678'], 가상이서연: ['01055555555'], 가상박지호: ['01099999999'],
+  가상최유진: ['01077777777'], 가상정하늘: ['01088888888'],
+};
+const COURIER_ROWS = [
+  ['가상 선크림 SPF50', '1', '가상김도윤'], ['가상 세럼 50ml', '1', '가상김도윤'], ['가상 토너 120ml', '2', '가상김도윤'],
+  ['가상 선크림 SPF50', '1', '가상이서연'], ['가상 세럼 50ml', '1', '가상이서연'],
+  ['가상 토너 120ml', '1', '가상박지호'], ['가상 선크림 SPF50', '1', '가상박지호'], ['가상 세럼 50ml', '2', '가상박지호'],
+  ['가상 앰플 30ml', '1', '가상최유진'], ['가상 토너 120ml', '1', '가상최유진'], ['가상 선크림 SPF50', '3', '가상정하늘'],
+  ['가상 세럼 50ml', '1', '가상정하늘'], ['가상 앰플 30ml', '1', '가상정하늘'],
+].map(([p, q, n]) => [p, q, n, PEOPLE[n][0]]);
+const SORTED_ROWS = [
+  ['가상 선크림 SPF50', '1', '가상김도윤'], ['가상 선크림 SPF50', '1', '가상이서연'], ['가상 선크림 SPF50', '1', '가상박지호'],
+  ['가상 세럼 50ml', '1', '가상김도윤'], ['가상 세럼 50ml', '1', '가상이서연'], ['가상 세럼 50ml', '2', '가상박지호'],
+  ['가상 세럼 50ml', '1', '가상정하늘'],
+  ['가상 앰플 30ml', '1', '가상최유진'], ['가상 앰플 30ml', '1', '가상정하늘'],
+  ['가상 토너 120ml', '2', '가상김도윤'], ['가상 토너 120ml', '1', '가상박지호'], ['가상 토너 120ml', '1', '가상최유진'],
+];
+const FILES: [string, string, number, string][] = [
+  ['DeliveryList_가상쿠팡_주문.xlsx', '5.4 KB', 6, '쿠팡'],
+  ['스마트스토어_주문_1120.xlsx', '28.1 KB', 8, '네이버 스마트스토어'],
+  ['토스_가상주문.xlsx', '9.8 KB', 3, '토스'],
+  ['올웨이즈_가상주문.xlsx', '7.2 KB', 4, '올웨이즈'],
+  ['식봄_가상주문.xlsx', '6.5 KB', 5, '식봄'],
+  ['ESM_가상주문.xlsx', '11.3 KB', 7, 'G마켓(옥션ESM)'],
+];
+const ODD: [string, string, string][] = [
+  ['가상최유진', '01000000000 · 부산', '주소가 너무 짧아요'],
+  ['가상박지호', '01099999999 · 경기가상', '주소가 너무 짧아요'],
+  ['가상정하늘', '0101234 · 서울시 가상구 예시로', '전화번호가 7자리예요'],
+  ['가상윤바다', '01000000000 · 서울시 가상구 샘플길', '수량이 0개예요'],
+  ['가상오세린', '비어 있음 · 경기도 가상시 테스트로', '전화번호가 비었어요'],
+];
+const DICT: [string, string][] = [
+  ['경북 청송 꿀사과 부사 5kg 선물용 특대과', '사과 5kg'],
+  ['나주 신고배 3kg 명절 선물세트', '배 3kg'],
+  ['산지직송 꿀맛 제주 감귤 로열과 5kg 가정용', '감귤 5kg'],
+  ['캠벨 포도 2kg 당일수확 산지직송', '포도 2kg'],
+  ['100% 착즙 사과즙 30포 실속형', '사과즙 30포'],
+  ['상주 단감 5kg 아삭한 부유 단감', '단감 5kg'],
+  ['그린 웰빙 업소용 국산 반달 슬라이스 단무지', '반달단무지'],
+  ['국내제조 비린맛 없는 절단 돌산 간장 꽃게장', '게장'],
+  ['제주 한라봉 3kg 선물용 고당도 산지직송', '한라봉 3kg'],
+  ['유기농 현미 10kg 햅쌀 당일도정', '현미 10kg'],
+];
+
+const FRAGS: Record<string, string> = {
+  detect: `<p class="frag__drop">+ 주문 엑셀 더 올리기</p><p class="frag__title">올린 주문 파일 ${FILES.length}개</p>
+    <ul class="frag__files">${FILES.map(([n, kb, c, shop]) => `<li>${DOC_ICO}<span class="frag__file"><b>${n}</b><small>${kb} · 주문 ${c}건 <em class="frag__chip">${shop} 양식</em></small></span><span class="frag__select is-opt"><small>읽을 양식</small><span>${shop}</span></span></li>`).join('')}</ul>`,
+  pack: sheet(
+    [{ h: '상품명' }, { h: '수량', cls: 'num' }, { h: '수령인', cls: 'name' }, { h: '연락처', opt: true }],
+    COURIER_ROWS, (r) => r[2] === '가상김도윤'),
+  sort: sheet(
+    [{ h: '상품명', cls: 'name' }, { h: '수량', cls: 'num' }, { h: '수령인', cls: 'opt-narrow' }],
+    SORTED_ROWS, (r) => r[0] === '가상 선크림 SPF50'),
+  check: `<div class="frag__alert"><span class="frag__alert-ico">${WARN_ICO}</span><span><b>잘못 배송될 수 있는 주문 ${ODD.length}건</b><small>이름·전화번호·주소가 이상한 주문이에요.</small></span></div>
+    <ul class="frag__odd">${ODD.map(([n, line, why]) => `<li><span><b>${n}</b><small>${line}</small></span><em class="frag__flag">${INFO_ICO}${why}</em></li>`).join('')}</ul>`,
+  dict: `<table class="frag__dict"><thead><tr><td>상품명에 들어 있는 말</td><td>바꿀 이름</td></tr></thead>
+    <tbody>${DICT.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join('')}</tbody></table>`,
+};
+const FEATS: [key: string, title: string, line: string, label: string][] = [
+  ['detect', '쇼핑몰 양식 자동 구분', '양식이 달라도 파일만 올리면 돼요', '올린 주문 파일 여섯 개에 쿠팡 양식, 네이버 스마트스토어 양식, 토스 양식 같은 쇼핑몰 양식 표시가 붙은 목록'],
+  ['pack', '같은 사람 주문은 한데 모아', '합포장할 주문이 바로 보여요', '택배사 파일 미리 보기: 가상김도윤의 주문 세 줄이 위아래로 붙어 있는 표'],
+  ['sort', '같은 상품끼리 묶어서 정리해요', '상품 이름순이라 같은 상품이 한데 모여요', '상품 준비표 미리 보기: 가상 선크림 SPF50 주문 세 줄이 한데 모인 표'],
+  ['check', '이상한 주문은 먼저 알려 줘요', '이름·전화번호·주소 점검', '잘못 배송될 수 있는 주문 5건: 주소가 너무 짧은 주문, 전화번호가 7자리인 주문 같은 문제마다 붉은 표시가 붙은 목록'],
+  ['dict', '긴 상품명은 짧게', '한 번 정하면 계속 써요', '품목사전: 경북 청송 꿀사과 부사 5kg 선물용 특대과를 사과 5kg으로 바꾸는 것처럼 긴 상품명마다 짧은 이름이 적힌 목록'],
+];
+const featCard = ([key, title, line, label]: (typeof FEATS)[number]) => `
+        <article class="feat feat--${key}">
+          <div class="feat__text"><h3>${title}</h3><p>${line}</p></div>
+          <div class="frag frag--${key}" role="img" aria-label="${label}">${FRAGS[key]}</div>
+        </article>`;
 
 const features = `
-<section class="section" id="features" aria-labelledby="features-h">
+<section class="section g2" id="features" aria-labelledby="features-h">
   <div class="wrap">
-    <div class="section-head">
-      <h2 id="features-h">엑셀 정리는 맡기세요</h2>
+    <div class="group">
+      <div class="section-head">
+        <h2 id="features-h">엑셀 정리는 맡기세요</h2>
+      </div>
+      <div class="feat-row feat-row--2">${FEATS.slice(0, 2).map(featCard).join('')}</div>
     </div>
-    <div class="feat-stack">
-      <article class="card card--row card--open span-6">
-          <h3>쇼핑몰 양식 자동 구분</h3>
-          <p>쇼핑몰 양식이 달라도 파일만 올리면 돼요</p>
-          <div class="panel" ${mesh(21)}>
-            <div class="feat-shot">${shot('files-detected', 1600, 523, '주문서 올리기 카드: 올린 주문 파일 두 개를 쿠팡 양식, 네이버 스마트스토어 양식으로 알아본 모습', 'loading=\"lazy\"')}</div>
-          </div>
-        </article>
-      <article class="card card--row card--open span-6">
-          <h3>같은 사람 주문은 한데 모아</h3>
-          <p>합포장할 주문이 바로 보여요</p>
-          <div class="panel" ${mesh(34)}>
-            <div class="feat-shot">${shot('courier-file', 1180, 540, '택배사에 넣을 파일 미리 보기: 같은 받는 사람의 주문이 위아래로 붙어 있는 표', 'loading=\"lazy\"')}</div>
-          </div>
-        </article>
-      <article class="card card--row card--open span-12">
-        <h3>같은 상품끼리 묶어서 정리해요</h3>
-        <p>상품 이름순으로 정렬해서 같은 상품이 한데 모여요</p>
-        <div class="panel" ${mesh(58)}>
-          <div class="feat-shot">${shot('product-sorted', 1180, 540, '품목별 정렬 파일 미리 보기: 선크림, 세럼, 토너처럼 같은 상품 주문이 이름순으로 한데 모여 있는 표', 'loading=\"lazy\"')}</div>
-        </div>
-      </article>
-      <article class="card card--row card--open span-6">
-        <h3>이상한 주문은 먼저 알려 줘요</h3>
-        <p>이름·전화번호·주소 점검</p>
-        <div class="panel" ${mesh(47)}>
-            <div class="feat-shot">${shot('check-orders', 920, 370, '잘못 배송될 수 있는 주문 2건: 주소가 너무 짧음', 'loading=\"lazy\"')}</div>
-        </div>
-      </article>
-      <article class="card card--row card--open span-6">
-        <h3>긴 상품명은 짧게</h3>
-        <p>한 번 정하면 계속 써요</p>
-        <div class="panel" ${mesh(58)}>
-          <div class="feat-shot is-tall">${shot('dictionary', 1600, 1417, '품목사전 화면: 긴 상품명마다 바꿀 짧은 이름이 적힌 목록', 'loading=\"lazy\"')}</div>
-        </div>
-      </article>
+    <div class="group">
+      <div class="feat-row feat-row--3">${FEATS.slice(2).map(featCard).join('')}</div>
     </div>
   </div>
 </section>`;

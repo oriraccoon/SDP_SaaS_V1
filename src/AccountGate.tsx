@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { Check, Megaphone } from 'lucide-react';
-import { APP_NAME, FREE_TRIAL_DAYS, PLANS, PLAN_FEATURE_ROWS } from './config/brand';
+import { APP_NAME, PLANS, PLAN_FEATURE_ROWS } from './config/brand';
 import { getCurrentUid, getCurrentUser, isFirebaseConfigured, logout } from './firebaseAuth';
 import {
   isAdminUser,
@@ -12,9 +12,6 @@ import {
   recordAccessDay,
   markWarningRead,
   hasUnreadWarning,
-  startFreeTrial,
-  canStartTrial,
-  trialEndsAtMs,
   type Account,
   type AccountStatus,
   type FeatureKey,
@@ -184,23 +181,11 @@ function ExpiredScreen({ status, account }: { status: AccountStatus; account: Ac
   );
 }
 
-/** 구독하지 않은 회원(신규 가입, 기간 만료)에게 보여 주는 구독권 선택 화면. 결제는 아직 연결하지 않았습니다. */
+/** 구독 기간이 끝난 회원에게 보여 주는 구독권 선택 화면. 무료 회원은 이 화면에 오지 않습니다. 결제는 아직 연결하지 않았습니다. */
 function PlanScreen({ account }: { account: Account | null }) {
   const [notice, setNotice] = useState<string | null>(null);
-  const trialAvailable = canStartTrial(account);
-  // 무료 체험을 이미 쓴 계정에서는 무료 플랜 칸을 아예 보여 주지 않습니다
-  const visiblePlans = PLANS.filter((plan) => plan.price !== 0 || trialAvailable);
-  const trialEnded = trialEndsAtMs(account) !== null;
-  async function startFree() {
-    if (!trialAvailable) return;
-    const uid = getCurrentUid();
-    if (!uid) return;
-    try {
-      await startFreeTrial(uid);
-    } catch (err) {
-      setNotice('무료 체험을 시작하지 못했어요. 잠시 후 다시 시도해 주세요.');
-    }
-  }
+  const expired = Boolean(account?.expiresAt);
+  const paidPlans = PLANS.filter((plan) => plan.price > 0);
   return (
     <div className="flex min-h-screen flex-col bg-white px-6 text-[#191F28]" style={{ fontFamily: "'Inter', 'Noto Sans KR', system-ui, sans-serif" }}>
       <header className="flex w-full items-center justify-between py-6">
@@ -209,41 +194,37 @@ function PlanScreen({ account }: { account: Account | null }) {
       <main className="flex flex-1 flex-col items-center pb-16">
         <div className="w-full max-w-4xl">
           <p className="text-sm font-semibold text-brand-600">구독 플랜</p>
-          <h1 className="mt-3 text-3xl font-bold leading-tight sm:text-4xl">{trialEnded ? `무료 체험 ${FREE_TRIAL_DAYS}일이 끝났어요` : '나에게 맞는 플랜을 골라 주세요'}</h1>
+          <h1 className="mt-3 text-3xl font-bold leading-tight sm:text-4xl">{expired ? '구독 기간이 끝났어요' : '나에게 맞는 플랜을 골라 주세요'}</h1>
           <p className="mt-3 text-base leading-relaxed text-[#6B7684]">
-            {trialEnded ? '계속 쓰려면 플랜을 골라 주세요. ' : ''}결제는 준비 중이에요. 관리자에게 문의해 주세요.
+            {expired ? '계속 쓰려면 플랜을 골라 주세요. ' : ''}결제는 준비 중이에요. 관리자에게 문의해 주세요.
           </p>
 
-          <div className={`mt-10 grid gap-4 ${visiblePlans.length >= 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
-            {visiblePlans.map((plan) => (
+          <div className={`mt-10 grid gap-4 ${paidPlans.length >= 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
+            {paidPlans.map((plan) => (
               <div key={plan.name} className="flex flex-col rounded-2xl border border-[#E5E8EB] bg-white p-6">
                 <p className="text-base font-semibold text-[#191F28]">{plan.name}</p>
                 <p className="mt-1 text-sm text-[#6B7684]">{plan.desc}</p>
                 <p className="mt-5 text-3xl font-bold">
-                  {plan.price === 0 ? '0원' : `${plan.price.toLocaleString('ko-KR')}원`}
-                  <span className="ml-1 text-sm font-medium text-[#8B95A1]">{plan.price === 0 ? `/ ${FREE_TRIAL_DAYS}일` : '/ 월'}</span>
+                  {`${plan.price.toLocaleString('ko-KR')}원`}
+                  <span className="ml-1 text-sm font-medium text-[#8B95A1]">/ 월</span>
                 </p>
                 <button
-                  onClick={() => (plan.price === 0 ? startFree() : setNotice('결제는 준비 중입니다. 관리자에게 문의해 주세요.'))}
-                  className={`mt-6 w-full rounded-xl px-4 py-3.5 text-base font-semibold transition-colors ${
-                    plan.price === 0
-                      ? 'border border-[#D1D6DB] text-[#191F28] hover:bg-[#F7F8FA]'
-                      : 'bg-brand-600 text-white hover:bg-brand-700'
-                  }`}
+                  onClick={() => setNotice('결제는 준비 중입니다. 관리자에게 문의해 주세요.')}
+                  className="mt-6 w-full rounded-xl bg-brand-600 px-4 py-3.5 text-base font-semibold text-white transition-colors hover:bg-brand-700"
                 >
-                  {plan.price === 0 ? `${FREE_TRIAL_DAYS}일 무료로 시작` : '이 플랜 선택'}
+                  이 플랜 선택
                 </button>
               </div>
             ))}
           </div>
 
-          {/* 기능표: 보이는 요금제 칸만 나오고, 해당하는 기능에만 체크합니다 */}
+          {/* 기능표: 세 플랜을 나란히 보고, 해당하는 기능에만 체크합니다 */}
           <div className="mt-10 overflow-x-auto">
             <table className="w-full border-collapse text-sm text-[#191F28]">
               <thead>
                 <tr className="border-b border-[#E5E8EB]">
                   <th scope="col" className="px-3 py-3 text-left font-semibold">기능</th>
-                  {visiblePlans.map((plan) => (
+                  {PLANS.map((plan) => (
                     <th key={plan.name} scope="col" className="px-3 py-3 text-center font-semibold">{plan.name}</th>
                   ))}
                 </tr>
@@ -252,18 +233,17 @@ function PlanScreen({ account }: { account: Account | null }) {
                 {PLAN_FEATURE_ROWS.map((row) => (
                   <tr key={row.label} className="border-b border-[#F2F4F6]">
                     <th scope="row" className="px-3 py-3 text-left font-normal text-[#4E5968]">{row.label}</th>
-                    {visiblePlans.map((plan) => {
-                      const on = row.included[PLANS.indexOf(plan)];
-                      return (
-                        <td key={plan.name} className="px-3 py-3 text-center">
-                          {on ? (
-                            <Check className="mx-auto h-5 w-5 text-brand-600" aria-label="포함" />
-                          ) : (
-                            <span className="text-[#B0B8C1]" aria-label="없음">–</span>
-                          )}
-                        </td>
-                      );
-                    })}
+                    {row.included.map((value, i) => (
+                      <td key={PLANS[i].name} className="px-3 py-3 text-center">
+                        {typeof value === 'string' ? (
+                          <span className="font-semibold">{value}</span>
+                        ) : value ? (
+                          <Check className="mx-auto h-5 w-5 text-brand-600" aria-label="포함" />
+                        ) : (
+                          <span className="text-[#B0B8C1]" aria-label="없음">–</span>
+                        )}
+                      </td>
+                    ))}
                   </tr>
                 ))}
               </tbody>

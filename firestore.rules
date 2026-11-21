@@ -29,8 +29,7 @@ service cloud.firestore {
     // 회원 문서 필드 (앱이 쓰는 것):
     //   email: string (로그인 이메일) / lastLoginAt: string (ISO 시각)
     //   expiresAt: string|null, features: map, blocked: bool, deletedAt: string|null  (관리자 또는 초대만)
-    //   uploadLimit: int|null (월 업로드 한도, 없거나 null이면 제한 없음. 관리자만 설정, 예전 무료 플랜 회원에게 남아 있음)
-    //   trialStartedAt: timestamp (무료 체험 시작 시각. 본인이 처음 한 번만 서버 시각 그대로 기록)
+    //   uploadLimit: int|null (월 업로드 한도. 무료 회원은 5로 저장됨. 없거나 null이면 제한 없음. 구독 회원은 관리자가 설정)
     //   usage: { month: 'YYYY-MM', count: int } (이번 달 업로드 사용량. 본인은 늘리기만 가능)
     //   access: { month: 'YYYY-MM', count: int, lastDay: 'YYYY-MM-DD' } (이번 달 접속한 날 수. 하루에 1번만 늘어남)
     //   warning: { text: string, sentAt: string } (관리자가 보낸 경고. 관리자만 씀)
@@ -105,6 +104,9 @@ service cloud.firestore {
         && isValidLoginAt(request.resource.data)
         && (
           request.resource.data.keys().hasOnly(['email', 'lastLoginAt'])
+          // 무료 회원: 처음 가입하면 월 5회 한도를 함께 기록합니다 (다른 값은 안 됨)
+          || (request.resource.data.keys().hasOnly(['email', 'lastLoginAt', 'uploadLimit'])
+            && request.resource.data.uploadLimit == 5)
           || (
             request.resource.data.keys().hasOnly(['email', 'lastLoginAt', 'expiresAt', 'features', 'blocked'])
             && exists(/databases/$(database)/documents/invites/$(request.resource.data.email))
@@ -127,6 +129,13 @@ service cloud.firestore {
           && invite(request.resource.data.email).expiresAt == request.resource.data.expiresAt
           && invite(request.resource.data.email).features == request.resource.data.features
           && invite(request.resource.data.email).blocked == request.resource.data.blocked)
+        // 무료 회원이 아직 한도가 없으면 월 5회를 한 번 기록할 수 있습니다 (구독 기간이 있는 계정은 안 됨)
+        || (isSignedIn() && request.auth.uid == uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastLoginAt', 'uploadLimit'])
+          && request.resource.data.uploadLimit == 5
+          && !('uploadLimit' in resource.data)
+          && resource.data.get('expiresAt', null) == null
+          && isValidLoginAt(request.resource.data))
         // 본인은 오늘 접속 기록(access)을 하루 한 번 늘릴 수 있습니다.
         || (isSignedIn() && request.auth.uid == uid
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['access'])
@@ -136,15 +145,10 @@ service cloud.firestore {
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['warningReadSentAt'])
           && resource.data.get('warning', null) != null
           && request.resource.data.warningReadSentAt == resource.data.warning.sentAt)
-        // 본인은 이번 달 업로드 사용량(usage)을 늘리기만 할 수 있습니다.
-        // 무료 체험은 한 번도 시작한 적이 없는 계정만 시작할 수 있고, 시작 시각은 서버 시각이어야 합니다.
-        // (구독 기간이나 월 한도가 있어도 한 번은 체험할 수 있습니다)
+        // 본인은 이번 달 업로드 사용량(usage)을 늘리기만 할 수 있습니다 (한도를 넘으면 안 됨)
         || (isSignedIn() && request.auth.uid == uid
-          && ((request.resource.data.diff(resource.data).affectedKeys().hasOnly(['usage'])
-              && isValidUsageIncrease())
-            || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['trialStartedAt'])
-              && !('trialStartedAt' in resource.data)
-              && request.resource.data.trialStartedAt == request.time)))
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['usage'])
+          && isValidUsageIncrease())
         || isAdmin();
       // 관리자는 휴지통에서 영구 삭제할 때 회원 정보를 지울 수 있습니다.
       allow delete: if isAdmin();

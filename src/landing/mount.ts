@@ -10,7 +10,7 @@
  * moment: line-carries-colour on the privacy section (the dark band): the page turns dark where it talks
  *         about keeping order files in the browser
  */
-import { APP_NAME, BUSINESS_INFO, FREE_TRIAL_DAYS, PLANS, PLAN_FEATURE_ROWS } from '../config/brand';
+import { APP_NAME, BUSINESS_INFO, FREE_MONTHLY_UPLOADS, PLANS, PLAN_FEATURE_ROWS } from '../config/brand';
 import { DEFAULT_FAQS, loadFaqs, type Faq } from '../lib/siteContent';
 import { SUPPORTED_COURIERS, SUPPORTED_SHOPS } from '../lib/supported';
 import { isMarkedSignedIn, markSignedIn } from '../lib/signedInFlag';
@@ -212,16 +212,16 @@ const pricing = `
   <div class="wrap">
     <div class="section-head">
       <h2 id="price-h">요금</h2>
-      <p>${FREE_TRIAL_DAYS}일 무료, 그다음 월 ${won(PLANS[1].price)}</p>
+      <p>무료는 매달 ${FREE_MONTHLY_UPLOADS}회, 기본은 월 ${won(PLANS[1].price)}</p>
     </div>
     <div class="grid">
       ${PLANS.map((plan) => {
         const featured = plan.name === 'Basic';
-        const label = plan.price === 0 ? `${FREE_TRIAL_DAYS}일 무료로 써 보기` : `${plan.name} 플랜 시작하기`;
+        const label = plan.price === 0 ? '무료로 시작하기' : `${plan.name} 플랜 시작하기`;
         return `<article class="card card--plan span-4 m-nolift${featured ? ' is-featured' : ''}">
           <h3>${plan.name}${featured ? ' <span class="badge">많이 써요</span>' : ''}</h3>
           <p>${plan.desc}</p>
-          <p class="price"><span class="t-stat">${won(plan.price)}</span><span class="muted">/ ${plan.price === 0 ? `${FREE_TRIAL_DAYS}일` : '월'}</span></p>
+          <p class="price"><span class="t-stat">${won(plan.price)}</span><span class="muted">/ ${plan.price === 0 ? `월 ${FREE_MONTHLY_UPLOADS}회` : '월'}</span></p>
           <a class="btn ${featured ? 'btn--primary' : 'btn--secondary'}" href="${APP_URL}">${label}</a>
         </article>`;
       }).join('')}
@@ -287,7 +287,7 @@ const footer = `
   <div class="wrap">
     <div class="closing__cta close--word">
       <div class="section-head--split">
-        <div><h2 id="close-h">${FREE_TRIAL_DAYS}일 무료로 정리해 보세요</h2><p class="t-lead">그다음 월 ${won(PLANS[1].price)} · 횟수 제한 없음</p></div>
+        <div><h2 id="close-h">무료로 정리해 보세요</h2><p class="t-lead">무료는 매달 ${FREE_MONTHLY_UPLOADS}회, 기본은 월 ${won(PLANS[1].price)}</p></div>
         <a class="btn btn--primary" href="${APP_URL}" data-main-action>${mainAction(SIGNED_IN)}${ARROW}</a>
       </div>
       <p class="close__word" aria-hidden="true">${APP_NAME}</p>

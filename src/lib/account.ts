@@ -1,4 +1,4 @@
-import { FREE_TRIAL_DAYS, WATCH_ACCESS_DAYS, WARNING_TEMPLATE_DEFAULT } from '../config/brand';
+import { FREE_MONTHLY_UPLOADS, WATCH_ACCESS_DAYS, WARNING_TEMPLATE_DEFAULT } from '../config/brand';
 import {
   collection,
   deleteDoc,
@@ -6,7 +6,6 @@ import {
   getDoc,
   getDocs,
   getFirestore,
-  serverTimestamp,
   onSnapshot,
   setDoc,
   updateDoc,
@@ -42,8 +41,6 @@ export interface Account {
   uploadLimit?: number | null;
   /** 이번 달 업로드 사용량. 달이 바뀌면 자동으로 0이 됩니다. */
   usage?: { month: string; count: number } | null;
-  /** 무료 체험을 시작한 시각 (서버 시각). 이때부터 FREE_TRIAL_DAYS일 동안 씁니다. */
-  trialStartedAt?: { toMillis: () => number } | null;
   /** 이번 달 접속한 날 수. 하루에 한 번만 늘어납니다. */
   access?: { month: string; count: number; lastDay: string } | null;
   /** 관리자가 보낸 경고 */
@@ -116,6 +113,18 @@ export async function touchAccount(user: User): Promise<void> {
     }
   }
 
+  // 무료 회원(구독 기간이 없는 회원)에게는 월 업로드 한도 5회를 문서에 기록합니다.
+  // 이 값이 있어야 보안 규칙이 횟수 차감을 막을 수 있습니다.
+  const snap = await getDoc(ref);
+  if (!snap.exists()) {
+    await setDoc(ref, { email, lastLoginAt: now, uploadLimit: FREE_MONTHLY_UPLOADS });
+    return;
+  }
+  const data = snap.data() as Account;
+  if (!data.expiresAt && data.uploadLimit === undefined) {
+    await updateDoc(ref, { lastLoginAt: now, uploadLimit: FREE_MONTHLY_UPLOADS });
+    return;
+  }
   await setDoc(ref, { email, lastLoginAt: now }, { merge: true });
 }
 
@@ -195,37 +204,23 @@ export async function isAdminUser(uid: string): Promise<boolean> {
   return snap.exists();
 }
 
+/**
+ * 회원 상태.
+ * - 구독 기간(expiresAt)이 없으면 무료 플랜입니다 (이번 달 업로드 5회).
+ * - 구독 기간이 있으면 그 날짜까지 이용하고, 지나면 구독권 화면을 봅니다.
+ */
 export function resolveStatus(account: Account | null): AccountStatus {
   if (!account) return 'new';
   // 휴지통에 든 회원은 구독권이 없는 것으로 봅니다 (이용 중지와 구분)
   if (account.deletedAt) return 'new';
   if (account.blocked) return 'blocked';
-  // 무료 체험 중이면 구독 기간과 상관없이 이용할 수 있습니다 (구독 기간이 끝난 계정도 체험을 한 번 쓸 수 있습니다)
-  const trialEnd = trialEndsAtMs(account);
-  if (trialEnd !== null && trialEnd > Date.now()) return 'active';
   if (account.expiresAt) return new Date(account.expiresAt).getTime() > Date.now() ? 'active' : 'expired';
-  // 구독 기간이 없으면: 체험을 써서 끝난 회원인지, 예전 무료 플랜(월 횟수 한도)인지 봅니다
-  if (trialEnd !== null) return 'expired';
-  return typeof account.uploadLimit === 'number' ? 'active' : 'new';
+  return 'active';
 }
 
-/** 무료 체험이 끝나는 시각(ms). 체험을 시작하지 않았으면 null입니다. */
-export function trialEndsAtMs(account: Account | null): number | null {
-  const started = account?.trialStartedAt;
-  if (!started || typeof started.toMillis !== 'function') return null;
-  return started.toMillis() + FREE_TRIAL_DAYS * 24 * 60 * 60 * 1000;
-}
-
-/** 무료 체험 남은 날 (올림). 체험 중이 아니면 null입니다. */
-export function trialDaysLeft(account: Account | null): number | null {
-  const end = trialEndsAtMs(account);
-  if (end === null || end <= Date.now()) return null;
-  return Math.ceil((end - Date.now()) / (24 * 60 * 60 * 1000));
-}
-
-/** 무료 체험을 아직 한 번도 쓰지 않은 계정인지. 구독 기간·월 한도와 상관없이, 한 번도 안 썼으면 됩니다. */
-export function canStartTrial(account: Account | null): boolean {
-  return !account?.trialStartedAt;
+/** 무료 플랜인지: 구독 기간이 없는 회원입니다. */
+export function isFreePlan(account: Account | null): boolean {
+  return Boolean(account) && !account?.expiresAt;
 }
 
 export function resolveFeatures(account: Account | null): Record<FeatureKey, boolean> {
@@ -261,11 +256,6 @@ export async function consumeUploads(account: Account | null, count: number): Pr
     { merge: true },
   );
   return true;
-}
-
-/** 무료 체험 시작: 본인 계정에 체험 시작 시각(서버 시각)을 한 번 기록합니다. */
-export async function startFreeTrial(uid: string): Promise<void> {
-  await setDoc(doc(database(), 'users', uid), { trialStartedAt: serverTimestamp() }, { merge: true });
 }
 
 // ---- 관리자 전용 ----

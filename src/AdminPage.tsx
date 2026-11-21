@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import Modal, { btn } from './components/ui/Modal';
-import { WATCH_ACCESS_DAYS } from './config/brand';
+import MembersTab from './admin/MembersTab';
+import { ChevronDown } from 'lucide-react';
+import { APP_NAME } from './config/brand';
 import { loadFaqs, saveFaqs, type Faq } from './lib/siteContent';
 import { getCurrentUser, isFirebaseConfigured } from './firebaseAuth';
 import {
@@ -21,7 +23,6 @@ import {
   subscribeNotice,
   updateAccount,
   uploadsUsedThisMonth,
-  trialEndsAtMs,
   accessDaysThisMonth,
   isWatchTarget,
   getWarningTemplate,
@@ -36,12 +37,6 @@ import {
 type Tab = 'members' | 'reports' | 'notice' | 'faq';
 
 const DAY = 24 * 60 * 60 * 1000;
-
-/** 기간 연장: 지금 남은 기간이 있으면 그 뒤에, 없으면 지금부터 더합니다. */
-function extendDays(account: Account, days: number): string {
-  const base = Math.max(Date.now(), account.expiresAt ? new Date(account.expiresAt).getTime() : 0);
-  return new Date(base + days * DAY).toISOString();
-}
 
 export default function AdminPage() {
   const [checked, setChecked] = useState<'checking' | 'admin' | 'denied'>('checking');
@@ -61,36 +56,54 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
-      <header className="border-b border-slate-200 bg-white px-4 py-3">
-        <div className="mx-auto flex max-w-5xl items-center justify-between">
-          <h1 className="text-base font-bold">관리자 화면</h1>
-          <a href="/app" className="text-xs font-semibold text-indigo-600 hover:underline">앱으로 돌아가기</a>
+      <header className="border-b border-slate-200 bg-white">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
+          <div className="flex items-center gap-2.5">
+            <span className="text-base font-bold text-brand-700">{APP_NAME}</span>
+            <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">관리자</span>
+          </div>
+          <a href="/app" className="text-sm font-semibold text-brand-700 hover:underline">앱으로 돌아가기</a>
         </div>
+        <nav className="mx-auto flex max-w-5xl gap-1 overflow-x-auto px-4" aria-label="관리자 메뉴">
+          {(
+            [
+              ['members', '회원 관리'],
+              ['reports', '신고/문의 내용'],
+              ['notice', '공지 배너'],
+              ['faq', '랜딩 질문'],
+            ] as [Tab, string][]
+          ).map(([key, label]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setTab(key)}
+              aria-current={tab === key ? 'page' : undefined}
+              className={`-mb-px whitespace-nowrap border-b-2 px-3 pb-3 pt-2 text-sm font-semibold transition cursor-pointer ${
+                tab === key ? 'border-brand-600 text-brand-700' : 'border-transparent text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </nav>
       </header>
 
-      <nav className="mx-auto mt-4 flex max-w-5xl gap-2 px-4">
-        {(
-          [
-            ['members', '회원 관리'],
-            ['reports', '신고/문의 내용'],
-            ['notice', '공지 배너'],
-            ['faq', '랜딩 질문'],
-          ] as [Tab, string][]
-        ).map(([key, label]) => (
-          <button
-            key={key}
-            onClick={() => setTab(key)}
-            className={`rounded-lg px-3 py-1.5 text-xs font-bold ${
-              tab === key ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </nav>
-
-      <main className="mx-auto max-w-5xl space-y-4 p-4">
-        {tab === 'members' && <MembersTab />}
+      <main className="mx-auto max-w-5xl space-y-4 px-4 py-8">
+        {tab === 'members' && (
+          <MembersTab
+            renderInvite={(onChanged) => (
+              <details className="group rounded-xl border border-slate-200 bg-white">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-slate-800 hover:bg-slate-50">
+                  <span>회원 초대하기</span>
+                  <ChevronDown className="h-4 w-4 text-slate-500 transition-transform group-open:rotate-180" />
+                </summary>
+                <div className="border-t border-slate-100 p-4">
+                  <InviteSection onChanged={onChanged} />
+                </div>
+              </details>
+            )}
+          />
+        )}
         {tab === 'reports' && <ReportsTab />}
         {tab === 'notice' && <NoticeTab />}
         {tab === 'faq' && <FaqTab />}
@@ -107,323 +120,6 @@ function Center({ text, desc }: { text: string; desc?: string }) {
         {desc && <p className="mt-2 text-sm text-slate-600">{desc}</p>}
       </div>
     </div>
-  );
-}
-
-/** 경고 문구 창: 틀을 고쳐서 저장하거나, 이 회원에게만 보낼 수 있습니다. */
-function WarningModal({ account, onClose, onSent }: { account: Account; onClose: () => void; onSent: (msg: string) => void }) {
-  const [text, setText] = useState('');
-  const [loaded, setLoaded] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    getWarningTemplate()
-      .then((t) => setText(t))
-      .catch((e) => setError(String(e?.message || e)))
-      .finally(() => setLoaded(true));
-  }, []);
-
-  const fill = (t: string) =>
-    t
-      .replaceAll('{email}', account.email || '')
-      .replaceAll('{days}', String(accessDaysThisMonth(account)))
-      .replaceAll('{usage}', String(uploadsUsedThisMonth(account)));
-
-  const send = async () => {
-    if (!text.trim()) return;
-    setBusy(true);
-    setError(null);
-    try {
-      await sendWarning(account.uid, fill(text.trim()));
-      onSent(`${account.email || '회원'}에게 경고를 보냈습니다.`);
-    } catch (e: any) {
-      setError(String(e?.message || e));
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const saveTemplate = async () => {
-    setBusy(true);
-    setError(null);
-    try {
-      await saveWarningTemplate(text.trim());
-      onSent('경고 문구 틀을 저장했습니다. 다음부터 이 문구가 기본으로 나옵니다.');
-    } catch (e: any) {
-      setError(String(e?.message || e));
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  return (
-    <Modal
-      onClose={onClose}
-      title="경고 보내기"
-      description={<><b className="font-semibold text-slate-800">{account.email || '이 회원'}</b>에게 화면 위쪽에 안내로 보입니다. 회원이 "확인했어요"를 누르기 전까지 떠 있어요.</>}
-      size="md"
-      closeOnBackdrop={false}
-      footerStart={<span>넣을 수 있는 말: {'{email}'} {'{days}'} {'{usage}'}</span>}
-      footer={
-        <>
-          <button type="button" onClick={saveTemplate} disabled={busy || !loaded} className={btn.secondary}>이 문구를 기본 틀로 저장</button>
-          <button type="button" onClick={send} disabled={busy || !loaded || !text.trim()} className={btn.danger}>이 회원에게 보내기</button>
-        </>
-      }
-    >
-      <div className="space-y-2">
-        <label htmlFor="warning-text" className="text-sm font-semibold text-slate-800">경고 문구</label>
-        <textarea
-          id="warning-text"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          disabled={!loaded}
-          rows={6}
-          maxLength={500}
-          className="w-full rounded-lg border border-slate-300 p-3 text-sm leading-relaxed focus:border-brand-500 focus:outline-none"
-        />
-        <p className="text-xs text-slate-500">{text.length} / 500자 · 보낸 뒤에는 회원 화면에 그대로 보입니다.</p>
-        {error && <p className="text-sm text-rose-600">{error}</p>}
-      </div>
-    </Modal>
-  );
-}
-
-function MembersTab() {
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const [busy, setBusy] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
-
-  const reload = async () => {
-    // 자동 삭제가 실패해도(예: 규칙이 아직 게시되지 않음) 회원 목록은 보여야 합니다.
-    try {
-      const purged = await purgeExpiredTrash();
-      if (purged > 0) setMessage(`휴지통에 ${TRASH_RETENTION_DAYS}일 넘게 있던 ${purged}명을 삭제했습니다.`);
-    } catch (e: any) {
-      console.warn('휴지통 자동 삭제 실패:', e);
-    }
-    try {
-      setAccounts(await listAccounts());
-    } catch (e: any) {
-      setMessage(String(e?.message || e));
-    }
-  };
-  useEffect(() => {
-    reload();
-  }, []);
-
-  const activeAccounts = accounts.filter((a) => !a.deletedAt);
-  const trashAccounts = accounts.filter((a) => a.deletedAt);
-  const [trashOpen, setTrashOpen] = useState(false);
-  const [warningTarget, setWarningTarget] = useState<Account | null>(null);
-
-  const run = async (uid: string, action: () => Promise<void>, doneText: string) => {
-    setBusy(uid);
-    setMessage(null);
-    try {
-      await action();
-      setMessage(doneText);
-      await reload();
-    } catch (e: any) {
-      setMessage(`실패: ${e?.message || e}`);
-    } finally {
-      setBusy(null);
-    }
-  };
-
-  return (
-    <section className="space-y-3">
-      {warningTarget && (
-        <WarningModal
-          account={warningTarget}
-          onClose={() => setWarningTarget(null)}
-          onSent={async (msg) => {
-            setWarningTarget(null);
-            setMessage(msg);
-            await reload();
-          }}
-        />
-      )}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-slate-600">회원 {accounts.length}명</p>
-        <button onClick={reload} className="text-xs font-semibold text-indigo-600 hover:underline">새로고침</button>
-      </div>
-      {message && <p className="rounded-lg bg-white border border-slate-200 px-3 py-2 text-xs text-slate-700">{message}</p>}
-
-      <InviteSection onChanged={reload} />
-
-      {/* 휴지통 배너: 누르면 휴지통 회원 목록이 펼쳐집니다 */}
-      <button
-        type="button"
-        onClick={() => setTrashOpen((v) => !v)}
-        className="flex w-full items-center justify-between rounded-xl border border-slate-300 bg-slate-100 px-4 py-3 text-left hover:bg-slate-200"
-      >
-        <span>
-          <span className="block text-sm font-bold text-slate-800">휴지통 ({trashAccounts.length}명)</span>
-          <span className="block text-xs text-slate-500">휴지통에 들어간 지 {TRASH_RETENTION_DAYS}일이 지나면 자동으로 삭제됩니다.</span>
-        </span>
-        <span className="text-xs font-semibold text-slate-600">{trashOpen ? '접기 ▲' : '펼치기 ▼'}</span>
-      </button>
-
-      {trashOpen && (
-        <section className="space-y-3 rounded-xl border border-slate-200 bg-white p-4">
-          {trashAccounts.length === 0 && <p className="text-sm text-slate-500">휴지통이 비어 있어요.</p>}
-          {trashAccounts.map((acc) => {
-            const left = Math.max(0, TRASH_RETENTION_DAYS - Math.floor((Date.now() - new Date(acc.deletedAt as string).getTime()) / (24 * 60 * 60 * 1000)));
-            return (
-              <div key={acc.uid} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white p-3 border border-slate-200">
-                <div>
-                  <p className="text-sm font-semibold text-slate-800">{acc.email || '(이메일 없음)'}</p>
-                  <p className="text-xs text-slate-500">자동 삭제까지 {left}일 남음</p>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    disabled={busy === acc.uid}
-                    onClick={() => run(acc.uid, () => updateAccount(acc.uid, { deletedAt: null, blocked: false }), '복구했습니다.')}
-                    className="rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-1.5 text-xs font-bold text-indigo-700 hover:bg-indigo-100 disabled:opacity-50"
-                  >
-                    복구
-                  </button>
-                  <button
-                    disabled={busy === acc.uid}
-                    onClick={() => {
-                      if (!window.confirm(`${acc.email || '이 회원'}의 데이터를 바로 영구 삭제합니다. 되돌릴 수 없습니다. 계속할까요?`)) return;
-                      run(acc.uid, () => deleteAccountData(acc.uid), '영구 삭제했습니다.');
-                    }}
-                    className="rounded-lg border border-rose-300 bg-white px-3 py-1.5 text-xs font-bold text-rose-700 hover:bg-rose-50 disabled:opacity-50"
-                  >
-                    바로 영구 삭제
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </section>
-      )}
-
-      {activeAccounts.map((acc) => {
-        const status = resolveStatus(acc);
-        const features = resolveFeatures(acc);
-        const statusLabel = { active: '사용 중', new: '기간 미등록', expired: '기간 만료', blocked: '정지' }[status];
-        const statusColor = {
-          active: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-          new: 'bg-slate-100 text-slate-600 border-slate-200',
-          expired: 'bg-amber-50 text-amber-700 border-amber-200',
-          blocked: 'bg-rose-50 text-rose-700 border-rose-200',
-        }[status];
-
-        return (
-          <div key={acc.uid} className="rounded-xl border border-slate-200 bg-white p-4 space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <p className="text-sm font-bold">{acc.email || '(이메일 없음)'}</p>
-                <p className="text-xs text-slate-500">
-                  마지막 접속: {acc.lastLoginAt ? new Date(acc.lastLoginAt).toLocaleString('ko-KR') : '-'}
-                  {' · '}만료일: {acc.expiresAt ? new Date(acc.expiresAt).toLocaleDateString('ko-KR') : '-'}
-                  {' · '}이번 달 접속: {accessDaysThisMonth(acc)}일
-                  {' · '}이번 달 업로드: {uploadsUsedThisMonth(acc)}{typeof acc.uploadLimit === 'number' ? ` / ${acc.uploadLimit}회` : '회 (제한 없음)'}
-                  {acc.warning && <>{' · '}경고: {acc.warningReadSentAt === acc.warning.sentAt ? '읽음' : '안 읽음'}</>}
-                  {trialEndsAtMs(acc) !== null && <>{' · '}무료 체험: {new Date(trialEndsAtMs(acc) as number).toLocaleDateString('ko-KR')}까지</>}
-                </p>
-              </div>
-              <div className="flex flex-wrap items-center gap-1.5">
-                {isWatchTarget(acc) && (
-                  <span className="rounded-md border border-amber-300 bg-amber-50 px-2 py-0.5 text-xs font-bold text-amber-800" title={`이번 달 접속 ${WATCH_ACCESS_DAYS}일 이상인데 업로드가 0회`}>확인 필요</span>
-                )}
-                <span className={`rounded-md border px-2 py-0.5 text-xs font-bold ${statusColor}`}>{statusLabel}</span>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              {[30, 365].map((days) => (
-                <button
-                  key={days}
-                  disabled={busy === acc.uid}
-                  onClick={() => run(acc.uid, () => updateAccount(acc.uid, { expiresAt: extendDays(acc, days) }), `기간 ${days === 30 ? '1개월' : '1년'} 연장했습니다.`)}
-                  className="rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-1.5 text-xs font-bold text-indigo-700 hover:bg-indigo-100 disabled:opacity-50"
-                >
-                  {days === 30 ? '+1개월' : '+1년'}
-                </button>
-              ))}
-              <button
-                disabled={busy === acc.uid}
-                onClick={() => {
-                  const v = window.prompt('만료일을 입력하세요 (예: 2027-06-30). 비우면 기간을 지웁니다.', acc.expiresAt ? acc.expiresAt.slice(0, 10) : '');
-                  if (v === null) return;
-                  const expiresAt = v.trim() ? new Date(`${v.trim()}T23:59:59`).toISOString() : null;
-                  run(acc.uid, () => updateAccount(acc.uid, { expiresAt }), '만료일을 저장했습니다.');
-                }}
-                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
-              >
-                날짜 직접 입력
-              </button>
-              <button
-                disabled={busy === acc.uid}
-                onClick={() => {
-                  const v = window.prompt('월 업로드 한도를 입력하세요 (숫자). 비우면 제한을 없앱니다.', acc.uploadLimit != null ? String(acc.uploadLimit) : '');
-                  if (v === null) return;
-                  const t = v.trim();
-                  const uploadLimit = t === '' ? null : Number(t);
-                  if (uploadLimit !== null && (!Number.isInteger(uploadLimit) || uploadLimit < 0)) {
-                    window.alert('0 이상의 정수를 입력해 주세요.');
-                    return;
-                  }
-                  run(acc.uid, () => updateAccount(acc.uid, { uploadLimit }), '업로드 한도를 저장했습니다.');
-                }}
-                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
-              >
-                업로드 한도
-              </button>
-              <button
-                disabled={busy === acc.uid}
-                onClick={() => setWarningTarget(acc)}
-                className="rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-bold text-amber-800 hover:bg-amber-50 disabled:opacity-50"
-              >
-                경고 보내기
-              </button>
-              <button
-                disabled={busy === acc.uid}
-                onClick={() => run(acc.uid, () => updateAccount(acc.uid, { blocked: !acc.blocked }), acc.blocked ? '정지를 풀었습니다.' : '이용을 정지했습니다.')}
-                className="rounded-lg border border-rose-300 bg-white px-3 py-1.5 text-xs font-bold text-rose-700 hover:bg-rose-50 disabled:opacity-50"
-              >
-                {acc.blocked ? '정지 해제' : '이용 정지'}
-              </button>
-              <button
-                disabled={busy === acc.uid}
-                onClick={() => {
-                  if (!window.confirm(`${acc.email || '이 회원'}을 휴지통으로 옮깁니다. ${TRASH_RETENTION_DAYS}일 뒤 자동으로 삭제되고, 그 전에는 복구할 수 있습니다. 계속할까요?`)) return;
-                  run(acc.uid, () => updateAccount(acc.uid, { deletedAt: new Date().toISOString() }), '휴지통으로 옮겼습니다.');
-                }}
-                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
-              >
-                삭제 (휴지통)
-              </button>
-            </div>
-
-            <div className="flex flex-wrap gap-4 border-t border-slate-100 pt-3">
-              {(Object.keys(FEATURE_LABELS) as FeatureKey[]).map((key) => (
-                <label key={key} className="flex items-center gap-2 text-xs text-slate-700">
-                  <input
-                    type="checkbox"
-                    checked={features[key]}
-                    disabled={busy === acc.uid}
-                    onChange={(e) =>
-                      run(
-                        acc.uid,
-                        () => updateAccount(acc.uid, { features: { ...acc.features, [key]: e.target.checked } }),
-                        '기능 설정을 저장했습니다.',
-                      )
-                    }
-                  />
-                  {FEATURE_LABELS[key]}
-                </label>
-              ))}
-            </div>
-          </div>
-        );
-      })}
-    </section>
   );
 }
 
@@ -454,14 +150,14 @@ function ReportsTab() {
               key={c}
               onClick={() => setCategory(c)}
               className={`rounded-lg px-3 py-1.5 text-xs font-bold ${
-                category === c ? 'bg-indigo-600 text-white' : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                category === c ? 'bg-brand-600 text-white' : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
               }`}
             >
               {c} ({countOf(c)})
             </button>
           ))}
         </div>
-        <button onClick={reload} className="text-xs font-semibold text-indigo-600 hover:underline">새로고침</button>
+        <button onClick={reload} className="text-xs font-semibold text-brand-600 hover:underline">새로고침</button>
       </div>
       {message && <p className="text-xs text-rose-600">{message}</p>}
 
@@ -528,14 +224,14 @@ function NoticeTab() {
         onChange={(e) => setText(e.target.value)}
         rows={4}
         placeholder="예: 3월 1일부터 택배사 양식이 추가됩니다."
-        className="w-full rounded-lg border border-slate-300 p-3 text-sm focus:border-indigo-500 focus:outline-none"
+        className="w-full rounded-lg border border-slate-300 p-3 text-sm focus:border-brand-500 focus:outline-none"
       />
       <label className="flex items-center gap-2 text-sm text-slate-700">
         <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} />
         공지 띄우기
       </label>
       <div className="flex items-center gap-3">
-        <button onClick={save} className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-700">
+        <button onClick={save} className="rounded-lg bg-brand-600 px-4 py-2 text-xs font-bold text-white hover:bg-brand-700">
           저장
         </button>
         {message && <span className="text-xs text-slate-600">{message}</span>}
@@ -585,7 +281,7 @@ function InviteSection({ onChanged }: { onChanged: () => void }) {
   };
 
   return (
-    <section className="space-y-3 rounded-xl border border-indigo-200 bg-white p-4">
+    <section className="space-y-3 rounded-xl border border-brand-200 bg-white p-4">
       <div>
         <p className="text-sm font-bold text-slate-900">회원 초대</p>
         <p className="text-xs text-slate-500">
@@ -597,7 +293,7 @@ function InviteSection({ onChanged }: { onChanged: () => void }) {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         placeholder="example@gmail.com"
-        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
       />
 
       <div className="flex flex-wrap items-center gap-2">
@@ -606,7 +302,7 @@ function InviteSection({ onChanged }: { onChanged: () => void }) {
             key={key}
             onClick={() => setPeriod(key)}
             className={`rounded-lg px-3 py-1.5 text-xs font-bold ${
-              period === key ? 'bg-indigo-600 text-white' : 'border border-slate-300 bg-white text-slate-700'
+              period === key ? 'bg-brand-600 text-white' : 'border border-slate-300 bg-white text-slate-700'
             }`}
           >
             {label}
@@ -639,7 +335,7 @@ function InviteSection({ onChanged }: { onChanged: () => void }) {
         <button
           onClick={save}
           disabled={saving}
-          className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-700 disabled:opacity-50"
+          className="rounded-lg bg-brand-600 px-4 py-2 text-xs font-bold text-white hover:bg-brand-700 disabled:opacity-50"
         >
           {saving ? '저장 중...' : '초대하기'}
         </button>
@@ -740,14 +436,14 @@ function FaqTab() {
             value={item.q}
             onChange={(e) => update(i, { q: e.target.value })}
             placeholder="질문"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
           />
           <textarea
             value={item.a}
             onChange={(e) => update(i, { a: e.target.value })}
             rows={3}
             placeholder="답변"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
           />
         </div>
       ))}
@@ -756,7 +452,7 @@ function FaqTab() {
         <button onClick={add} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50">
           질문 추가
         </button>
-        <button onClick={save} disabled={saving} className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-700 disabled:opacity-50">
+        <button onClick={save} disabled={saving} className="rounded-lg bg-brand-600 px-4 py-2 text-xs font-bold text-white hover:bg-brand-700 disabled:opacity-50">
           {saving ? '저장 중...' : '저장'}
         </button>
         {message && <span className="text-xs text-slate-600">{message}</span>}

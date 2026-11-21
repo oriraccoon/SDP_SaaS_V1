@@ -262,12 +262,13 @@ const featCard = ([key, title, line, label]: (typeof FEATS)[number]) => `
         </article>`;
 
 const features = `
-<section class="section g2 g2m" id="features" aria-labelledby="features-h">
+<section class="section g2" id="features" aria-labelledby="features-h">
   <div class="wrap">
     <div class="group">
       <div class="section-head">
         <h2 id="features-h">엑셀 정리는 맡기세요</h2>
       </div>
+      <div class="feat-track" role="group" aria-label="기능 카드 다섯 장, 옆으로 넘겨 보기">${FEATS.map(featCard).join('')}</div>
       <div class="feat-row feat-row--2" role="group" aria-label="기능 카드 1~2">${FEATS.slice(0, 2).map(featCard).join('')}</div>
     </div>
     <div class="group">

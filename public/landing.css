@@ -205,15 +205,19 @@
   .feat-row--3 > .feat:last-child { grid-column: 1 / -1; }
   .feat .frag { min-height: 280px; }
 }
-/* 폰: 두 화면(.g2m). 화면마다 카드를 옆으로 넘겨 봄(다음 카드가 오른쪽에 살짝 보임). 글씨는 14px 그대로 */
+/* 폰 전용 한 줄(5장). PC·태블릿에서는 숨기고 위의 두 줄 배치를 씀 */
+.feat-track { display: none; }
+/* 폰: 한 화면. 카드 다섯 장을 한 줄로 옆으로 넘겨 봄(다음 카드가 오른쪽에 살짝 보임). 글씨는 14px 그대로 */
 @media (max-width: 639px) {
-  .feat-row, .feat-row--3 { display: flex; gap: 12px; overflow-x: auto; overscroll-behavior-x: contain;
+  #features { --hm: 1; }
+  #features .feat-row, #features .group + .group { display: none; }
+  #features > .wrap { grid-template-columns: minmax(0, 1fr); }
+  #features .group { min-width: 0; flex: 1 1 auto; }
+  .feat-track { display: flex; flex: 1 1 auto; min-height: 0; gap: 12px; overflow-x: auto; overscroll-behavior-x: contain;
     scroll-snap-type: x mandatory; scroll-padding-inline: var(--gut); scrollbar-width: none;
     margin-inline: calc(-1 * var(--gut)); padding-inline: var(--gut); }
-  .feat-row::-webkit-scrollbar { display: none; }
-  #features > .wrap { grid-template-columns: minmax(0, 1fr); }
-  #features .group { min-width: 0; }
-  .feat-row > .feat { flex: 0 0 86%; scroll-snap-align: start; }
+  .feat-track::-webkit-scrollbar { display: none; }
+  .feat-track > .feat { flex: 0 0 86%; scroll-snap-align: start; }
   .feat { --pad: 20px; gap: 18px; border-radius: 20px; }
   .feat__text h3 { font-size: 19px; }
   .feat__text p { font-size: 15px; }

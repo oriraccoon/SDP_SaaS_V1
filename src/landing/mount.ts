@@ -105,8 +105,8 @@ const hero = `
 <section class="hero hero--collage" id="intro" data-enter aria-labelledby="hero-h">
   <div class="wrap"><div class="hero-text grid hero__grid">
     <div class="hero__text span-5">
-      <h1 id="hero-h">온라인 셀러를 위한 주문·송장 엑셀 정리</h1>
-      <p class="hero__lead">주문 엑셀만 올리면 택배사 파일부터 송장 붙인 쇼핑몰 파일까지 만들어 드려요.</p>
+      <h1 id="hero-h">주문 엑셀, 한 번에 정리</h1>
+      <p class="hero__lead">주문 엑셀을 올리면 택배사 파일과 송장 파일까지 만들어요.</p>
       <div class="btn-row"><a class="btn btn--primary" href="${APP_URL}" data-main-action>${mainAction(SIGNED_IN)}${ARROW}</a><a class="btn btn--secondary" href="#price">가격 보기</a></div>
       <ul class="shop-chips" aria-label="바로 읽는 쇼핑몰">${SUPPORTED_SHOPS.map((n) => `<li>${n}</li>`).join('')}</ul>
     </div>

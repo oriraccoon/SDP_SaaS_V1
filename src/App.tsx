@@ -215,7 +215,7 @@ function migratePlatforms(parsed: PlatformConfig[]): PlatformConfig[] {
 }
 
 export default function App() {
-  const { features, account } = useAccount();
+  const { features, account, isAdmin } = useAccount();
   // ----------------------------------------------------
   // 1. 상태 선언 및 로컬스토리지 연동
   // ----------------------------------------------------
@@ -2204,6 +2204,8 @@ export default function App() {
             { key: 'platforms', label: '쇼핑몰·택배사 칸 맞추기', icon: <Grid className="w-5 h-5 shrink-0" />, selected: activeTab === 'platforms' && !isSettingsOpen, show: true, action: () => setActiveTab('platforms') },
             { key: 'settings', label: '설정', icon: <Settings className="w-5 h-5 shrink-0" />, selected: isSettingsOpen, show: true, action: () => openSettings('backup') },
             { key: 'support', label: '문의하기', icon: <MessageSquare className="w-5 h-5 shrink-0" />, selected: false, show: true, action: () => setIsFeedbackOpen(true) },
+            // 관리자 계정에만 보이는 바로가기 (관리 화면은 /admin 주소로 열립니다)
+            { key: 'admin', label: '관리자 화면', icon: <ShieldCheck className="w-5 h-5 shrink-0" />, selected: false, show: isAdmin, action: () => { window.location.assign('/admin'); } },
           ]
             .filter((item) => item.show)
             .map((item) => (

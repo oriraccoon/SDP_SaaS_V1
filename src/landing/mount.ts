@@ -22,11 +22,13 @@ const esc = (s: string) =>
 const won = (n: number) => `${n.toLocaleString('ko-KR')}원`;
 const MAIN_ACTION = '무료로 시작하기';
 const APP_URL = '/app';
-// 앱에서 로그인했던 브라우저면 메뉴를 '로그아웃 · 앱 열기'로 보여 줍니다 (Firebase는 불러오지 않음)
+// 앱에서 로그인했던 브라우저면 메뉴를 '로그아웃 · 시작하기'로 보여 줍니다 (Firebase는 불러오지 않음)
 const SIGNED_IN = isMarkedSignedIn();
+// 로그인한 사람에게는 '무료로'를 빼고 '시작하기'만 보여 줍니다
+const mainAction = (signedIn: boolean) => (signedIn ? '시작하기' : MAIN_ACTION);
 const navActions = (signedIn: boolean) =>
   signedIn
-    ? `<button type="button" class="nav__link nav__logout" data-logout>로그아웃</button><a class="btn btn--primary" href="${APP_URL}">앱 열기</a>`
+    ? `<button type="button" class="nav__link nav__logout" data-logout>로그아웃</button><a class="btn btn--primary" href="${APP_URL}">${mainAction(true)}</a>`
     : `<a class="nav__link" href="${APP_URL}">로그인</a><a class="btn btn--primary" href="${APP_URL}">${MAIN_ACTION}</a>`;
 const ARROW =
   '<svg class="m-arrow" viewBox="0 0 12 12" aria-hidden="true"><path class="m-arrow__stem" d="M1 6h8"/><path class="m-arrow__head" d="M4.5 2.5 8 6l-3.5 3.5"/></svg>';
@@ -105,7 +107,7 @@ const hero = `
     <div class="hero__text span-5">
       <h1 id="hero-h">온라인 셀러를 위한 주문·송장 엑셀 정리</h1>
       <p class="hero__lead">주문 엑셀만 올리면 택배사 파일부터 송장 붙인 쇼핑몰 파일까지 만들어 드려요.</p>
-      <div class="btn-row"><a class="btn btn--primary" href="${APP_URL}">${MAIN_ACTION}${ARROW}</a><a class="btn btn--secondary" href="#price">가격 보기</a></div>
+      <div class="btn-row"><a class="btn btn--primary" href="${APP_URL}" data-main-action>${mainAction(SIGNED_IN)}${ARROW}</a><a class="btn btn--secondary" href="#price">가격 보기</a></div>
       <ul class="shop-chips" aria-label="바로 읽는 쇼핑몰">${SUPPORTED_SHOPS.map((n) => `<li>${n}</li>`).join('')}</ul>
     </div>
     <div class="hero__art span-6 start-7" data-fx="grain-gradient" data-fx-seed="7">
@@ -283,7 +285,7 @@ const footer = `
     <div class="closing__cta close--word">
       <div class="section-head--split">
         <div><h2 id="close-h">${FREE_TRIAL_DAYS}일 무료로 정리해 보세요</h2><p class="t-lead">그다음 월 ${won(PLANS[1].price)} · 횟수 제한 없음</p></div>
-        <a class="btn btn--primary" href="${APP_URL}">${MAIN_ACTION}${ARROW}</a>
+        <a class="btn btn--primary" href="${APP_URL}" data-main-action>${mainAction(SIGNED_IN)}${ARROW}</a>
       </div>
       <p class="close__word" aria-hidden="true">${APP_NAME}</p>
     </div>
@@ -323,6 +325,7 @@ export function mountLanding(): void {
     if (box) box.innerHTML = navActions(signedIn);
     const acc = document.querySelector('[data-account-link]');
     if (acc) acc.textContent = signedIn ? '앱 열기' : '로그인';
+    document.querySelectorAll('[data-main-action]').forEach((a) => { if (a.firstChild) a.firstChild.nodeValue = mainAction(signedIn); });
     document.querySelectorAll<HTMLButtonElement>('[data-logout]').forEach((btn) => {
       btn.addEventListener('click', async () => {
         btn.disabled = true;

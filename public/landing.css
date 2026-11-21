@@ -133,3 +133,9 @@
 #features .feat-stack > .card--open { display: flex; flex-direction: column; }
 #features .feat-stack > .card--open > .panel { flex: 1 1 auto; display: flex; align-items: center; }
 #features .feat-stack > .card--open > .panel > .feat-shot { width: 100%; }
+
+/* 기능 카드 사진 틀: 모두 같은 16:10 틀에 넣고 잘리지 않게(contain). 세로로 긴 목록만 위쪽을 채움(cover) */
+#features .feat-shot { aspect-ratio: 16 / 10; display: grid; place-items: center; padding: 24px; box-sizing: border-box; }
+#features .feat-shot img { width: 100%; height: 100%; object-fit: contain; border-radius: 12px; }
+#features .feat-shot.is-tall img { object-fit: cover; object-position: top center; }
+@media (max-width: 760px) { #features .feat-shot { padding: 16px; } }

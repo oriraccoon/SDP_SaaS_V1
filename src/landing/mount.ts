@@ -202,7 +202,7 @@ const features = `
         <h3>긴 상품명은 짧게</h3>
         <p>한 번 정하면 계속 써요</p>
         <div class="panel" ${mesh(58)}>
-          <div class="feat-shot">${shot('dictionary', 1600, 1417, '품목사전 화면: 긴 상품명마다 바꿀 짧은 이름이 적힌 목록', 'loading=\"lazy\"')}</div>
+          <div class="feat-shot is-tall">${shot('dictionary', 1600, 1417, '품목사전 화면: 긴 상품명마다 바꿀 짧은 이름이 적힌 목록', 'loading=\"lazy\"')}</div>
         </div>
       </article>
     </div>

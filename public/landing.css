@@ -115,4 +115,4 @@
 .nav__logout:disabled { opacity: .6; cursor: default; }
 
 /* 히어로 제목은 글자 사이를 조금 넓혀서 읽기 편하게 (공용 기본값 -0.025em보다 느슨하게) */
-#hero-h { letter-spacing: -0.01em; }
+#hero-h { letter-spacing: 0em; }

@@ -89,11 +89,24 @@
 .shop-chips { list-style: none; margin: var(--s-5) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
 .shop-chips li { padding: 5px 10px; border-radius: 999px; font: 500 13px/1.2 var(--font-text); color: var(--muted); background: color-mix(in oklab, var(--ink) 5%, transparent); }
 
-/* the four steps, as icons with a few words */
-.steps { list-style: none; margin: var(--s-6) 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-.steps li { display: flex; align-items: center; gap: 12px; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg); font: 500 15px/1.3 var(--font-text); }
+/* the four steps: tabs that switch the app screen below */
+.steps { margin: var(--s-6) 0 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.steps > button { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 14px 16px; text-align: left; border: 1px solid var(--line); border-radius: 14px; background: var(--bg); color: var(--ink); font: 500 15px/1.3 var(--font-text); cursor: pointer; transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease; }
+.steps > button:hover { border-color: color-mix(in oklab, var(--accent) 40%, var(--line)); }
+.steps > button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.steps > button[aria-selected="true"] { border-color: var(--accent); background: color-mix(in oklab, var(--accent) 7%, var(--bg)); box-shadow: 0 0 0 1px var(--accent); }
 .steps small { display: block; margin-bottom: 2px; font-size: 12px; font-weight: 400; color: var(--muted); }
 .steps__ico { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; color: var(--accent); background: color-mix(in oklab, var(--accent) 12%, transparent); }
+.steps > button[aria-selected="true"] .steps__ico { color: #fff; background: var(--accent); }
 .steps__ico svg { width: 22px; height: 22px; }
+.step-frame { margin-top: var(--s-5); }
+.step-frame picture { display: block; }
+.step-frame [data-step-shot][hidden] { display: none; }
+.step-frame .shot { display: block; width: 100%; height: auto; aspect-ratio: 2000 / 889; }
 @media (max-width: 1023px) { .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 639px) { .steps li { padding: 12px; gap: 10px; font-size: 14px; } .steps__ico { width: 34px; height: 34px; } }
+@media (max-width: 639px) {
+  .steps > button { padding: 10px 12px; gap: 10px; font-size: 14px; min-height: 56px; }
+  .steps__ico { width: 34px; height: 34px; }
+  .step-frame { max-width: 360px; margin-left: auto; margin-right: auto; }
+  .step-frame .shot { aspect-ratio: 780 / 1440; max-height: 600px; object-fit: cover; object-position: top; }
+}

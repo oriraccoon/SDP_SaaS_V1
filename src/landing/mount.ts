@@ -116,6 +116,20 @@ const STEPS: [string, string][] = [
   [ICO('<path d="M14 3H6v18h12V7z"/><path d="M14 3v4h4"/><path d="m9 14 2 2 4-4"/>'), '송장 엑셀 올리기'],
   [ICO('<path d="M12 4v11m0 0-4-4m4 4 4-4"/><path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/>'), '쇼핑몰 파일 받기'],
 ];
+// 단계마다 보여 줄 실제 앱 화면 (public/assets/shots/step1~4, 휴대폰은 -m)
+const STEP_ALTS = [
+  '주문 엑셀 두 개를 올리자 쿠팡·스마트스토어 양식으로 알아보고 정리한 화면',
+  '택배사 사이트에 올릴 택배사 파일 미리 보기',
+  '택배사에서 받은 송장 엑셀을 올려 주문 14건 모두에 송장 번호를 붙인 화면',
+  '송장 번호를 붙인 쇼핑몰별 파일 미리 보기',
+];
+
+// 4단계 탭과 화면 전환은 디자인 키트(system.js)의 탭 기능이 맡습니다 ([role=tablist] + aria-controls).
+// 숨겨 둔 단계 사진은 페이지를 다 연 뒤 미리 받아 둡니다 (처음 누를 때 빈 화면이 안 보이게).
+function preloadStepShots(): void {
+  const run = () => document.querySelectorAll<HTMLImageElement>('#app [data-step-shot] img').forEach((img) => { img.loading = 'eager'; });
+  if (document.readyState === 'complete') run(); else window.addEventListener('load', run, { once: true });
+}
 
 // ---------- app-frame ----------
 const app = `
@@ -124,14 +138,14 @@ const app = `
     <div class="grid grid--top">
       <h2 id="app-h" class="span-12">4단계면 끝나요</h2>
     </div>
-    <ol class="steps">
-      ${STEPS.map(([icon, label], i) => `<li><span class="steps__ico" aria-hidden="true">${icon}</span><span><small>${i + 1}단계</small>${label}</span></li>`).join('')}
-    </ol>
-    <figure class="shot-frame">
-      <picture>
-        <source media="(max-width: 639px)" srcset="/assets/shots/app-match-phone.webp" width="1120" height="894">
-        ${shot('app-match', 2000, 889, `${APP_NAME} 주문정리 화면: 송장 엑셀을 올려 주문 14건 모두에 송장 번호를 붙인 결과`, 'loading="lazy"')}
-      </picture>
+    <div class="steps" role="tablist" aria-label="쓰는 순서">
+      ${STEPS.map(([icon, label], i) => `<button type="button" role="tab" id="step-tab-${i}" aria-controls="step-shot-${i}" aria-selected="${i === 0}" tabindex="${i === 0 ? 0 : -1}"><span class="steps__ico" aria-hidden="true">${icon}</span><span><small>${i + 1}단계</small>${label}</span></button>`).join('')}
+    </div>
+    <figure class="shot-frame step-frame">
+      ${STEP_ALTS.map((alt, i) => `<div id="step-shot-${i}" role="tabpanel" aria-labelledby="step-tab-${i}" data-step-shot${i === 0 ? '' : ' hidden'}><picture>
+        <source media="(max-width: 639px)" srcset="/assets/shots/step${i + 1}-m.webp" width="780" height="1440">
+        ${shot(`step${i + 1}`, 2000, 889, alt, 'loading="lazy"')}
+      </picture></div>`).join('')}
     </figure>
   </div>
 </section>`;
@@ -299,6 +313,7 @@ export function mountLanding(): void {
   );
 
   wireToc();
+  preloadStepShots();
 
   // 관리자가 바꾼 질문이 있으면 불러와서 바꿉니다
   loadFaqs().then((items) => {

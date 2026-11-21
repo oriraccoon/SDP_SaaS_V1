@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { Check, Megaphone } from 'lucide-react';
-import { APP_NAME, FREE_TRIAL_DAYS, PLANS } from './config/brand';
+import { APP_NAME, FREE_TRIAL_DAYS, PLANS, PLAN_FEATURE_ROWS } from './config/brand';
 import { getCurrentUid, getCurrentUser, isFirebaseConfigured, logout } from './firebaseAuth';
 import {
   isAdminUser,
@@ -195,14 +195,6 @@ function PlanScreen({ account }: { account: Account | null }) {
                   {plan.price === 0 ? '0원' : `${plan.price.toLocaleString('ko-KR')}원`}
                   <span className="ml-1 text-sm font-medium text-[#8B95A1]">{plan.price === 0 ? `/ ${FREE_TRIAL_DAYS}일` : '/ 월'}</span>
                 </p>
-                <ul className="mt-5 flex-1 space-y-2.5">
-                  {plan.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2 text-sm text-[#4E5968]">
-                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
                 <button
                   onClick={() => (plan.price === 0 ? startFree() : setNotice('결제는 준비 중입니다. 관리자에게 문의해 주세요.'))}
                   className={`mt-6 w-full rounded-xl px-4 py-3.5 text-base font-semibold transition-colors ${
@@ -215,6 +207,39 @@ function PlanScreen({ account }: { account: Account | null }) {
                 </button>
               </div>
             ))}
+          </div>
+
+          {/* 기능표: 보이는 요금제 칸만 나오고, 해당하는 기능에만 체크합니다 */}
+          <div className="mt-10 overflow-x-auto">
+            <table className="w-full border-collapse text-sm text-[#191F28]">
+              <thead>
+                <tr className="border-b border-[#E5E8EB]">
+                  <th scope="col" className="px-3 py-3 text-left font-semibold">기능</th>
+                  {visiblePlans.map((plan) => (
+                    <th key={plan.name} scope="col" className="px-3 py-3 text-center font-semibold">{plan.name}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {PLAN_FEATURE_ROWS.map((row) => (
+                  <tr key={row.label} className="border-b border-[#F2F4F6]">
+                    <th scope="row" className="px-3 py-3 text-left font-normal text-[#4E5968]">{row.label}</th>
+                    {visiblePlans.map((plan) => {
+                      const on = row.included[PLANS.indexOf(plan)];
+                      return (
+                        <td key={plan.name} className="px-3 py-3 text-center">
+                          {on ? (
+                            <Check className="mx-auto h-5 w-5 text-brand-600" aria-label="포함" />
+                          ) : (
+                            <span className="text-[#B0B8C1]" aria-label="없음">–</span>
+                          )}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
 
           {notice && <p className="mt-6 text-center text-base text-brand-600">{notice}</p>}

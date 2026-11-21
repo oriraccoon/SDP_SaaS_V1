@@ -22,6 +22,8 @@
 /* hero collage (from the kit's hero-collage demo): the result card on the frame's lower left, the window's rows without a time column */
 .hero__art > .ly-piece--note { left: var(--s-6); bottom: var(--s-6); width: 300px; z-index: 2; }
 .hero__proof { font-size: var(--t-small); color: var(--muted); }
+/* 히어로 제목 아래 사실 한 줄: 무료 횟수와 가격 */
+.hero__fact { margin: var(--s-3) 0 0; font-size: 18px; font-weight: 600; color: var(--p-accent); }
 @media (max-width: 1023px) { .hero__art > .ly-piece--note { left: var(--s-4); bottom: var(--s-4); width: 270px; } }
 
 /* screen fit: the phone's privacy and FAQ sections inside one screen */
@@ -202,14 +204,20 @@
   .feat-row--3 > .feat:last-child { grid-column: 1 / -1; }
   .feat .frag { min-height: 280px; }
 }
-/* 폰: 한 줄씩 쌓고, 좁은 화면에 덜 중요한 열은 숨김. 글씨는 14px 그대로 */
+/* 폰: 두 화면(.g2m). 화면마다 카드를 옆으로 넘겨 봄(다음 카드가 오른쪽에 살짝 보임). 글씨는 14px 그대로 */
 @media (max-width: 639px) {
-  #features > .wrap { grid-template-rows: auto auto; row-gap: 16px; }
-  .feat-row, .feat-row--3 { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .feat-row, .feat-row--3 { display: flex; gap: 12px; overflow-x: auto; overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory; scroll-padding-inline: var(--gut); scrollbar-width: none;
+    margin-inline: calc(-1 * var(--gut)); padding-inline: var(--gut); }
+  .feat-row::-webkit-scrollbar { display: none; }
+  #features > .wrap { grid-template-columns: minmax(0, 1fr); }
+  #features .group { min-width: 0; }
+  .feat-row > .feat { flex: 0 0 86%; scroll-snap-align: start; }
   .feat { --pad: 20px; gap: 18px; border-radius: 20px; }
   .feat__text h3 { font-size: 19px; }
   .feat__text p { font-size: 15px; }
-  .feat .frag { flex: none; min-height: 0; height: auto; max-height: 300px; }
+  /* 앱 조각은 카드가 자름(아래로 흘러 넘친 줄은 카드 끝에서 가려짐) */
+  .feat .frag { flex: 1 1 0; min-height: 0; height: auto; max-height: none; overflow: visible; }
   .frag__dict td:last-child { width: 34%; }
 }
 

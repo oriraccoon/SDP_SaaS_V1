@@ -277,12 +277,6 @@ const features = `
 </section>`;
 
 // ---------- pricing ----------
-// 요금제 아이콘: 무료는 파일 한 장, 기본은 여러 장, 프로는 번개(빠른 문의 답변)
-const PLAN_ICONS: Record<string, string> = {
-  Free: ICO('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/>'),
-  Basic: ICO('<path d="M16 3H9a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V6z"/><path d="M16 3v3h3"/><path d="M4 8v11a2 2 0 0 0 2 2h8"/>'),
-  Pro: ICO('<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>'),
-};
 const pricing = `
 <section class="section" id="price" aria-labelledby="price-h">
   <div class="wrap">
@@ -295,7 +289,7 @@ const pricing = `
         const featured = plan.name === 'Basic';
         const label = plan.price === 0 ? '무료로 시작하기' : `${plan.name} 플랜 시작하기`;
         return `<article class="card card--plan span-4 m-nolift${featured ? ' is-featured' : ''}">
-          <h3 class="plan__head"><span class="plan__ico" aria-hidden="true">${PLAN_ICONS[plan.name] ?? PLAN_ICONS.Free}</span>${plan.name}${featured ? ' <span class="badge">많이 써요</span>' : ''}</h3>
+          <h3>${plan.name}${featured ? ' <span class="badge">많이 써요</span>' : ''}</h3>
           <p>${plan.desc}</p>
           <p class="price"><span class="t-stat">${won(plan.price)}</span><span class="muted">/ ${plan.price === 0 ? `월 ${FREE_MONTHLY_UPLOADS}회` : '월'}</span></p>
           <a class="btn ${featured ? 'btn--primary' : 'btn--secondary'}" href="${APP_URL}">${label}</a>
@@ -342,7 +336,7 @@ const faq = `
     <div class="grid grid--top">
       <div class="span-5 stack-4">
         <h2 id="faq-h">자주 묻는 질문</h2>
-        <p class="faq__ask"><span class="faq__ask-ico" aria-hidden="true">${ICO('<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>')}</span>더 궁금하면 앱의 '문의하기'로 보내 주세요.</p>
+        <p>더 궁금하면 앱의 '문의하기'로 보내 주세요.</p>
         <figure class="shot-ask">${shot('contact', 1040, 948, `${APP_NAME} 앱의 문의하기 창`, 'loading="lazy"')}</figure>
       </div>
       <div class="faq span-6 start-7" data-faq-list>${faqItems(DEFAULT_FAQS)}</div>

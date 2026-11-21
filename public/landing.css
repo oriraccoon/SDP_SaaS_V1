@@ -29,6 +29,7 @@
 /* screen fit: the phone's privacy and FAQ sections inside one screen */
 @media (max-width: 639px) {
   #privacy .t-lead { font-size: var(--t-body); }
+  #faq .span-5 > p { display: none; }
 }
 
 /* the close word: the Latin face with Hangul fallback sits lower, so give its line room */
@@ -228,14 +229,5 @@
 @container (max-width: 480px) { .frag__select { display: none; } }
 @container (max-width: 340px) { .frag__odd li { flex-direction: column; gap: 6px; } .frag__alert small { display: none; } }
 
-/* 요금제 카드 이름 앞 아이콘 */
-.plan__head { display: flex; align-items: center; gap: 10px; }
-.plan__ico { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 10px; color: var(--p-accent); background: color-mix(in oklab, var(--p-accent) 12%, transparent); }
-.is-featured .plan__ico { color: #fff; background: var(--p-accent); }
-.plan__ico svg { width: 24px; height: 24px; }
-
-/* FAQ: 문의하기 안내 줄에 앱의 문의 버튼 모양 아이콘. 섹션 내용은 화면 세로 가운데 */
-.faq__ask { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
-.faq__ask-ico { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; color: var(--p-ink); background: #fff; border: 1px solid var(--line); box-shadow: 0 2px 8px rgb(0 0 0 / .06); }
-.faq__ask-ico svg { width: 24px; height: 24px; }
+/* FAQ: 섹션 내용은 화면 세로 가운데 */
 #faq > .wrap { justify-content: center; }

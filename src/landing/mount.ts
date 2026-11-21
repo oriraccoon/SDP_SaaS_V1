@@ -216,7 +216,7 @@ const pricing = `
     </div>
     <div class="grid">
       ${PLANS.map((plan) => {
-        const featured = plan.name === '기본';
+        const featured = plan.name === 'Basic';
         const label = plan.price === 0 ? `${FREE_TRIAL_DAYS}일 무료로 써 보기` : `${plan.name} 플랜 시작하기`;
         return `<article class="card card--plan span-4 m-nolift${featured ? ' is-featured' : ''}">
           <h3>${plan.name}${featured ? ' <span class="badge">많이 써요</span>' : ''}</h3>

@@ -13,7 +13,7 @@ export const FREE_TRIAL_DAYS = 3;
 export const PLANS = [
   { name: 'Free', price: 0, desc: '먼저 써 보기', features: ['횟수 제한 없음', '모든 기능'] },
   { name: 'Basic', price: MONTHLY_PRICE_KRW, desc: '매달 정리하는 셀러', features: ['횟수 제한 없음', '모든 기능', '설정 백업'] },
-  { name: 'Pro', price: PRO_PRICE_KRW, desc: '주문이 많은 셀러', features: ['Basic 플랜 전부', 'API 연동 추가', '문의 먼저 답변'] },
+  { name: 'Pro', price: PRO_PRICE_KRW, desc: '주문이 많은 셀러', features: ['Basic 플랜 전부', 'API 연동 추가'] },
 ];
 
 /**
